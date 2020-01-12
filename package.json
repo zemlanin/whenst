@@ -1,0 +1,49 @@
+{
+  "name": "whenst",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npm run eslint && npm run prettier -- -l",
+    "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
+    "prettier": "prettier \"./*.{js,yml,yaml}\" \"./src/**/*.{js,yml,yaml}\" --ignore-path=\".gitignore\"",
+    "eslint": "eslint \"./*.js\" \"./src/**/*.js\" --ignore-path=\".gitignore\""
+  },
+  "author": "Anton Verinov <anton@verinov.com>",
+  "license": "ISC",
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "env": {
+      "browser": false,
+      "es6": true,
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 9
+    },
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        }
+      ]
+    }
+  },
+  "engines": {
+    "node": "^12.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "prettier": "^1.19.1"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mustache": "^3.2.1",
+    "pg": "^7.17.1",
+    "url-pattern": "^1.0.3"
+  }
+}
