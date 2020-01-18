@@ -1,21 +1,12 @@
 const UrlPattern = require("url-pattern");
-const sql = require("pg-template-tag").default;
-
-const h = (req, res, ctx) => `hello ${ctx.params.name || "world"}`;
-
-const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
 const routes = [
-  ["GET /", () => module.exports.reverse.get(h).stringify()],
-  ["GET /hello(/:name)", h],
-  [
-    "GET /now",
-    async (req, res, ctx) => {
-      const client = await ctx.db();
-      return (await client.query(sql`SELECT now()`)).rows[0].now;
-    }
-  ]
+  ["GET /", () => `index`],
+  ["GET /m", require("./meeting/index.js")],
+  ["GET /m/(:slug)", require("./meeting/slug.js")]
 ];
+
+const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
 module.exports = {};
 
