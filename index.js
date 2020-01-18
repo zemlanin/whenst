@@ -9,7 +9,7 @@ const pg = require("pg");
 const sql = require("pg-template-tag").default;
 
 const config = require("./src/config.js");
-const { handlers } = require("./src/routes.js");
+const routes = require("./src/routes.js");
 
 async function processPost(request, response, ctx) {
   var queryData = "";
@@ -39,13 +39,20 @@ function wrapPostHandler(handler) {
 }
 
 const server = http.createServer((req, res) => {
-  const ctx = {};
+  const ctx = {
+    // ctx.db
+    // ctx.params
+    // ctx.absolute
+    // ctx.query
+    config,
+    routes: routes.reverse
+  };
 
   const pathname = url.parse(req.url).pathname.replace(/(.)\/$/, "$1");
   let handler;
 
-  if (handlers[req.method]) {
-    handler = (handlers[req.method].find(([pattern]) => {
+  if (routes.handlers[req.method]) {
+    handler = (routes.handlers[req.method].find(([pattern]) => {
       const params = pattern.match(pathname);
 
       if (params) {
@@ -57,7 +64,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === "HEAD" && !handler) {
-    handler = (handlers["GET"].find(([pattern]) => {
+    handler = (routes.handlers["GET"].find(([pattern]) => {
       const params = pattern.match(pathname);
 
       if (params) {
@@ -74,87 +81,91 @@ const server = http.createServer((req, res) => {
       res.end("404");
       return;
     }
-  } else {
-    const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
-    const host = req.headers["x-forwarded-host"] || req.headers["host"];
-    const port =
-      (host && host.match(/:(\d+)$/) && host.match(/:(\d+)$/)[1]) || null;
 
-    ctx.absolute = url.format({
-      protocol,
-      host,
-      port
-    });
+    return;
+  }
 
-    if (
-      req.method === "POST" &&
-      req.headers["content-type"] === "application/x-www-form-urlencoded"
-    ) {
-      const ogHandler = handler;
-      handler = wrapPostHandler(ogHandler);
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+  const host = req.headers["x-forwarded-host"] || req.headers["host"];
+  const port =
+    (host && host.match(/:(\d+)$/) && host.match(/:(\d+)$/)[1]) || null;
+
+  ctx.absolute = url.format({
+    protocol,
+    host,
+    port
+  });
+
+  ctx.query = url.parse(req.url, true).query;
+
+  if (
+    req.method === "POST" &&
+    req.headers["content-type"] === "application/x-www-form-urlencoded"
+  ) {
+    const ogHandler = handler;
+    handler = wrapPostHandler(ogHandler);
+  }
+
+  let db;
+  ctx.db = async () => {
+    if (db) {
+      return db;
     }
 
-    let db;
-    ctx.db = async () => {
-      if (db) {
-        return db;
+    db = new pg.Client(config.pg);
+
+    await db.connect();
+
+    return db;
+  };
+
+  let result;
+  let resultPromise;
+
+  try {
+    result = handler(req, res, ctx);
+    resultPromise =
+      result instanceof Promise ? result : Promise.resolve(result);
+  } catch (e) {
+    resultPromise = Promise.reject(e);
+  }
+
+  return resultPromise
+    .then(body => {
+      if (res.finished) {
+        return;
       }
 
-      db = new pg.Client(config.pg);
+      const contentType = res.getHeader("content-type");
+      if (
+        typeof body === "string" ||
+        contentType === "text/xml" ||
+        contentType === "text/html" ||
+        contentType === "text/plain" ||
+        contentType === "text/markdown" ||
+        contentType === "application/javascript" ||
+        (contentType && contentType.startsWith("image/"))
+      ) {
+        res.writeHead(res.statusCode, {
+          "Content-Type": contentType || "text/html"
+        });
+        res.end(body);
+      } else if (body || contentType === "application/json") {
+        res.writeHead(res.statusCode, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(body));
+      } else {
+        res.end();
+      }
+    })
+    .catch(err => {
+      if (!res.finished) {
+        console.error(err);
 
-      await db.connect();
-
-      return db;
-    };
-
-    let result;
-    let resultPromise;
-
-    try {
-      result = handler(req, res, ctx);
-      resultPromise =
-        result instanceof Promise ? result : Promise.resolve(result);
-    } catch (e) {
-      resultPromise = Promise.reject(e);
-    }
-
-    return resultPromise
-      .then(body => {
-        if (res.finished) {
-          return;
-        }
-
-        const contentType = res.getHeader("content-type");
-        if (
-          typeof body === "string" ||
-          contentType === "text/xml" ||
-          contentType === "text/html" ||
-          contentType === "text/plain" ||
-          contentType === "text/markdown" ||
-          contentType === "application/javascript" ||
-          (contentType && contentType.startsWith("image/"))
-        ) {
-          res.writeHead(res.statusCode, {
-            "Content-Type": contentType || "text/html"
-          });
-          res.end(body);
-        } else if (body || contentType === "application/json") {
-          res.writeHead(res.statusCode, { "Content-Type": "application/json" });
-          res.end(JSON.stringify(body));
-        } else {
-          res.end();
-        }
-      })
-      .catch(err => {
-        if (!res.finished) {
-          console.error(err);
-
-          res.writeHead(500, { "Content-Type": "text/plain" });
-          res.end("500");
-        }
-      })
-      .finally(() => db && db.end());
-  }
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.end("500");
+      }
+    })
+    .finally(() => db && db.end());
 });
 
 function start() {
