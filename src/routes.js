@@ -1,4 +1,5 @@
 const UrlPattern = require("url-pattern");
+const sql = require("pg-template-tag").default;
 
 const h = (req, res, ctx) => `hello ${ctx.params.name || "world"}`;
 
@@ -11,7 +12,7 @@ const routes = [
     "GET /now",
     async (req, res, ctx) => {
       const client = await ctx.db();
-      return (await client.query("SELECT now()")).rows[0].now;
+      return (await client.query(sql`SELECT now()`)).rows[0].now;
     }
   ]
 ];

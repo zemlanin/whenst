@@ -2,10 +2,11 @@
 
 const url = require("url");
 const http = require("http");
+const path = require("path");
 const querystring = require("querystring");
 
-require("dotenv").config();
 const pg = require("pg");
+const sql = require("pg-template-tag").default;
 
 const config = require("./src/config.js");
 const { handlers } = require("./src/routes.js");
@@ -99,7 +100,7 @@ const server = http.createServer((req, res) => {
         return db;
       }
 
-      db = new pg.Client();
+      db = new pg.Client(config.pg);
 
       await db.connect();
 
@@ -157,15 +158,33 @@ const server = http.createServer((req, res) => {
 });
 
 function start() {
-  (async () => {
-    const client = new pg.Client();
+  Promise.resolve()
+    .then(async function checkDBConnection() {
+      const client = new pg.Client(config.pg);
 
-    await client.connect();
+      await client.connect();
 
-    await client.query("SELECT 1;");
+      await client.query(sql`SELECT 1;`);
 
-    await client.end();
-  })()
+      await client.end();
+    })
+    .then(
+      config.production
+        ? null
+        : async function migrate() {
+            const marv = require("marv/api/promise");
+            const driver = require("marv-pg-driver");
+            const directory = path.resolve("migrations");
+
+            const migrations = await marv.scan(directory);
+            await marv.migrate(
+              migrations,
+              driver({
+                connection: config.pg
+              })
+            );
+          }
+    )
     .then(() => {
       server.on("clientError", (err, socket) => {
         socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
