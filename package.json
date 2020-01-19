@@ -38,12 +38,12 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0",
+    "marv": "^3.1.0",
+    "marv-pg-driver": "^3.0.0",
     "prettier": "^1.19.1"
   },
   "dependencies": {
     "dotenv": "^8.2.0",
-    "marv": "^3.1.0",
-    "marv-pg-driver": "^3.0.0",
     "mustache": "^3.2.1",
     "pg": "^7.17.1",
     "pg-template-tag": "^0.1.2",
