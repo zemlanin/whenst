@@ -1,9 +1,16 @@
 const UrlPattern = require("url-pattern");
 
+const config = require("./config");
+
 const routes = [
-  ["GET /", () => `index`],
+  [
+    "GET /",
+    (req, res, ctx) =>
+      ctx.routes.get(require("./cdn.js")).stringify({ _: "index.css" })
+  ],
   ["GET /m", require("./meeting/index.js")],
-  ["GET /m/(:slug)", require("./meeting/slug.js")]
+  ["GET /m/(:slug)", require("./meeting/slug.js")],
+  ["GET /cdn/*", require("./cdn.js")]
 ];
 
 const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
@@ -31,6 +38,11 @@ module.exports.reverse = routes.reduce((acc, [route, handler]) => {
   }
 
   if (acc.has(handler)) {
+    return acc;
+  }
+
+  if (handler === require("./cdn.js") && config.cdn) {
+    acc.set(handler, new UrlPattern(config.cdn.replace(/:/g, "\\:") + "*"));
     return acc;
   }
 

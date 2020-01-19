@@ -5,5 +5,6 @@ module.exports = {
   pg: {
     database: process.env.PGDATABASE || "whenst"
   },
-  production: process.env.NODE_ENV !== "development"
+  production: process.env.NODE_ENV !== "development",
+  cdn: process.env.CDN || ""
 };
