@@ -1,4 +1,5 @@
 const sql = require("pg-template-tag").default;
+const tmpl = require.resolve("./templates/slug.handlebars");
 
 const SLUG_REGEX = /[a-z][a-z0-9]{2,}/i;
 
@@ -22,5 +23,7 @@ module.exports = async function meetingSlug(req, res, ctx) {
     return `404 Not Found`;
   }
 
-  return id;
+  return ctx.render(tmpl, {
+    id
+  });
 };

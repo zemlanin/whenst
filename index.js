@@ -10,6 +10,7 @@ const sql = require("pg-template-tag").default;
 
 const config = require("./src/config.js");
 const routes = require("./src/routes.js");
+const render = require("./src/render.js");
 
 async function processPost(request, response, ctx) {
   var queryData = "";
@@ -45,6 +46,7 @@ const server = http.createServer((req, res) => {
     // ctx.absolute
     // ctx.query
     config,
+    render,
     routes: routes.reverse
   };
 

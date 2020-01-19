@@ -44,8 +44,8 @@
   },
   "dependencies": {
     "dotenv": "^8.2.0",
+    "handlebars": "^4.7.2",
     "mime": "^2.4.4",
-    "mustache": "^3.2.1",
     "pg": "^7.17.1",
     "pg-template-tag": "^0.1.2",
     "url-pattern": "^1.0.3"
