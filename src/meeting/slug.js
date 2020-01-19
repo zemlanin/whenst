@@ -7,23 +7,23 @@ module.exports = async function meetingSlug(req, res, ctx) {
   const client = await ctx.db();
   const slug = ctx.params.slug;
 
-  let id;
+  let meeting;
 
   if (slug && slug.match(SLUG_REGEX)) {
     const res = await client.query(
-      sql`SELECT id FROM meeting WHERE slug = ${slug} LIMIT 1`
+      sql`SELECT id, slug FROM meeting WHERE slug = ${slug} LIMIT 1`
     );
 
-    id = res.rows[0].id;
+    meeting = res.rows[0];
   }
 
-  if (!id) {
+  if (!meeting) {
     res.statusCode = 404;
 
     return `404 Not Found`;
   }
 
   return ctx.render(tmpl, {
-    id
+    meeting
   });
 };

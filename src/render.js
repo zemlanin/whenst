@@ -2,6 +2,18 @@ const fs = require("fs");
 
 const Handlebars = require("handlebars");
 
+const routes = require("./routes.js");
+
+Handlebars.registerHelper("route", function(name, helperOptions) {
+  const pattern = routes.reverse[name];
+
+  if (!pattern) {
+    throw new Error(`route not found: ${name}`);
+  }
+
+  return pattern.stringify(helperOptions.hash);
+});
+
 const tmplMap = {};
 
 module.exports = function render(tmplPath, data) {

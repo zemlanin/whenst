@@ -23,7 +23,7 @@ module.exports = async function meetingIndex(req, res, ctx) {
   }
 
   res.writeHead(302, {
-    Location: ctx.routes.get(require("./slug.js")).stringify({ slug: query.q })
+    Location: ctx.routes.meetingSlug.stringify({ slug: query.q })
   });
 
   return;

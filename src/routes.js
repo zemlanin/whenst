@@ -2,29 +2,26 @@ const UrlPattern = require("url-pattern");
 
 const config = require("./config");
 
-const routes = [
-  [
-    "GET /",
-    (req, res, ctx) =>
-      ctx.routes.get(require("./cdn.js")).stringify({ _: "index.css" })
-  ],
-  ["GET /m", require("./meeting/index.js")],
-  ["GET /m/(:slug)", require("./meeting/slug.js")],
-  ["GET /cdn/*", require("./cdn.js")]
-];
-
+const CDN = "cdn";
 const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
-module.exports = {};
+const routes = [
+  ["GET /", (req, res, ctx) => ctx.routes.cdn.stringify({ _: "index.css" })],
+  ["GET /m", require("./meeting/index.js")],
+  ["GET /m/(:slug)", require("./meeting/slug.js")],
+  ["GET /cdn/*", require("./cdn.js"), CDN]
+];
 
+module.exports = {};
 module.exports.handlers = routes.reduce((acc, [route, handler]) => {
   if (!route.match(METHODS_REGEX)) {
     throw new Error(`unknown method in route: ${route}`);
   }
 
-  const method = route.split(" ")[0];
+  const spaceIndex = route.indexOf(" ");
 
-  const pattern = route.slice(method.length + 1);
+  const method = route.slice(0, spaceIndex);
+  const pattern = route.slice(spaceIndex + 1);
 
   acc[method] = acc[method] || [];
   acc[method].push([new UrlPattern(pattern), handler]);
@@ -32,24 +29,27 @@ module.exports.handlers = routes.reduce((acc, [route, handler]) => {
   return acc;
 }, {});
 
-module.exports.reverse = routes.reduce((acc, [route, handler]) => {
+module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
   if (!route.match(METHODS_REGEX)) {
     throw new Error(`unknown method in route: ${route}`);
   }
 
-  if (acc.has(handler)) {
+  name = name || handler.name;
+
+  if (!name || acc[name]) {
     return acc;
   }
 
-  if (handler === require("./cdn.js") && config.cdn) {
-    acc.set(handler, new UrlPattern(config.cdn.replace(/:/g, "\\:") + "*"));
-    return acc;
+  let pattern;
+
+  if (handler === CDN && config.cdn) {
+    pattern = config.cdn.replace(/:/g, "\\:") + "*";
+  } else {
+    const spaceIndex = route.indexOf(" ");
+    pattern = route.slice(spaceIndex + 1);
   }
 
-  const method = route.split(" ")[0];
-  const pattern = route.slice(method.length + 1);
-
-  acc.set(handler, new UrlPattern(pattern));
+  acc[name] = new UrlPattern(pattern);
 
   return acc;
-}, new Map());
+}, {});
