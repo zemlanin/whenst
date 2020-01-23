@@ -1,4 +1,26 @@
-{{#with meeting}}
-id: {{ id }}
-url: {{ route "meetingSlug" slug=slug }}
-{{/with}}
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ meeting.title }}</title>
+  <link rel="stylesheet" type="text/css" href="{{ route "cdn" _="pure-min.css" }}">
+  <link rel="stylesheet" type="text/css" href="{{ route "cdn" _="main.css" }}">
+</head>
+<body>
+  <div id="layout" class="pure-g">
+    <div class='pure-u-1'>
+      {{#with meeting}}
+      <h1><a href="{{ route "meetingSlug" slug=slug }}">{{ title }}</a></h1>
+      {{/with}}
+    </div>
+      {{#each tracks}}
+        <div class='pure-u-1'>
+          <h2><span aria="hidden" style="color: #{{color_rgb}}">■</span> {{ title }}</h2>
+          <ul>
+            {{#each (lookup ../eventsByTrack [id]) }}
+              <li>{{title}}</li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/each}}
+  </div>
+</body>
