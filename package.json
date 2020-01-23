@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{js,css}\" \"./{src,static}/**/*.{js,css}\" --ignore-path=\".gitignore\"",
-    "eslint": "eslint \"./*.js\" \"./{src,static}/**/*.js\" --ignore-path=\".gitignore\""
+    "prettier": "prettier \"./*.{js,css}\" \"./{src,static}/**/*.{js,css}\" --ignore-path=\".lintignore\"",
+    "eslint": "eslint \"./*.js\" \"./{src,static}/**/*.js\" --ignore-path=\".lintignore\""
   },
   "author": "Anton Verinov <anton@verinov.com>",
   "license": "ISC",

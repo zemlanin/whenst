@@ -1,0 +1,4 @@
+.env
+.DS_Store
+node_modules/
+static/pure-min.css
