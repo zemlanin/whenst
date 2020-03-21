@@ -1,4 +1,5 @@
 const fs = require("fs");
+const url = require("url");
 
 const Handlebars = require("handlebars");
 
@@ -14,6 +15,17 @@ Handlebars.registerHelper("route", function(name, helperOptions) {
   return pattern.stringify(helperOptions.hash);
 });
 
+const absoluteRoute = base =>
+  function absoluteRoute(name, helperOptions) {
+    const pattern = routes.reverse[name];
+
+    if (!pattern) {
+      throw new Error(`route not found: ${name}`);
+    }
+
+    return url.resolve(base, pattern.stringify(helperOptions.hash));
+  };
+
 const tmplMap = {};
 
 module.exports = function render(tmplPath, data) {
@@ -28,5 +40,9 @@ module.exports = function render(tmplPath, data) {
   return Handlebars.compile(tmpl, {
     strict: true,
     explicitPartialContext: true
-  })(data);
+  })(data, {
+    helpers: {
+      absolute: absoluteRoute(this.absolute)
+    }
+  });
 };
