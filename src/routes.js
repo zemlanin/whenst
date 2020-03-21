@@ -6,8 +6,6 @@ const CDN = "cdn";
 const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
 const routes = [
-  ["GET /m", require("./meeting/index.js")],
-  ["GET /m/(:slug)", require("./meeting/slug.js")],
   ["GET /", require("./landing/index.js")],
   ["GET /auth/slack", require("./auth/slack.js")],
   ["GET /cdn/*", require("./cdn.js"), CDN]
