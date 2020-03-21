@@ -164,7 +164,11 @@ const server = http.createServer((req, res) => {
         console.error(err);
 
         res.writeHead(500, { "Content-Type": "text/plain" });
-        res.end("500");
+        if (config.production) {
+          res.end("500");
+        } else {
+          res.end(err.stack);
+        }
       }
     })
     .finally(() => db && db.end());
