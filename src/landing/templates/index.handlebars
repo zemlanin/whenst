@@ -11,7 +11,7 @@
       {{#if user}}
         logged in
       {{else}}
-        <a href="https://slack.com/oauth/authorize?client_id={{client_id}}&scope=users.profile:write%20dnd:write&redirect_uri={{ absolute "authSlack" }}&state={{state}}">
+        <a href="https://slack.com/oauth/authorize?client_id={{client_id}}&scope=users.profile:write%20dnd:write%20emoji:read&redirect_uri={{ absolute "authSlack" }}&state={{state}}">
           login
         </a>
       {{/if}}
