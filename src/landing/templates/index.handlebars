@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>when.st</title>
+  <link rel="stylesheet" type="text/css" href="{{ route "cdn" _="pure-min.css" }}">
+  <link rel="stylesheet" type="text/css" href="{{ route "cdn" _="main.css" }}">
+</head>
+<body>
+  <div id="layout" class="pure-g">
+    <div class="pure-u-1">
+      {{#if user}}
+        logged in
+      {{else}}
+        <a href="https://slack.com/oauth/authorize?client_id={{client_id}}&scope=users.profile:write%20dnd:write&redirect_uri={{ absolute "authSlack" }}&state={{state}}">
+          login
+        </a>
+      {{/if}}
+    </div>
+  </div>
+</body>
