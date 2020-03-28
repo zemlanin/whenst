@@ -16,9 +16,9 @@ module.exports = async function landing(req, res) {
       WHERE s.id = ANY(${slack_oauth_ids})
     `);
 
-    slacks = dbRes.rows.map(row => ({
+    slacks = dbRes.rows.map((row) => ({
       team_name: row.team_name,
-      team_id: row.team_id
+      team_id: row.team_id,
     }));
   }
 
@@ -26,6 +26,6 @@ module.exports = async function landing(req, res) {
     session: req.session,
     slacks: slacks,
     client_id: config.slack.client_id,
-    state: "" // TODO
+    state: "", // TODO
   });
 };

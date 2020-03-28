@@ -5,7 +5,7 @@ const Handlebars = require("handlebars");
 
 const routes = require("./routes.js");
 
-Handlebars.registerHelper("route", function(name, helperOptions) {
+Handlebars.registerHelper("route", function (name, helperOptions) {
   const pattern = routes.reverse[name];
 
   if (!pattern) {
@@ -15,7 +15,7 @@ Handlebars.registerHelper("route", function(name, helperOptions) {
   return pattern.stringify(helperOptions.hash);
 });
 
-const absoluteRoute = base =>
+const absoluteRoute = (base) =>
   function absoluteRoute(name, helperOptions) {
     const pattern = routes.reverse[name];
 
@@ -42,11 +42,11 @@ module.exports = function renderMiddleware(req, res, next) {
 
     return Handlebars.compile(tmpl, {
       strict: true,
-      explicitPartialContext: true
+      explicitPartialContext: true,
     })(data, {
       helpers: {
-        absolute: absoluteRoute(req.absolute)
-      }
+        absolute: absoluteRoute(req.absolute),
+      },
     });
   };
 

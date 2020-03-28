@@ -13,17 +13,17 @@ function getSessionSecret() {
 module.exports = {
   port: process.env.PORT || 8000,
   pg: {
-    database: process.env.PG_DATABASE || "whenst"
+    database: process.env.PG_DATABASE || "whenst",
   },
   session: {
-    secret: getSessionSecret()
+    secret: getSessionSecret(),
   },
   slack: process.env.SLACK_CLIENT_ID
     ? {
         client_id: process.env.SLACK_CLIENT_ID,
-        client_secret: process.env.SLACK_CLIENT_SECRET || ""
+        client_secret: process.env.SLACK_CLIENT_SECRET || "",
       }
     : null,
   production: process.env.NODE_ENV !== "development",
-  cdn: process.env.CDN || ""
+  cdn: process.env.CDN || "",
 };

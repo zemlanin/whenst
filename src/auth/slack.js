@@ -29,11 +29,11 @@ module.exports = async function authSlack(req, res) {
     code,
     client_id,
     client_secret,
-    redirect_uri
+    redirect_uri,
   });
 
   const slackResp = await slackApi("oauth.access", accessRequestBody, {
-    "content-type": "application/x-www-form-urlencoded"
+    "content-type": "application/x-www-form-urlencoded",
   });
 
   if (slackResp.ok) {
@@ -67,7 +67,7 @@ module.exports = async function authSlack(req, res) {
 
     req.session.slack_oauth_ids = [
       slack_oauth_id,
-      ...(req.session.slack_oauth_ids || [])
+      ...(req.session.slack_oauth_ids || []),
     ];
   }
 

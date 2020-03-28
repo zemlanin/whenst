@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   req.absolute = url.format({
     protocol,
     host,
-    port
+    port,
   });
 
   next();
@@ -76,14 +76,14 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: new (require("connect-pg-simple")(session))({
-      conObject: config.pg
-    })
+      conObject: config.pg,
+    }),
   })
 );
 
 app.use((req, res, next) => {
   req.app = {
-    routes: routes.reverse
+    routes: routes.reverse,
   };
 
   const handler = routes.getHandler(req); // req.params
@@ -104,7 +104,7 @@ app.use((req, res, next) => {
   }
 
   return resultPromise
-    .then(body => {
+    .then((body) => {
       if (res.finished) {
         return;
       }
@@ -124,7 +124,7 @@ app.use((req, res, next) => {
         (resType && resType.startsWith("image/"))
       ) {
         res.writeHead(res.statusCode, {
-          "Content-Type": resType || "text/html"
+          "Content-Type": resType || "text/html",
         });
         res.end(body);
       } else if (body || resType === "application/json") {
@@ -136,7 +136,7 @@ app.use((req, res, next) => {
 
       next();
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 });
@@ -166,7 +166,7 @@ function start() {
             await marv.migrate(
               migrations,
               driver({
-                connection: config.pg
+                connection: config.pg,
               })
             );
           }
@@ -180,7 +180,7 @@ function start() {
 
       console.log(`running on ${config.port}`);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       process.exit(1);
     });
@@ -191,6 +191,6 @@ if (require.main === module) {
 } else {
   module.exports = {
     server,
-    start
+    start,
   };
 }

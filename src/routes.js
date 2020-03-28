@@ -10,7 +10,7 @@ const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 const routes = [
   ["GET /", require("./landing/index.js")],
   ["GET /auth/slack", require("./auth/slack.js")],
-  ["GET /cdn/*", require("./cdn.js"), CDN]
+  ["GET /cdn/*", require("./cdn.js"), CDN],
 ];
 
 const handlers = routes.reduce((acc, [route, handler]) => {

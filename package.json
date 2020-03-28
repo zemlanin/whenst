@@ -40,7 +40,7 @@
     "eslint": "^6.8.0",
     "marv": "^3.1.0",
     "marv-pg-driver": "^3.0.0",
-    "prettier": "^1.19.1"
+    "prettier": "^2.0.2"
   },
   "dependencies": {
     "bent": "^7.1.2",

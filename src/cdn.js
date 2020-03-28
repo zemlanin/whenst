@@ -20,7 +20,7 @@ module.exports = async function CDN(req, res) {
 
   const filestream = fs.createReadStream(filepath);
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     filestream.on("error", () => {
       res.setHeader("Content-Type", "text/plain");
       res.statusCode = 404;
