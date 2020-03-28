@@ -50,9 +50,9 @@
     "content-type": "^1.0.4",
     "dotenv": "^8.2.0",
     "express-session": "^1.17.0",
-    "handlebars": "^4.7.2",
+    "handlebars": "^4.7.3",
     "mime": "^2.4.4",
-    "pg": "^7.17.1",
+    "pg": "^7.18.2",
     "pg-template-tag": "^0.1.2",
     "url-pattern": "^1.0.3"
   }
