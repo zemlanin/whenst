@@ -3,7 +3,7 @@ require("dotenv").config();
 module.exports = {
   port: process.env.PORT || 8000,
   pg: {
-    database: process.env.PGDATABASE || "whenst"
+    database: process.env.PG_DATABASE || "whenst"
   },
   slack: process.env.SLACK_CLIENT_ID
     ? {
