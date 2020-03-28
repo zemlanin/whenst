@@ -38,6 +38,8 @@ module.exports = function renderMiddleware(req, res, next) {
       tmpl = tmplMap[tmplPath] = fs.readFileSync(tmplPath).toString();
     }
 
+    res.setHeader("content-type", "text/html");
+
     return Handlebars.compile(tmpl, {
       strict: true,
       explicitPartialContext: true
