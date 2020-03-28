@@ -1,31 +1,27 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE IF NOT EXISTS "event" (
-  id uuid PRIMARY KEY NOT NULL,
-  track_id uuid NOT NULL,
-  title text NOT NULL,
-  subtitle text NOT NULL,
-  ts_start timestamp(0) without time zone NOT NULL,
-  ts_end timestamp(0) without time zone NOT NULL
+CREATE TABLE IF NOT EXISTS "slack_oauth" (
+  id bigserial PRIMARY KEY NOT NULL,
+  access_token text UNIQUE NOT NULL,
+  scope text NOT NULL,
+  user_id text NOT NULL,
+  team_id text NOT NULL,
+  team_name text NOT NULL,
+  enterprise_id text
 );
 
-CREATE INDEX IF NOT EXISTS event_track_id_id_idx ON "event" (track_id, id);
+-- `node-connect-pg-simple/table.sql`
+CREATE TABLE IF NOT EXISTS "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+  "sess" json NOT NULL,
+  "expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
 
-CREATE TABLE IF NOT EXISTS "track" (
-  id uuid PRIMARY KEY NOT NULL,
-  meeting_id uuid NOT NULL,
-  title text NOT NULL,
-  subtitle text NOT NULL,
-  color_rgb text NOT NULL
-);
+ALTER TABLE "session" DROP CONSTRAINT IF EXISTS "session_pkey";
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
 
-CREATE INDEX IF NOT EXISTS track_meeting_id_id_idx ON "track" (meeting_id, id);
-
-CREATE TABLE IF NOT EXISTS "meeting" (
-  id uuid PRIMARY KEY NOT NULL,
-  title text NOT NULL,
-  subtitle text NOT NULL,
-  slug text UNIQUE NOT NULL
-);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+-- /`node-connect-pg-simple/table.sql`
 
 END TRANSACTION;

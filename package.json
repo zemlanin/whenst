@@ -43,10 +43,13 @@
     "prettier": "^1.19.1"
   },
   "dependencies": {
+    "bent": "^7.1.2",
     "body-parser": "^1.19.0",
     "connect": "^3.7.0",
+    "connect-pg-simple": "^6.1.0",
     "content-type": "^1.0.4",
     "dotenv": "^8.2.0",
+    "express-session": "^1.17.0",
     "handlebars": "^4.7.2",
     "mime": "^2.4.4",
     "pg": "^7.17.1",

@@ -8,6 +8,7 @@ const pg = require("pg");
 const sql = require("pg-template-tag").default;
 const connect = require("connect");
 const bodyParser = require("body-parser");
+const session = require("express-session");
 const contentType = require("content-type");
 
 const config = require("./src/config.js");
@@ -66,6 +67,19 @@ app.use(function dbMiddleware(req, res, next) {
 
   next();
 });
+
+app.use(
+  session({
+    secret: config.session.secret,
+    secure: config.production,
+    name: "whenst.sid",
+    resave: false,
+    saveUninitialized: false,
+    store: new (require("connect-pg-simple")(session))({
+      conObject: config.pg
+    })
+  })
+);
 
 app.use((req, res, next) => {
   req.app = {

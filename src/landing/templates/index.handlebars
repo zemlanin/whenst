@@ -8,13 +8,17 @@
 <body>
   <div id="layout" class="pure-g">
     <div class="pure-u-1">
-      {{#if session}}
-        logged in
-      {{else}}
-        <a href="https://slack.com/oauth/authorize?client_id={{client_id}}&scope=users.profile:write%20dnd:write%20emoji:read&redirect_uri={{ absolute "authSlack" }}&state={{state}}">
-          login
-        </a>
-      {{/if}}
+      <p>{{session.id}}</p>
+
+      <ul>
+        {{#each slacks}}
+          <li>{{this.team_name}} ({{this.team_id}})</li>
+        {{/each}}
+      </ul>
+
+      <a href="https://slack.com/oauth/authorize?client_id={{client_id}}&scope=users.profile:write%20dnd:write%20emoji:read&redirect_uri={{ absolute "authSlack" }}&state={{state}}">
+        login
+      </a>
     </div>
   </div>
 </body>
