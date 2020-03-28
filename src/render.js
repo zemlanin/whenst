@@ -28,21 +28,25 @@ const absoluteRoute = base =>
 
 const tmplMap = {};
 
-module.exports = function render(tmplPath, data) {
-  let tmpl;
+module.exports = function renderMiddleware(req, res, next) {
+  res.render = function render(tmplPath, data) {
+    let tmpl;
 
-  if (tmplPath in tmplMap) {
-    tmpl = tmplMap[tmplPath];
-  } else {
-    tmpl = tmplMap[tmplPath] = fs.readFileSync(tmplPath).toString();
-  }
-
-  return Handlebars.compile(tmpl, {
-    strict: true,
-    explicitPartialContext: true
-  })(data, {
-    helpers: {
-      absolute: absoluteRoute(this.absolute)
+    if (tmplPath in tmplMap) {
+      tmpl = tmplMap[tmplPath];
+    } else {
+      tmpl = tmplMap[tmplPath] = fs.readFileSync(tmplPath).toString();
     }
-  });
+
+    return Handlebars.compile(tmpl, {
+      strict: true,
+      explicitPartialContext: true
+    })(data, {
+      helpers: {
+        absolute: absoluteRoute(req.absolute)
+      }
+    });
+  };
+
+  next();
 };

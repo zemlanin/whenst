@@ -1,3 +1,5 @@
+const url = require("url");
+
 const UrlPattern = require("url-pattern");
 
 const config = require("./config");
@@ -11,8 +13,7 @@ const routes = [
   ["GET /cdn/*", require("./cdn.js"), CDN]
 ];
 
-module.exports = {};
-module.exports.handlers = routes.reduce((acc, [route, handler]) => {
+const handlers = routes.reduce((acc, [route, handler]) => {
   if (!route.match(METHODS_REGEX)) {
     throw new Error(`unknown method in route: ${route}`);
   }
@@ -28,6 +29,8 @@ module.exports.handlers = routes.reduce((acc, [route, handler]) => {
   return acc;
 }, {});
 
+module.exports = {};
+module.exports.handlers = handlers;
 module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
   if (!route.match(METHODS_REGEX)) {
     throw new Error(`unknown method in route: ${route}`);
@@ -52,3 +55,35 @@ module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
 
   return acc;
 }, {});
+
+module.exports.getHandler = function getHandler(req) {
+  let handler;
+
+  const pathname = url.parse(req.url).pathname.replace(/(.)\/$/, "$1");
+
+  if (handlers[req.method]) {
+    handler = (handlers[req.method].find(([pattern]) => {
+      const params = pattern.match(pathname);
+
+      if (params) {
+        req.params = params;
+      }
+
+      return !!params;
+    }) || [])[1];
+  }
+
+  if (req.method === "HEAD" && !handler) {
+    handler = (handlers["GET"].find(([pattern]) => {
+      const params = pattern.match(pathname);
+
+      if (params) {
+        req.params = params;
+      }
+
+      return !!params;
+    }) || [])[1];
+  }
+
+  return handler;
+};

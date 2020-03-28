@@ -6,16 +6,16 @@ const mime = require("mime");
 
 const config = require("./config.js");
 
-module.exports = async function CDN(req, res, ctx) {
+module.exports = async function CDN(req, res) {
   if (config.cdn) {
-    res.writeHead(302, { Location: new url.URL(ctx.params._, config.cdn) });
+    res.writeHead(302, { Location: new url.URL(req.params._, config.cdn) });
     return;
   } else if (config.production) {
     res.statusCode = 404;
     return;
   }
 
-  const filepath = path.resolve(__dirname, "../static/", ctx.params._);
+  const filepath = path.resolve(__dirname, "../static/", req.params._);
   const mimetype = mime.getType(filepath);
 
   const filestream = fs.createReadStream(filepath);

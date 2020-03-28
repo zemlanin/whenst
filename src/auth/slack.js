@@ -1,8 +1,8 @@
 const url = require("url");
 const config = require("../config.js");
 
-module.exports = async function authSlack(req, res, ctx) {
-  const query = ctx.query;
+module.exports = async function authSlack(req, res) {
+  const query = req.query;
 
   const error = !query ? "something's wrong" : query.error;
 
@@ -14,8 +14,8 @@ module.exports = async function authSlack(req, res, ctx) {
   const code = query.code;
   const { client_id, client_secret } = config.slack;
   const redirect_uri = url.resolve(
-    ctx.absolute,
-    ctx.routes.authSlack.stringify()
+    req.absolute,
+    req.app.routes.authSlack.stringify()
   );
 
   return {

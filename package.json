@@ -43,6 +43,9 @@
     "prettier": "^1.19.1"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "connect": "^3.7.0",
+    "content-type": "^1.0.4",
     "dotenv": "^8.2.0",
     "handlebars": "^4.7.2",
     "mime": "^2.4.4",
