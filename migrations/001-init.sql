@@ -32,4 +32,7 @@ CREATE TABLE IF NOT EXISTS "slack_preset" (
   status_expiration timestamp(0)
 );
 
+ALTER TABLE "slack_preset" DROP CONSTRAINT IF EXISTS "slack_preset_unique_text_emoji";
+ALTER TABLE "slack_preset" ADD CONSTRAINT "slack_preset_unique_text_emoji" UNIQUE ("slack_oauth_id", "status_text", "status_emoji");
+
 END TRANSACTION;
