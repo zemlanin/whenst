@@ -24,4 +24,12 @@ ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFE
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
 -- /`node-connect-pg-simple/table.sql`
 
+CREATE TABLE IF NOT EXISTS "slack_preset" (
+  id bigserial PRIMARY KEY NOT NULL,
+  slack_oauth_id text NOT NULL,
+  status_text text NOT NULL,
+  status_emoji text NOT NULL,
+  status_expiration timestamp(0)
+);
+
 END TRANSACTION;
