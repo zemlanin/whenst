@@ -1,12 +1,8 @@
 const url = require("url");
-const querystring = require("querystring");
-
-const bent = require("bent");
 const sql = require("pg-template-tag").default;
 
 const config = require("../config.js");
-
-const slackApi = bent("https://slack.com/api/", "json", "POST");
+const slackApi = require("../external/slack.js");
 
 module.exports = async function authSlack(req, res) {
   const query = req.query;
@@ -25,16 +21,14 @@ module.exports = async function authSlack(req, res) {
     req.app.routes.authSlack.stringify()
   );
 
-  const accessRequestBody = querystring.stringify({
+  const accessRequestBody = {
     code,
     client_id,
     client_secret,
     redirect_uri,
-  });
+  };
 
-  const slackResp = await slackApi("oauth.access", accessRequestBody, {
-    "content-type": "application/x-www-form-urlencoded",
-  });
+  const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
 
   if (slackResp.ok) {
     const db = await req.db();
@@ -68,7 +62,8 @@ module.exports = async function authSlack(req, res) {
     if (req.session.slack_oauth_ids) {
       req.session.slack_oauth_ids = [
         slack_oauth_id,
-        ...req.session.slack_oauth_ids.filter((id) => id !== slack_oauth_id),
+        // TODO: support multiple slacks per session
+        // ...req.session.slack_oauth_ids.filter((id) => id !== slack_oauth_id),
       ];
     } else {
       req.session.slack_oauth_ids = [slack_oauth_id];
