@@ -51,13 +51,22 @@ module.exports = async function authSlack(req, res) {
         ${slackResp.enterprise_id},
         ${slackResp.team_name}
       )
-      ON CONFLICT (access_token) DO UPDATE SET
-        scope = EXCLUDED.scope,
-        team_name = EXCLUDED.team_name
+      ON CONFLICT (access_token) DO NOTHING
       RETURNING id;
     `);
 
-    const slack_oauth_id = dbOauthResp.rows[0].id;
+    let slack_oauth_id;
+    if (dbOauthResp.rows.length) {
+      slack_oauth_id = dbOauthResp.rows[0].id;
+    } else {
+      const existingOauthResp = await db.query(sql`
+        SELECT id from slack_oauth
+        WHERE access_token = ${slackResp.access_token}
+        LIMIT 1
+      `)
+
+      slack_oauth_id = existingOauthResp.rows[0].id;
+    }
 
     if (req.session.slack_oauth_ids) {
       req.session.slack_oauth_ids = [
