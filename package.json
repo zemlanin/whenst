@@ -50,7 +50,7 @@
     "content-type": "^1.0.4",
     "dotenv": "^8.2.0",
     "express-session": "^1.17.0",
-    "handlebars": "^4.7.3",
+    "handlebars": "^4.7.6",
     "mime": "^2.4.4",
     "pg": "^7.18.2",
     "pg-template-tag": "^0.1.2",
