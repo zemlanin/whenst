@@ -1,5 +1,6 @@
 const url = require("url");
 
+const nodeEmoji = require("node-emoji");
 const sql = require("pg-template-tag").default;
 
 const EMOJI_REGEX = /:[a-z0-9+_'-]+:/;
@@ -28,19 +29,25 @@ module.exports = async function slackPresetAdd(req, res) {
 
   let status_emoji = "";
   if (req.body.status_emoji) {
-    const status_emoji_inside_colons = req.body.status_emoji.match(
-      INSIDE_COLONS_REGEX
-    )
-      ? req.body.status_emoji
-      : `:${req.body.status_emoji}:`;
+    const emoji_name = nodeEmoji.which(req.body.status_emoji, true);
 
-    if (!status_emoji_inside_colons.match(EMOJI_REGEX)) {
-      res.statusCode = TODO_BAD_REQUEST;
+    if (emoji_name) {
+      status_emoji = emoji_name;
+    } else {
+      const status_emoji_inside_colons = req.body.status_emoji.match(
+        INSIDE_COLONS_REGEX
+      )
+        ? req.body.status_emoji
+        : `:${req.body.status_emoji}:`;
 
-      return;
+      if (!status_emoji_inside_colons.match(EMOJI_REGEX)) {
+        res.statusCode = TODO_BAD_REQUEST;
+
+        return;
+      }
+
+      status_emoji = status_emoji_inside_colons;
     }
-
-    status_emoji = status_emoji_inside_colons;
   }
 
   const db = await req.db();
