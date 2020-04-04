@@ -16,7 +16,7 @@ const emojiHTMLGetter = (slacksEmojis) => {
       if (customEmoji.startsWith("alias:")) {
         return getEmojiHTML(`:${customEmoji.slice("alias:".length)}:`);
       } else {
-        return `<img width="22" height="22" src="${customEmoji}" alt="${name}" title=":${name}:">`;
+        return `<img class="custom-emoji" src="${customEmoji}" alt="${name}" title=":${name}:">`;
       }
     }
 

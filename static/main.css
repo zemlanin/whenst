@@ -2,3 +2,9 @@
   width: 30em;
   margin: 1em auto;
 }
+
+.custom-emoji {
+  width: 22px;
+  height: 22px;
+  vertical-align: text-bottom;
+}
