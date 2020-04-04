@@ -78,13 +78,24 @@
                 >
                   <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
                   <input type="hidden" name="csrf" value="TODO">
-                  <input type="text" name="status_emoji" placeholder="emoji">
+                  <input
+                    type="text"
+                    name="status_emoji"
+                    placeholder="emoji"
+                    list="emoji_datalist_{{slack_oauth_id}}"
+                  >
                   <input type="text" name="status_text" placeholder="text">
                   <button type="submit">+</button>
                 </form>
               </li>
             </ul>
           </li>
+
+          <datalist id="emoji_datalist_{{slack_oauth_id}}">
+            {{#each emoji_options}}
+              <option value="{{this}}"></option>
+            {{/each}}
+          </datalist>
         {{/each}}
       </ul>
 

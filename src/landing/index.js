@@ -6,6 +6,8 @@ const slackApi = require("../external/slack.js");
 
 const tmpl = require.resolve("./templates/index.handlebars");
 
+const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji);
+
 const emojiHTMLGetter = (slacksEmojis) => {
   function onMissing(name) {
     const customEmoji = slacksEmojis && slacksEmojis[name];
@@ -96,6 +98,7 @@ module.exports = async function landing(req, res) {
         current_status,
         team_name: row.team_name,
         team_id: row.team_id,
+        emoji_options: DEFAULT_EMOJI_LIST.concat(Object.keys(slacksEmojis)),
       };
     });
   }
