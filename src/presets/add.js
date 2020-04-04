@@ -50,6 +50,20 @@ module.exports = async function slackPresetAdd(req, res) {
     }
   }
 
+  let status_text = req.body.status_text
+    ? nodeEmoji.replace(
+        escapeStatusText(req.body.status_text.trim()),
+        (emoji) => `:${emoji.key}:`
+      )
+    : "";
+
+  // if `status_emoji` is empty, Slack uses emoji-only `status_text` instead
+  // so we're doing the same
+  if (!status_emoji && status_text.match(EMOJI_REGEX)) {
+    status_emoji = status_text;
+    status_text = "";
+  }
+
   const db = await req.db();
   await db.query(sql`
     INSERT INTO slack_preset (
@@ -59,7 +73,7 @@ module.exports = async function slackPresetAdd(req, res) {
     )
     VALUES (
       ${req.body.slack_oauth_id},
-      ${escapeStatusText(req.body.status_text)},
+      ${status_text},
       ${status_emoji}
     )
     ON CONFLICT DO NOTHING
