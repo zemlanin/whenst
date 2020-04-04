@@ -1,5 +1,7 @@
 const url = require("url");
 
+const escapeHtml = require("escape-html");
+
 const sql = require("pg-template-tag").default;
 
 const EMOJI_REGEX = /:[a-z0-9+_'-]+:/;
@@ -48,7 +50,7 @@ module.exports = async function slackPresetAdd(req, res) {
     )
     VALUES (
       ${req.body.slack_oauth_id},
-      ${req.body.status_text},
+      ${escapeHtml(req.body.status_text)},
       ${status_emoji}
     )
     ON CONFLICT DO NOTHING

@@ -24,7 +24,7 @@
             <ul>
               {{#with current_status}}
                 <li style="list-style-type: square;">
-                  <code>{{status_emoji}}</code> {{status_text}}
+                  {{{status_emoji_html}}} {{{status_text_html}}}
 
                   {{#unless already_saved}}
                     <form
@@ -44,7 +44,7 @@
 
               {{#each presets}}
                 <li>
-                  {{#if status_emoji}}<code>{{status_emoji}}</code>{{/if}} {{status_text}}
+                  {{{status_emoji_html}}} {{{status_text_html}}}
 
                   <form
                     style="display: inline-block"
