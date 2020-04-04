@@ -10,6 +10,7 @@ const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 const routes = [
   ["GET /", require("./landing/index.js")],
   ["GET /auth/slack", require("./auth/slack.js")],
+  ["POST /auth/logout", require("./auth/logout.js")],
   ["POST /presets/add", require("./presets/add.js")],
   ["POST /presets/delete", require("./presets/delete.js")],
   ["POST /presets/use", require("./presets/use.js")],
