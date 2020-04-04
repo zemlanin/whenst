@@ -63,7 +63,7 @@ module.exports = async function authSlack(req, res) {
         SELECT id from slack_oauth
         WHERE access_token = ${slackResp.access_token}
         LIMIT 1
-      `)
+      `);
 
       slack_oauth_id = existingOauthResp.rows[0].id;
     }
@@ -79,5 +79,7 @@ module.exports = async function authSlack(req, res) {
     }
   }
 
-  return slackResp;
+  res.writeHead(302, {
+    Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
+  });
 };
