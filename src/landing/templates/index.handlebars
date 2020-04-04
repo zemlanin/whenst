@@ -49,6 +49,17 @@
                   <form
                     style="display: inline-block"
                     method="post"
+                    action="{{ route "slackPresetUse" }}"
+                  >
+                    <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
+                    <input type="hidden" name="csrf" value="TODO">
+                    <input type="hidden" name="id" value="{{id}}">
+                    <button type="submit">use</button>
+                  </form>
+
+                  <form
+                    style="display: inline-block"
+                    method="post"
                     action="{{ route "slackPresetDelete" }}"
                     onsubmit="return confirm('are you sure?')"
                   >
