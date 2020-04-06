@@ -3,7 +3,7 @@ BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS "slack_oauth" (
   id bigserial PRIMARY KEY NOT NULL,
   access_token text UNIQUE NOT NULL,
-  scope text NOT NULL,
+  scopes text[] NOT NULL,
   user_id text NOT NULL,
   team_id text NOT NULL,
   team_name text NOT NULL,

@@ -59,6 +59,19 @@ app.use(function dbMiddleware(req, res, next) {
     return db;
   };
 
+  req.db.transaction = async (callback) => {
+    const db = await req.db();
+
+    try {
+      await db.query("BEGIN");
+      await callback(db);
+      await db.query("COMMIT");
+    } catch (e) {
+      await db.query("ROLLBACK");
+      throw e;
+    }
+  };
+
   res.on("finish", () => {
     if (db) {
       db.end();

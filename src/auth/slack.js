@@ -31,42 +31,51 @@ module.exports = async function authSlack(req, res) {
   const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
 
   if (slackResp.ok) {
-    const db = await req.db();
-
-    const dbOauthResp = await db.query(sql`
-      INSERT INTO
-      slack_oauth (
-        access_token,
-        scope,
-        user_id,
-        team_id,
-        enterprise_id,
-        team_name
-      )
-      VALUES (
-        ${slackResp.access_token},
-        ${slackResp.scope},
-        ${slackResp.user_id},
-        ${slackResp.team_id},
-        ${slackResp.enterprise_id},
-        ${slackResp.team_name}
-      )
-      ON CONFLICT (access_token) DO NOTHING
-      RETURNING id;
-    `);
-
     let slack_oauth_id;
-    if (dbOauthResp.rows.length) {
-      slack_oauth_id = dbOauthResp.rows[0].id;
-    } else {
+    await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id from slack_oauth
+        SELECT id, scopes from slack_oauth
         WHERE access_token = ${slackResp.access_token}
-        LIMIT 1
+        LIMIT 1;
       `);
 
-      slack_oauth_id = existingOauthResp.rows[0].id;
-    }
+      let existing_oauth = existingOauthResp.rows[0];
+
+      if (existing_oauth) {
+        slack_oauth_id = existingOauthResp.rows[0].id;
+
+        if (existing_oauth.scopes.join(",") !== slackResp.scope) {
+          await db.query(sql`
+            UPDATE slack_oauth
+            SET scopes = ${slackResp.scope.split(",")}
+            WHERE access_token = ${slackResp.access_token};
+          `);
+        }
+      } else {
+        const dbOauthResp = await db.query(sql`
+          INSERT INTO
+          slack_oauth (
+            access_token,
+            scopes,
+            user_id,
+            team_id,
+            enterprise_id,
+            team_name
+          )
+          VALUES (
+            ${slackResp.access_token},
+            ${slackResp.scope.split(",")},
+            ${slackResp.user_id},
+            ${slackResp.team_id},
+            ${slackResp.enterprise_id},
+            ${slackResp.team_name}
+          )
+          RETURNING id;
+        `);
+
+        slack_oauth_id = dbOauthResp.rows[0].id;
+      }
+    });
 
     if (req.session.slack_oauth_ids) {
       req.session.slack_oauth_ids = [
