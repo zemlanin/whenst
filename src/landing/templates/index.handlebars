@@ -43,6 +43,25 @@
                 </li>
               {{/with}}
 
+              <li>
+                <form
+                  style="display: inline-block"
+                  method="post"
+                  action="{{ route "slackPresetAdd" }}"
+                >
+                  <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
+                  <input type="hidden" name="csrf" value="TODO">
+                  <input
+                    type="text"
+                    name="status_emoji"
+                    placeholder="emoji"
+                    list="emoji_datalist_{{slack_oauth_id}}"
+                  >
+                  <input type="text" name="status_text" placeholder="text">
+                  <button type="submit">+</button>
+                </form>
+              </li>
+
               {{#each presets}}
                 <li>
                   [{{{status_emoji_html}}}] {{{status_text_html}}}
@@ -71,24 +90,6 @@
                   </form>
                 </li>
               {{/each}}
-              <li>
-                <form
-                  style="display: inline-block"
-                  method="post"
-                  action="{{ route "slackPresetAdd" }}"
-                >
-                  <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
-                  <input type="hidden" name="csrf" value="TODO">
-                  <input
-                    type="text"
-                    name="status_emoji"
-                    placeholder="emoji"
-                    list="emoji_datalist_{{slack_oauth_id}}"
-                  >
-                  <input type="text" name="status_text" placeholder="text">
-                  <button type="submit">+</button>
-                </form>
-              </li>
             </ul>
           </li>
 
