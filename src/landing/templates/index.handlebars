@@ -11,13 +11,16 @@
       <ul>
         {{#each slacks}}
           <li>
-            <img src="{{profile.image_24}}">
+            <img src="{{profile.image_48}}">
+            {{#unless team.icon.image_default}}
+              <img src="{{team.icon.image_34}}">
+            {{/unless}}
             {{#if profile.display_name}}
               {{profile.display_name}}
             {{else}}
               {{profile.real_name}}
             {{/if}}
-            ({{team_name}})
+            ({{team.name}})
 
             <ul>
               {{#with current_status}}
@@ -108,7 +111,7 @@
           <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
           <input type="hidden" name="state" value="{{ state }}">
           <input type="hidden" name="scope"
-            value="users.profile:read users.profile:write dnd:write emoji:read"
+            value="team:read users.profile:read users.profile:write dnd:write emoji:read"
           >
           <button type="submit">login</button>
         </form>

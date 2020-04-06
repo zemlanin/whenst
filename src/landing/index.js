@@ -63,6 +63,12 @@ module.exports = async function landing(req, res) {
       )
     );
 
+    const teams = await Promise.all(
+      dbOauthRes.rows.map((row) =>
+        slackApi.apiGet("team.info", { token: row.access_token })
+      )
+    );
+
     slacks = dbOauthRes.rows.map((row, index) => {
       const profile = profiles[index].profile;
       const slacksEmojis = emojis[index].emoji;
@@ -91,13 +97,14 @@ module.exports = async function landing(req, res) {
             }
           : null;
 
+      const team = teams[index].team;
+
       return {
         slack_oauth_id: row.id,
         profile,
+        team,
         presets,
         current_status,
-        team_name: row.team_name,
-        team_id: row.team_id,
         emoji_options: DEFAULT_EMOJI_LIST.concat(Object.keys(slacksEmojis)),
       };
     });
