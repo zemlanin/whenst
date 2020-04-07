@@ -6,6 +6,7 @@ const path = require("path");
 
 const pg = require("pg");
 const sql = require("pg-template-tag").default;
+const redis = require("redis");
 const connect = require("connect");
 const bodyParser = require("body-parser");
 const session = require("express-session");
@@ -88,8 +89,8 @@ app.use(
     name: "whenst.sid",
     resave: false,
     saveUninitialized: false,
-    store: new (require("connect-pg-simple")(session))({
-      conObject: config.pg,
+    store: new (require("connect-redis")(session))({
+      client: new redis.createClient(config.redis),
     }),
   })
 );

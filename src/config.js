@@ -13,7 +13,10 @@ function getSessionSecret() {
 module.exports = {
   port: process.env.PORT || 8000,
   pg: {
-    database: process.env.PG_DATABASE || "whenst",
+    connectionString: process.env.DATABASE_URL || null,
+  },
+  redis: {
+    url: process.env.REDIS_URL || null,
   },
   session: {
     secret: getSessionSecret(),
