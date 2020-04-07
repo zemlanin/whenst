@@ -34,15 +34,73 @@ const emojiHTMLGetter = (slacksEmojis) => {
   return getEmojiHTML;
 };
 
+async function getProfile(db, redis, token, userId) {
+  const apiMethod = "users.profile.get";
+  const cacheKey = `slack:${apiMethod}:${userId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await slackApi.apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
+async function getTeam(db, redis, token, teamId) {
+  const apiMethod = "team.info";
+  const cacheKey = `slack:${apiMethod}:${teamId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await slackApi.apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
+async function getTeamEmojis(db, redis, token, teamId) {
+  const apiMethod = "emoji.list";
+  const cacheKey = `slack:${apiMethod}:${teamId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await slackApi.apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
 module.exports = async function landing(req, res) {
   let slacks = [];
   if (req.session.slack_oauth_ids && req.session.slack_oauth_ids.length) {
     const db = await req.db();
+    const redis = await req.redis();
 
     const slack_oauth_ids = req.session.slack_oauth_ids;
 
     const dbOauthRes = await db.query(sql`
-      SELECT s.id, s.team_id, s.access_token FROM slack_oauth s
+      SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
       WHERE s.id = ANY(${slack_oauth_ids})
     `);
 
@@ -53,19 +111,19 @@ module.exports = async function landing(req, res) {
 
     const profiles = await Promise.all(
       dbOauthRes.rows.map((row) =>
-        slackApi.apiGet("users.profile.get", { token: row.access_token })
+        getProfile(db, redis, row.access_token, row.user_id)
       )
     );
 
     const emojis = await Promise.all(
       dbOauthRes.rows.map((row) =>
-        slackApi.apiGet("emoji.list", { token: row.access_token })
+        getTeamEmojis(db, redis, row.access_token, row.team_id)
       )
     );
 
     const teams = await Promise.all(
       dbOauthRes.rows.map((row) =>
-        slackApi.apiGet("team.info", { token: row.access_token })
+        getTeam(db, redis, row.access_token, row.team_id)
       )
     );
 

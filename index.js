@@ -3,6 +3,7 @@
 const url = require("url");
 const http = require("http");
 const path = require("path");
+const util = require("util");
 
 const pg = require("pg");
 const sql = require("pg-template-tag").default;
@@ -76,6 +77,31 @@ app.use(function dbMiddleware(req, res, next) {
   res.on("finish", () => {
     if (db) {
       db.end();
+    }
+  });
+
+  next();
+});
+
+app.use(function redisMiddleware(req, res, next) {
+  let client;
+
+  req.redis = async () => {
+    if (client) {
+      return client;
+    }
+
+    client = new redis.createClient(config.redis);
+
+    return {
+      get: util.promisify(client.get).bind(client),
+      set: util.promisify(client.set).bind(client),
+    };
+  };
+
+  res.on("finish", () => {
+    if (client) {
+      client.quit();
     }
   });
 
