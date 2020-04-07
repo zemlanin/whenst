@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS "slack_oauth" (
   scopes text[] NOT NULL,
   user_id text NOT NULL,
   team_id text NOT NULL,
-  team_name text NOT NULL,
   enterprise_id text
 );
 

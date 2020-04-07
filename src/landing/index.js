@@ -42,7 +42,7 @@ module.exports = async function landing(req, res) {
     const slack_oauth_ids = req.session.slack_oauth_ids;
 
     const dbOauthRes = await db.query(sql`
-      SELECT s.id, s.team_id, s.team_name, s.access_token FROM slack_oauth s
+      SELECT s.id, s.team_id, s.access_token FROM slack_oauth s
       WHERE s.id = ANY(${slack_oauth_ids})
     `);
 

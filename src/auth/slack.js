@@ -59,16 +59,14 @@ module.exports = async function authSlack(req, res) {
             scopes,
             user_id,
             team_id,
-            enterprise_id,
-            team_name
+            enterprise_id
           )
           VALUES (
             ${slackResp.access_token},
             ${slackResp.scope.split(",")},
             ${slackResp.user_id},
             ${slackResp.team_id},
-            ${slackResp.enterprise_id},
-            ${slackResp.team_name}
+            ${slackResp.enterprise_id}
           )
           RETURNING id;
         `);
