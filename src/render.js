@@ -29,6 +29,9 @@ const absoluteRoute = (base) =>
 const tmplMap = {};
 
 module.exports = function renderMiddleware(req, res, next) {
+  // @csrfToken
+  const csrfToken = () => req.csrfToken();
+
   res.render = function render(tmplPath, data) {
     let tmpl;
 
@@ -44,6 +47,9 @@ module.exports = function renderMiddleware(req, res, next) {
       strict: true,
       explicitPartialContext: true,
     })(data, {
+      data: {
+        csrfToken,
+      },
       helpers: {
         absolute: absoluteRoute(req.absolute),
       },

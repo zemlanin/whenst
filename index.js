@@ -12,6 +12,7 @@ const connect = require("connect");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const contentType = require("content-type");
+const csurf = require("csurf");
 
 const config = require("./src/config.js");
 const routes = require("./src/routes.js");
@@ -120,6 +121,8 @@ app.use(
     }),
   })
 );
+
+app.use(csurf());
 
 app.use((req, res, next) => {
   req.app = {

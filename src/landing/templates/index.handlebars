@@ -34,7 +34,7 @@
                       action="{{ route "slackPresetAdd" }}"
                     >
                       <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                      <input type="hidden" name="csrf" value="TODO">
+                      <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                       <input type="hidden" name="status_emoji" value="{{status_emoji}}">
                       <input type="hidden" name="status_text" value="{{status_text}}">
                       <button type="submit">save</button>
@@ -50,7 +50,7 @@
                   action="{{ route "slackPresetAdd" }}"
                 >
                   <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
-                  <input type="hidden" name="csrf" value="TODO">
+                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                   <input
                     type="text"
                     name="status_emoji"
@@ -72,7 +72,7 @@
                     action="{{ route "slackPresetUse" }}"
                   >
                     <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                    <input type="hidden" name="csrf" value="TODO">
+                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                     <input type="hidden" name="id" value="{{id}}">
                     <button type="submit">use</button>
                   </form>
@@ -84,7 +84,7 @@
                     onsubmit="return confirm('are you sure?')"
                   >
                     <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                    <input type="hidden" name="csrf" value="TODO">
+                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                     <input type="hidden" name="id" value="{{id}}">
                     <button type="submit">-</button>
                   </form>
@@ -103,7 +103,7 @@
 
       {{#if slacks}}
         <form method="POST" action="{{ route "authLogout" }}">
-          <input type="hidden" name="csrf" value="TODO">
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <button type="submit">logout</button>
         </form>
       {{else}}

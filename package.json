@@ -48,6 +48,7 @@
     "connect": "^3.7.0",
     "connect-redis": "^4.0.4",
     "content-type": "^1.0.4",
+    "csurf": "^1.11.0",
     "dotenv": "^8.2.0",
     "express-session": "^1.17.0",
     "handlebars": "^4.7.6",
