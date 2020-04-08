@@ -97,6 +97,7 @@ app.use(function redisMiddleware(req, res, next) {
     return {
       get: util.promisify(client.get).bind(client),
       set: util.promisify(client.set).bind(client),
+      del: util.promisify(client.del).bind(client),
     };
   };
 

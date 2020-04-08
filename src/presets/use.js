@@ -24,7 +24,7 @@ module.exports = async function slackPresetUse(req, res) {
   const db = await req.db();
 
   const dbOauthResp = await db.query(sql`
-    SELECT s.id, s.access_token FROM slack_oauth s
+    SELECT s.id, s.user_id, s.access_token FROM slack_oauth s
     WHERE s.id = ${req.body.slack_oauth_id}
     LIMIT 1
   `);
@@ -67,6 +67,10 @@ module.exports = async function slackPresetUse(req, res) {
   if (slackResp.error) {
     throw new Error(slackResp.error);
   }
+
+  const redis = await req.redis();
+  const userId = oauth.user_id;
+  await redis.del(`slack:users.profile.get:${userId}`);
 
   res.writeHead(303, {
     Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
