@@ -2,8 +2,6 @@ const url = require("url");
 
 const UrlPattern = require("url-pattern");
 
-const config = require("./config");
-
 const CDN = "cdn";
 const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
@@ -48,12 +46,8 @@ module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
 
   let pattern;
 
-  if (handler === CDN && config.cdn) {
-    pattern = config.cdn.replace(/:/g, "\\:") + "*";
-  } else {
-    const spaceIndex = route.indexOf(" ");
-    pattern = route.slice(spaceIndex + 1);
-  }
+  const spaceIndex = route.indexOf(" ");
+  pattern = route.slice(spaceIndex + 1);
 
   acc[name] = new UrlPattern(pattern);
 
