@@ -13,6 +13,17 @@ function getSessionSecret() {
   return secret || "6563eae1e1c146d1a377a7779a03bbf3";
 }
 
+function getSlackConfig() {
+  if (!process.env.SLACK_CLIENT_ID || !process.env.SLACK_CLIENT_SECRET) {
+    throw new Error(`SLACK_CLIENT_ID and SLACK_CLIENT_SECRET are required`);
+  }
+
+  return {
+    client_id: process.env.SLACK_CLIENT_ID,
+    client_secret: process.env.SLACK_CLIENT_SECRET,
+  };
+}
+
 const TODO = null;
 
 module.exports = {
@@ -26,12 +37,7 @@ module.exports = {
   session: {
     secret: getSessionSecret(),
   },
-  slack: process.env.SLACK_CLIENT_ID
-    ? {
-        client_id: process.env.SLACK_CLIENT_ID,
-        client_secret: process.env.SLACK_CLIENT_SECRET || "",
-      }
-    : null,
+  slack: getSlackConfig(),
   production: process.env.NODE_ENV !== "development",
   assets: {
     base: process.env.ASSETS_BASE || null,
