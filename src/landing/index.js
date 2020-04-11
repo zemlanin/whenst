@@ -101,12 +101,14 @@ module.exports = async function landing(req, res) {
 
     const dbOauthRes = await db.query(sql`
       SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
-      WHERE s.id = ANY(${slack_oauth_ids})
+      WHERE s.id = ANY(${slack_oauth_ids}) AND s.revoked = false
     `);
 
+    const slack_user_ids = dbOauthRes.rows.map((row) => row.user_id);
+
     const dbPresetsRes = await db.query(sql`
-      SELECT p.id, p.slack_oauth_id, p.status_text, p.status_emoji FROM slack_preset p
-      WHERE p.slack_oauth_id = ANY(${slack_oauth_ids})
+      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
+      WHERE p.slack_user_id = ANY(${slack_user_ids})
     `);
 
     const profiles = await Promise.all(
@@ -132,7 +134,7 @@ module.exports = async function landing(req, res) {
       const slacksEmojis = emojis[index].emoji;
       const getEmojiHTML = emojiHTMLGetter(slacksEmojis);
       const presets = dbPresetsRes.rows
-        .filter((presetRow) => row.id === presetRow.slack_oauth_id)
+        .filter((presetRow) => row.user_id === presetRow.slack_user_id)
         .map((presetRow) => ({
           id: presetRow.id,
           status_text: presetRow.status_text,

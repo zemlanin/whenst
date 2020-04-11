@@ -4,13 +4,15 @@ const sql = require("pg-template-tag").default;
 const config = require("../config.js");
 const slackApi = require("../external/slack.js");
 
+const TODO_BAD_REQUEST = 400;
+
 module.exports = async function authSlack(req, res) {
   const query = req.query;
 
   const error = !query ? "something's wrong" : query.error;
 
   if (error) {
-    res.writeHead(400);
+    res.writeHead(TODO_BAD_REQUEST);
     return error;
   }
 
@@ -34,7 +36,7 @@ module.exports = async function authSlack(req, res) {
     let slack_oauth_id;
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id, scopes from slack_oauth
+        SELECT id, scopes, revoked from slack_oauth
         WHERE access_token = ${slackResp.access_token}
         LIMIT 1;
       `);
@@ -42,6 +44,11 @@ module.exports = async function authSlack(req, res) {
       let existing_oauth = existingOauthResp.rows[0];
 
       if (existing_oauth) {
+        if (existing_oauth.revoked) {
+          res.writeHead(TODO_BAD_REQUEST);
+          return;
+        }
+
         slack_oauth_id = existingOauthResp.rows[0].id;
 
         if (existing_oauth.scopes.join(",") !== slackResp.scope) {

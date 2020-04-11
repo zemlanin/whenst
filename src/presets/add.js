@@ -65,14 +65,29 @@ module.exports = async function slackPresetAdd(req, res) {
   }
 
   const db = await req.db();
+
+  const dbOauthResp = await db.query(sql`
+    SELECT s.id, s.user_id, s.access_token FROM slack_oauth s
+    WHERE s.id = ${req.body.slack_oauth_id} AND s.revoked = false
+    LIMIT 1
+  `);
+
+  const oauth = dbOauthResp.rows[0];
+
+  if (!oauth) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
   await db.query(sql`
     INSERT INTO slack_preset (
-      slack_oauth_id,
+      slack_user_id,
       status_text,
       status_emoji
     )
     VALUES (
-      ${req.body.slack_oauth_id},
+      ${oauth.user_id},
       ${status_text},
       ${status_emoji}
     )
