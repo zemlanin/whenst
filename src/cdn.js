@@ -16,10 +16,12 @@ module.exports = async function CDN(req, res) {
 
   return new Promise((resolve, reject) => {
     filestream.on("error", (err) => {
+      res.removeHeader("Cache-Control");
       if (err.code === "ENOENT") {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "text/plain");
+        resolve("404 Not Found");
       }
-      res.removeHeader("Cache-Control");
       reject(err);
     });
 
