@@ -109,6 +109,7 @@ module.exports = async function landing(req, res) {
     const dbPresetsRes = await db.query(sql`
       SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
       WHERE p.slack_user_id = ANY(${slack_user_ids})
+      ORDER BY p.id DESC;
     `);
 
     const profiles = await Promise.all(
