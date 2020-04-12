@@ -110,6 +110,10 @@ app.use(function redisMiddleware(req, res, next) {
   next();
 });
 
+const sessionStore = new (require("connect-redis")(session))({
+  client: new redis.createClient(config.redis),
+});
+
 app.use(
   session({
     secret: config.session.secret,
@@ -117,9 +121,7 @@ app.use(
     name: "whenst.sid",
     resave: false,
     saveUninitialized: false,
-    store: new (require("connect-redis")(session))({
-      client: new redis.createClient(config.redis),
-    }),
+    store: sessionStore,
   })
 );
 
@@ -195,6 +197,10 @@ app.use((req, res, next) => {
 });
 
 const server = http.createServer(app);
+
+server.on("close", () => {
+  sessionStore.client.unref();
+});
 
 function start() {
   Promise.resolve()
