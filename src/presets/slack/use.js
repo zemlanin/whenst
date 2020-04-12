@@ -2,7 +2,7 @@ const url = require("url");
 
 const sql = require("pg-template-tag").default;
 
-const slackApi = require("../external/slack.js");
+const slackApi = require("../../external/slack.js");
 
 const TODO_BAD_REQUEST = 400;
 
