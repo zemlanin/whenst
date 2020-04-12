@@ -124,6 +124,15 @@ app.use(
 );
 
 app.use(csurf());
+app.use(function (err, req, res, next) {
+  if (err.code === "EBADCSRFTOKEN") {
+    res.statusCode = 403;
+    res.end();
+    return;
+  }
+
+  return next(err);
+});
 
 app.use((req, res, next) => {
   req.app = {
