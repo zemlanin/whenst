@@ -127,17 +127,17 @@ app.use(
 
 app.use(function slackAuthMiddleware(req, res, next) {
   let oauthTokens;
-  
+
   req.getSlackOauths = async function getSlackOauths() {
     if (oauthTokens !== undefined) {
       return oauthTokens;
     }
-    
+
     if (!req.session.slack_oauth_ids || !req.session.slack_oauth_ids.length) {
       oauthTokens = [];
       return oauthTokens;
     }
-    
+
     const db = await req.db();
 
     const slack_oauth_ids = req.session.slack_oauth_ids;
@@ -146,27 +146,29 @@ app.use(function slackAuthMiddleware(req, res, next) {
       SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
       WHERE s.id = ANY(${slack_oauth_ids}) AND s.revoked = false
     `);
-    
+
     if (dbOauthRes.rows.length !== slack_oauth_ids.length) {
-      const activeOauths = new Set(dbOauthRes.rows.map((row) => row.id))
-    
-      req.session.slack_oauth_ids = slack_oauth_ids.filter((id) => activeOauths.has(id))
+      const activeOauths = new Set(dbOauthRes.rows.map((row) => row.id));
+
+      req.session.slack_oauth_ids = slack_oauth_ids.filter((id) =>
+        activeOauths.has(id)
+      );
     }
-    
+
     oauthTokens = dbOauthRes.rows.map((row) => {
       return {
         id: row.id,
         user_id: row.user_id,
         team_id: row.team_id,
         access_token: row.access_token,
-      }
-    })
-    
+      };
+    });
+
     return oauthTokens;
-  }
-  
+  };
+
   next();
-})
+});
 
 app.use(csurf());
 app.use(function (err, req, res, next) {

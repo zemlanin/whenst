@@ -14,7 +14,7 @@ module.exports = async function slackPresetUse(req, res) {
 
     return;
   }
-  
+
   const oauth = slackOauths.find((o) => o.id === req.body.slack_oauth_id);
 
   if (!oauth) {
