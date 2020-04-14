@@ -7,8 +7,6 @@ const slackApi = require("../../external/slack.js");
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function slackPresetUse(req, res) {
-  const slack_oauth_ids = req.session.slack_oauth_ids;
-  
   const slackOauths = await req.getSlackOauths();
 
   if (!slackOauths.length) {

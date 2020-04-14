@@ -128,7 +128,7 @@ app.use(
 app.use(function slackAuthMiddleware(req, res, next) {
   let oauthTokens;
   
-  req.getSlackOauth = async function getSlackOauth() {
+  req.getSlackOauth s = async function getSlackOauths() {
     if (oauthTokens !== undefined) {
       return oauthTokens;
     }
