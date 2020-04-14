@@ -6,7 +6,7 @@
   "bin": "index.js",
   "scripts": {
     "test": "mocha \"./test/**/*.test.js\"",
-    "lint": "npm run eslint && npm run prettier -- -l",
+    "lint": "npm run eslint && npm run prettier -- -c",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
     "prettier": "prettier \"./*.{js,css}\" \"./{src,static,test}/**/*.{js,css}\" --ignore-path=\".lintignore\"",
     "eslint": "eslint \"./*.js\" \"./{src,static,test}/**/*.js\" --ignore-path=\".lintignore\""
