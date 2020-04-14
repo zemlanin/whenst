@@ -93,18 +93,12 @@ async function getTeamEmojis(db, redis, token, teamId) {
 
 module.exports = async function landing(req, res) {
   let slacks = [];
-  if (req.session.slack_oauth_ids && req.session.slack_oauth_ids.length) {
+  const slackOauths = await req.getSlackOauths();
+  if (slackOauths.length) {
     const db = await req.db();
     const redis = await req.redis();
 
-    const slack_oauth_ids = req.session.slack_oauth_ids;
-
-    const dbOauthRes = await db.query(sql`
-      SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
-      WHERE s.id = ANY(${slack_oauth_ids}) AND s.revoked = false
-    `);
-
-    const slack_user_ids = dbOauthRes.rows.map((row) => row.user_id);
+    const slack_user_ids = slackOauths.map((o) => o.user_id);
 
     const dbPresetsRes = await db.query(sql`
       SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
@@ -113,29 +107,29 @@ module.exports = async function landing(req, res) {
     `);
 
     const profiles = await Promise.all(
-      dbOauthRes.rows.map((row) =>
-        getProfile(db, redis, row.access_token, row.user_id)
+      slackOauths.map((o) =>
+        getProfile(db, redis, o.access_token, o.user_id)
       )
     );
 
     const emojis = await Promise.all(
-      dbOauthRes.rows.map((row) =>
-        getTeamEmojis(db, redis, row.access_token, row.team_id)
+      slackOauths.map((o) =>
+        getTeamEmojis(db, redis, o.access_token, o.team_id)
       )
     );
 
     const teams = await Promise.all(
-      dbOauthRes.rows.map((row) =>
-        getTeam(db, redis, row.access_token, row.team_id)
+      slackOauths.map((o) =>
+        getTeam(db, redis, o.access_token, o.team_id)
       )
     );
 
-    slacks = dbOauthRes.rows.map((row, index) => {
+    slacks = slackOauths.map((o, index) => {
       const profile = profiles[index].profile;
       const slacksEmojis = emojis[index].emoji;
       const getEmojiHTML = emojiHTMLGetter(slacksEmojis);
       const presets = dbPresetsRes.rows
-        .filter((presetRow) => row.user_id === presetRow.slack_user_id)
+        .filter((presetRow) => o.user_id === presetRow.slack_user_id)
         .map((presetRow) => ({
           id: presetRow.id,
           status_text: presetRow.status_text,
@@ -161,7 +155,7 @@ module.exports = async function landing(req, res) {
       const team = teams[index].team;
 
       return {
-        slack_oauth_id: row.id,
+        slack_oauth_id: o.id,
         profile,
         team,
         presets,
