@@ -107,9 +107,7 @@ module.exports = async function landing(req, res) {
     `);
 
     const profiles = await Promise.all(
-      slackOauths.map((o) =>
-        getProfile(db, redis, o.access_token, o.user_id)
-      )
+      slackOauths.map((o) => getProfile(db, redis, o.access_token, o.user_id))
     );
 
     const emojis = await Promise.all(
@@ -119,9 +117,7 @@ module.exports = async function landing(req, res) {
     );
 
     const teams = await Promise.all(
-      slackOauths.map((o) =>
-        getTeam(db, redis, o.access_token, o.team_id)
-      )
+      slackOauths.map((o) => getTeam(db, redis, o.access_token, o.team_id))
     );
 
     slacks = slackOauths.map((o, index) => {
