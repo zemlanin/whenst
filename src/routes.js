@@ -12,6 +12,7 @@ const routes = [
   ["POST /presets/slack/add", require("./presets/slack/add.js")],
   ["POST /presets/slack/delete", require("./presets/slack/delete.js")],
   ["POST /presets/slack/use", require("./presets/slack/use.js")],
+  ["POST /incoming-webhooks/slack", require("./incoming-webhooks/slack.js")],
   ["GET /cdn/*", require("./cdn.js"), CDN],
 ];
 

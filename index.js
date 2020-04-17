@@ -20,8 +20,15 @@ const renderMiddleware = require("./src/render.js");
 
 const app = connect();
 
-app.use(bodyParser.json()); // req.body
-app.use(bodyParser.urlencoded({ extended: true })); // req.body
+// https://github.com/expressjs/body-parser/issues/208#issuecomment-263805902
+function rawBodyVerifyHack(req, res, buf, _encoding) {
+  if (!req.rawBody) {
+    req.rawBody = buf;
+  }
+}
+
+app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
+app.use(bodyParser.urlencoded({ extended: true, verify: rawBodyVerifyHack })); // req.body
 app.use((req, res, next) => {
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
   const host = req.headers["x-forwarded-host"] || req.headers["host"];
@@ -170,7 +177,17 @@ app.use(function slackAuthMiddleware(req, res, next) {
   next();
 });
 
-app.use(csurf());
+const csurfInstance = csurf();
+
+app.use(function (req, res, next) {
+  // do something better
+  if (req.url.startsWith("/incoming-webhooks/slack")) {
+    next();
+    return;
+  }
+
+  return csurfInstance(req, res, next);
+});
 app.use(function (err, req, res, next) {
   if (err.code === "EBADCSRFTOKEN") {
     res.statusCode = 403;

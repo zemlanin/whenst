@@ -70,3 +70,4 @@ jobs:
         SESSION_SECRET: 'sikret'
         SLACK_CLIENT_ID: 'fake_client_id'
         SLACK_CLIENT_SECRET: 'fake_client_secret'
+        SLACK_SIGNING_SECRET: 'fake_signing_secret'

@@ -16,13 +16,28 @@ function getSessionSecret() {
 }
 
 function getSlackConfig() {
-  if (!process.env.SLACK_CLIENT_ID || !process.env.SLACK_CLIENT_SECRET) {
-    throw new Error(`SLACK_CLIENT_ID and SLACK_CLIENT_SECRET are required`);
+  const {
+    SLACK_CLIENT_ID,
+    SLACK_CLIENT_SECRET,
+    SLACK_SIGNING_SECRET,
+  } = process.env;
+
+  if (!SLACK_CLIENT_ID) {
+    throw new Error(`SLACK_CLIENT_ID is required`);
+  }
+
+  if (!SLACK_CLIENT_SECRET) {
+    throw new Error(`SLACK_CLIENT_SECRET is required`);
+  }
+
+  if (!SLACK_SIGNING_SECRET) {
+    throw new Error(`SLACK_SIGNING_SECRET is required`);
   }
 
   return {
-    client_id: process.env.SLACK_CLIENT_ID,
-    client_secret: process.env.SLACK_CLIENT_SECRET,
+    client_id: SLACK_CLIENT_ID,
+    client_secret: SLACK_CLIENT_SECRET,
+    signing_secret: SLACK_SIGNING_SECRET,
   };
 }
 
