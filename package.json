@@ -5,7 +5,7 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
-    "test": "mocha \"./test/**/*.test.js\"",
+    "test": "mocha \"./{src,test}/**/*.test.js\"",
     "lint": "npm run eslint && npm run prettier -- -c",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
     "prettier": "prettier \"./*.{js,css}\" \"./{src,static,test}/**/*.{js,css}\" --ignore-path=\".lintignore\"",
@@ -13,26 +13,6 @@
   },
   "author": "Anton Verinov <anton@verinov.com>",
   "license": "ISC",
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "env": {
-      "browser": false,
-      "es6": true,
-      "node": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 9
-    },
-    "rules": {
-      "no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_",
-          "ignoreRestSiblings": true
-        }
-      ]
-    }
-  },
   "engines": {
     "node": "^12.16.0"
   },

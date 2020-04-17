@@ -3,7 +3,7 @@ const supertest = require("supertest");
 
 describe("smoke", () => {
   let server;
-  const slackApi = require("../../src/external/slack.js");
+  const slackApi = require("../src/external/slack.js");
 
   before(() => {
     sinon.stub(slackApi);
@@ -14,7 +14,7 @@ describe("smoke", () => {
   });
 
   beforeEach(() => {
-    server = require("../../index.js").server;
+    server = require("../index.js").server;
   });
 
   afterEach(() => {
