@@ -41,6 +41,9 @@ module.exports = async function slackPresetDelete(req, res) {
   `);
 
   res.writeHead(303, {
-    Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
+    Location: url.resolve(
+      req.absolute,
+      req.app.routes.slackPresetsList.stringify()
+    ),
   });
 };

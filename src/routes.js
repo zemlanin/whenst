@@ -9,6 +9,7 @@ const routes = [
   ["GET /", require("./landing/index.js")],
   ["GET /auth/slack", require("./auth/slack.js")],
   ["POST /auth/logout", require("./auth/logout.js")],
+  ["GET /presets/slack", require("./presets/slack/list.js")],
   ["POST /presets/slack/add", require("./presets/slack/add.js")],
   ["POST /presets/slack/delete", require("./presets/slack/delete.js")],
   ["POST /presets/slack/use", require("./presets/slack/use.js")],

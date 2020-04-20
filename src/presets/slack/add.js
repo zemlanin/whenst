@@ -96,6 +96,9 @@ module.exports = async function slackPresetAdd(req, res) {
   `);
 
   res.writeHead(303, {
-    Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
+    Location: url.resolve(
+      req.absolute,
+      req.app.routes.slackPresetsList.stringify()
+    ),
   });
 };

@@ -94,6 +94,9 @@ module.exports = async function authSlack(req, res) {
   }
 
   res.writeHead(302, {
-    Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
+    Location: url.resolve(
+      req.absolute,
+      req.app.routes.slackPresetsList.stringify()
+    ),
   });
 };

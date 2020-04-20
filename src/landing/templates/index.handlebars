@@ -9,116 +9,15 @@
 <body>
   <div id="layout" class="pure-g">
     <div class="pure-u-1">
-      <ul>
-        {{#each slacks}}
-          <li>
-            <img src="{{profile.image_48}}">
-            {{#unless team.icon.image_default}}
-              <img src="{{team.icon.image_34}}">
-            {{/unless}}
-            {{#if profile.display_name}}
-              {{profile.display_name}}
-            {{else}}
-              {{profile.real_name}}
-            {{/if}}
-            ({{team.name}})
-
-            <ul>
-              {{#with current_status}}
-                <li style="list-style-type: square;">
-                  [{{{status_emoji_html}}}] {{{status_text_html}}}
-
-                  {{#unless already_saved}}
-                    <form
-                      style="display: inline-block"
-                      method="post"
-                      action="{{ route "slackPresetAdd" }}"
-                    >
-                      <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                      <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                      <input type="hidden" name="status_emoji" value="{{status_emoji}}">
-                      <input type="hidden" name="status_text" value="{{status_text}}">
-                      <button type="submit">save</button>
-                    </form>
-                  {{/unless}}
-                </li>
-              {{/with}}
-
-              <li>
-                <form
-                  style="display: inline-block"
-                  method="post"
-                  action="{{ route "slackPresetAdd" }}"
-                >
-                  <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
-                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                  <input
-                    type="text"
-                    name="status_emoji"
-                    placeholder="emoji"
-                    list="emoji_datalist_{{slack_oauth_id}}"
-                  >
-                  <input type="text" name="status_text" placeholder="text">
-                  <button type="submit">+</button>
-                </form>
-              </li>
-
-              {{#each presets}}
-                <li>
-                  [{{{status_emoji_html}}}] {{{status_text_html}}}
-
-                  <form
-                    style="display: inline-block"
-                    method="post"
-                    action="{{ route "slackPresetUse" }}"
-                  >
-                    <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                    <input type="hidden" name="id" value="{{id}}">
-                    <button type="submit">use</button>
-                  </form>
-
-                  <form
-                    style="display: inline-block"
-                    method="post"
-                    action="{{ route "slackPresetDelete" }}"
-                    onsubmit="return confirm('are you sure?')"
-                  >
-                    <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
-                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                    <input type="hidden" name="id" value="{{id}}">
-                    <button type="submit">-</button>
-                  </form>
-                </li>
-              {{/each}}
-            </ul>
-          </li>
-
-          <datalist id="emoji_datalist_{{slack_oauth_id}}">
-            {{#each emoji_options}}
-              <option value="{{this}}"></option>
-            {{/each}}
-          </datalist>
-        {{/each}}
-      </ul>
-
-      {{#if slacks}}
-        <form method="POST" action="{{ route "authLogout" }}">
-          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <button type="submit">logout</button>
-        </form>
-      {{else}}
-        <form method="GET" action="https://slack.com/oauth/authorize">
-          <input type="hidden" name="client_id" value="{{client_id}}">
-          <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
-          <input type="hidden" name="state" value="{{ state }}">
-          <input type="hidden" name="scope"
-            value="team:read users.profile:read users.profile:write dnd:write emoji:read"
-          >
-          <button type="submit">login</button>
-        </form>
-      {{/if}}
-
+      <form method="GET" action="https://slack.com/oauth/authorize">
+        <input type="hidden" name="client_id" value="{{client_id}}">
+        <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+        <input type="hidden" name="state" value="{{ state }}">
+        <input type="hidden" name="scope"
+          value="team:read users.profile:read users.profile:write dnd:write emoji:read"
+        >
+        <button type="submit">login</button>
+      </form>
     </div>
   </div>
 </body>
