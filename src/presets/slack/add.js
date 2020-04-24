@@ -3,14 +3,12 @@ const url = require("url");
 const nodeEmoji = require("node-emoji");
 const sql = require("pg-template-tag").default;
 
+const { escapeStatusText } = require("../../external/slack");
+
 const EMOJI_REGEX = /:[a-z0-9+_'-]+:/;
 const INSIDE_COLONS_REGEX = /:[^:]+:/;
 
 const TODO_BAD_REQUEST = 400;
-
-// https://api.slack.com/reference/surfaces/formatting#escaping
-const escapeStatusText = (str) =>
-  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 module.exports = async function slackPresetAdd(req, res) {
   const slack_oauth_ids = req.session.slack_oauth_ids;

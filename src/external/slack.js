@@ -9,6 +9,11 @@ const APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
 const APPLICATION_JSON = "application/json";
 
 module.exports = {
+  // https://api.slack.com/reference/surfaces/formatting#escaping
+  escapeStatusText: (str) =>
+    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+  decodeStatusText: (str) =>
+    str.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"),
   apiGet: async function apiGet(apiMethod, body) {
     const encodedBody = body ? "?" + querystring.stringify(body) : "";
 

@@ -140,7 +140,7 @@ module.exports = async function slackPresetsList(req, res) {
     const current_status =
       profile.status_text || profile.status_emoji
         ? {
-            status_text: profile.status_text,
+            status_text: slackApi.decodeStatusText(profile.status_text),
             status_emoji: profile.status_emoji,
             status_text_html: getEmojiHTML(profile.status_text),
             status_emoji_html: getEmojiHTML(profile.status_emoji),
