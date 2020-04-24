@@ -1,3 +1,4 @@
+const url = require("url");
 const sql = require("pg-template-tag").default;
 const nodeEmoji = require("node-emoji");
 
@@ -94,7 +95,9 @@ module.exports = async function slackPresetsList(req, res) {
   let slacks = [];
   const slackOauths = await req.getSlackOauths();
   if (!slackOauths.length) {
-    res.statusCode = 403;
+    res.writeHead(302, {
+      Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
+    });
     return;
   }
 
