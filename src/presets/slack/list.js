@@ -101,14 +101,36 @@ module.exports = async function slackPresetsList(req, res) {
     return;
   }
 
+  if (!(req.params && req.params.user_id)) {
+    const { user_id } = slackOauths[0];
+    res.writeHead(302, {
+      Location: url.resolve(
+        req.absolute,
+        req.app.routes.slackPresetsList.stringify({ user_id })
+      ),
+    });
+    return;
+  }
+
+  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+
+  if (!user_oauth) {
+    const { user_id } = slackOauths[0];
+    res.writeHead(302, {
+      Location: url.resolve(
+        req.absolute,
+        req.app.routes.slackPresetsList.stringify({ user_id })
+      ),
+    });
+    return;
+  }
+
   const db = await req.db();
   const redis = await req.redis();
 
-  const slack_user_ids = slackOauths.map((o) => o.user_id);
-
   const dbPresetsRes = await db.query(sql`
       SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-      WHERE p.slack_user_id = ANY(${slack_user_ids})
+      WHERE p.slack_user_id = ${user_oauth.user_id}
       ORDER BY p.id DESC;
     `);
 
@@ -155,7 +177,8 @@ module.exports = async function slackPresetsList(req, res) {
     const team = teams[index].team;
 
     return {
-      slack_oauth_id: o.id,
+      oauth_id: o.id,
+      user_id: o.user_id,
       profile,
       team,
       presets,

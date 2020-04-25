@@ -32,9 +32,8 @@
                     <form
                       style="display: inline-block"
                       method="post"
-                      action="{{ route "slackPresetAdd" }}"
+                      action="{{ route "slackPresetAdd" user_id=../user_id }}"
                     >
-                      <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
                       <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                       <input type="hidden" name="status_emoji" value="{{status_emoji}}">
                       <input type="hidden" name="status_text" value="{{status_text}}">
@@ -48,15 +47,14 @@
                 <form
                   style="display: inline-block"
                   method="post"
-                  action="{{ route "slackPresetAdd" }}"
+                  action="{{ route "slackPresetAdd" user_id=user_id }}"
                 >
-                  <input type="hidden" name="slack_oauth_id" value="{{slack_oauth_id}}">
                   <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                   <input
                     type="text"
                     name="status_emoji"
                     placeholder="emoji"
-                    list="emoji_datalist_{{slack_oauth_id}}"
+                    list="emoji_datalist_{{oauth_id}}"
                   >
                   <input type="text" name="status_text" placeholder="text">
                   <button type="submit">+</button>
@@ -70,9 +68,8 @@
                   <form
                     style="display: inline-block"
                     method="post"
-                    action="{{ route "slackPresetUse" }}"
+                    action="{{ route "slackPresetUse" user_id=../user_id }}"
                   >
-                    <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
                     <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                     <input type="hidden" name="id" value="{{id}}">
                     <button type="submit">use</button>
@@ -81,10 +78,9 @@
                   <form
                     style="display: inline-block"
                     method="post"
-                    action="{{ route "slackPresetDelete" }}"
+                    action="{{ route "slackPresetDelete" user_id=../user_id }}"
                     onsubmit="return confirm('are you sure?')"
                   >
-                    <input type="hidden" name="slack_oauth_id" value="{{../slack_oauth_id}}">
                     <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                     <input type="hidden" name="id" value="{{id}}">
                     <button type="submit">-</button>
@@ -94,7 +90,7 @@
             </ul>
           </li>
 
-          <datalist id="emoji_datalist_{{slack_oauth_id}}">
+          <datalist id="emoji_datalist_{{oauth_id}}">
             {{#each emoji_options}}
               <option value="{{this}}"></option>
             {{/each}}

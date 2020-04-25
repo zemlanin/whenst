@@ -11,20 +11,6 @@ const INSIDE_COLONS_REGEX = /:[^:]+:/;
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function slackPresetAdd(req, res) {
-  const slack_oauth_ids = req.session.slack_oauth_ids;
-
-  if (!slack_oauth_ids || !slack_oauth_ids.length) {
-    res.statusCode = TODO_BAD_REQUEST;
-
-    return;
-  }
-
-  if (!slack_oauth_ids.includes(req.body.slack_oauth_id)) {
-    res.statusCode = TODO_BAD_REQUEST;
-
-    return;
-  }
-
   let status_emoji = "";
   if (req.body.status_emoji) {
     const emoji_name = nodeEmoji.which(req.body.status_emoji, true);
@@ -62,21 +48,23 @@ module.exports = async function slackPresetAdd(req, res) {
     status_text = "";
   }
 
-  const db = await req.db();
+  const slackOauths = await req.getSlackOauths();
 
-  const dbOauthResp = await db.query(sql`
-    SELECT s.id, s.user_id, s.access_token FROM slack_oauth s
-    WHERE s.id = ${req.body.slack_oauth_id} AND s.revoked = false
-    LIMIT 1
-  `);
-
-  const oauth = dbOauthResp.rows[0];
-
-  if (!oauth) {
+  if (!slackOauths.length) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
   }
+
+  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+
+  if (!user_oauth) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
+  const db = await req.db();
 
   await db.query(sql`
     INSERT INTO slack_preset (
@@ -85,7 +73,7 @@ module.exports = async function slackPresetAdd(req, res) {
       status_emoji
     )
     VALUES (
-      ${oauth.user_id},
+      ${user_oauth.user_id},
       ${status_text},
       ${status_emoji}
     )
@@ -96,7 +84,7 @@ module.exports = async function slackPresetAdd(req, res) {
   res.writeHead(303, {
     Location: url.resolve(
       req.absolute,
-      req.app.routes.slackPresetsList.stringify()
+      req.app.routes.slackPresetsList.stringify({ user_id: user_oauth.user_id })
     ),
   });
 };

@@ -9,10 +9,10 @@ const routes = [
   ["GET /", require("./landing/index.js")],
   ["GET /auth/slack", require("./auth/slack.js")],
   ["POST /auth/logout", require("./auth/logout.js")],
-  ["GET /presets/slack", require("./presets/slack/list.js")],
-  ["POST /presets/slack/add", require("./presets/slack/add.js")],
-  ["POST /presets/slack/delete", require("./presets/slack/delete.js")],
-  ["POST /presets/slack/use", require("./presets/slack/use.js")],
+  ["GET /presets/slack(/:user_id)", require("./presets/slack/list.js")],
+  ["POST /presets/slack/:user_id/add", require("./presets/slack/add.js")],
+  ["POST /presets/slack/:user_id/delete", require("./presets/slack/delete.js")],
+  ["POST /presets/slack/:user_id/use", require("./presets/slack/use.js")],
   ["POST /incoming-webhooks/slack", require("./incoming-webhooks/slack.js")],
   ["GET /cdn/*", require("./cdn.js"), CDN],
 ];
@@ -28,7 +28,10 @@ const handlers = routes.reduce((acc, [route, handler]) => {
   const pattern = route.slice(spaceIndex + 1);
 
   acc[method] = acc[method] || [];
-  acc[method].push([new UrlPattern(pattern), handler]);
+  acc[method].push([
+    new UrlPattern(pattern, { segmentNameCharset: "a-zA-Z0-9_" }),
+    handler,
+  ]);
 
   return acc;
 }, {});
@@ -51,7 +54,7 @@ module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
   const spaceIndex = route.indexOf(" ");
   pattern = route.slice(spaceIndex + 1);
 
-  acc[name] = new UrlPattern(pattern);
+  acc[name] = new UrlPattern(pattern, { segmentNameCharset: "a-zA-Z0-9_" });
 
   return acc;
 }, {});

@@ -15,9 +15,8 @@ module.exports = async function slackPresetUse(req, res) {
     return;
   }
 
-  const oauth = slackOauths.find((o) => o.id === req.body.slack_oauth_id);
-
-  if (!oauth) {
+  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  if (!user_oauth) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
@@ -28,7 +27,7 @@ module.exports = async function slackPresetUse(req, res) {
   const dbPresetResp = await db.query(sql`
     SELECT id, status_text, status_emoji FROM slack_preset
     WHERE id = ${req.body.id}
-      AND slack_user_id = ${oauth.user_id}
+      AND slack_user_id = ${user_oauth.user_id}
     LIMIT 1
   `);
 
@@ -43,7 +42,7 @@ module.exports = async function slackPresetUse(req, res) {
   const slackResp = await slackApi.apiPost(
     "users.profile.set",
     {
-      token: oauth.access_token,
+      token: user_oauth.access_token,
       profile: {
         status_text: preset.status_text || "",
         status_emoji: preset.status_emoji || "",
@@ -57,13 +56,13 @@ module.exports = async function slackPresetUse(req, res) {
   }
 
   const redis = await req.redis();
-  const userId = oauth.user_id;
+  const userId = user_oauth.user_id;
   await redis.del(`slack:users.profile.get:${userId}`);
 
   res.writeHead(303, {
     Location: url.resolve(
       req.absolute,
-      req.app.routes.slackPresetsList.stringify()
+      req.app.routes.slackPresetsList.stringify({ user_id: userId })
     ),
   });
 };
