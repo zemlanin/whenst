@@ -27,7 +27,7 @@ describe("smoke", () => {
   });
 
   it("should fail: csrf", async () => {
-    await supertest(server).post("/presets/slack/use").expect(403);
+    await supertest(server).post("/presets/slack/U010GLS73TJ/use").expect(403);
   });
 
   it("should call slack", async () => {

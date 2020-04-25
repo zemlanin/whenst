@@ -19,7 +19,7 @@ function getSignatureHeaders(body = EMPTY_BODY, timestamp = new Date()) {
   };
 }
 
-describe("smoke", () => {
+describe("slack", () => {
   let server;
 
   const config = require("../config.js");
@@ -54,7 +54,6 @@ describe("smoke", () => {
       EMPTY_BODY,
       new Date("2012-04-17T18:01:00.000Z")
     );
-    console.log(timestamp);
 
     await supertest(server)
       .post("/incoming-webhooks/slack")
