@@ -13,7 +13,7 @@ module.exports = {
   escapeStatusText: (str) =>
     str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
   decodeStatusText: (str) =>
-    str.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"),
+    str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"),
   apiGet: async function apiGet(apiMethod, body) {
     const encodedBody = body ? "?" + querystring.stringify(body) : "";
 
