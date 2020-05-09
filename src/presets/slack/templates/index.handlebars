@@ -43,6 +43,8 @@
                 </li>
               {{/with}}
 
+              <hr>
+
               <li>
                 <form
                   style="display: inline-block"
@@ -64,6 +66,8 @@
               {{#each presets}}
                 <li>
                   [{{{status_emoji_html}}}] {{{status_text_html}}}
+
+                  <a href="{{ route "slackPresetId" user_id=../user_id preset_id=id }}">&infin;</a>
 
                   <form
                     style="display: inline-block"
