@@ -93,8 +93,8 @@ async function getTeamEmojis(db, redis, token, teamId) {
   return freshResp;
 }
 
-const EMOJI_REGEX = /:[a-z0-9+_'-]+:/;
-const INSIDE_COLONS_REGEX = /:[^:]+:/;
+const EMOJI_REGEX = /^:[a-z0-9+_'-]+:$/;
+const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
 function processPresetForm(body) {
   let status_emoji = "";
@@ -127,6 +127,8 @@ function processPresetForm(body) {
   if (!status_emoji && status_text.match(EMOJI_REGEX)) {
     status_emoji = status_text;
     status_text = "";
+  } else if (!status_emoji && !status_text) {
+    return {};
   }
 
   return { status_emoji, status_text };
