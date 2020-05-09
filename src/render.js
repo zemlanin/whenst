@@ -1,30 +1,38 @@
 const fs = require("fs");
 const url = require("url");
 
+const qs = require("qs");
 const Handlebars = require("handlebars");
 
 const config = require("./config.js");
 const routes = require("./routes.js");
 
-Handlebars.registerHelper("route", function (name, helperOptions) {
+function routeHelper(name, helperOptions) {
   const pattern = routes.reverse[name];
 
   if (!pattern) {
     throw new Error(`route not found: ${name}`);
   }
 
-  return pattern.stringify(helperOptions.hash);
-});
+  const queryHash = Object.keys(helperOptions.hash).reduce((acc, k) => {
+    if (k.startsWith("?")) {
+      acc[k.slice(1)] = helperOptions.hash[k];
+    }
+
+    return acc;
+  }, {});
+  const query = qs.stringify(queryHash);
+
+  return (
+    pattern.stringify(helperOptions.hash) + (query.length ? "?" + query : "")
+  );
+}
+
+Handlebars.registerHelper("route", routeHelper);
 
 const absoluteRoute = (base) =>
   function absoluteRoute(name, helperOptions) {
-    const pattern = routes.reverse[name];
-
-    if (!pattern) {
-      throw new Error(`route not found: ${name}`);
-    }
-
-    return url.resolve(base, pattern.stringify(helperOptions.hash));
+    return url.resolve(base, routeHelper(name, helperOptions));
   };
 
 if (config.assets.manifest) {

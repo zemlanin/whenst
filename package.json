@@ -39,6 +39,7 @@
     "node-emoji": "^1.10.0",
     "pg": "^8.0.3",
     "pg-template-tag": "^0.1.2",
+    "qs": "^6.9.4",
     "redis": "^3.0.2",
     "url-pattern": "^1.0.3"
   }
