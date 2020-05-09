@@ -186,8 +186,14 @@ app.use(function (req, res, next) {
     return;
   }
 
+  if (config.disableCSRFCheck) {
+    next();
+    return;
+  }
+
   return csurfInstance(req, res, next);
 });
+
 app.use(function (err, req, res, next) {
   if (err.code === "EBADCSRFTOKEN") {
     res.statusCode = 403;

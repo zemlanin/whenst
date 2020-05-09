@@ -4,6 +4,7 @@ const supertest = require("supertest");
 describe("smoke", () => {
   let server;
   const slackApi = require("../src/external/slack.js");
+  const config = require("../src/config.js");
 
   before(() => {
     sinon.stub(slackApi);
@@ -28,6 +29,11 @@ describe("smoke", () => {
 
   it("should fail: csrf", async () => {
     await supertest(server).post("/presets/slack/U010GLS73TJ/use").expect(403);
+  });
+
+  it("should fail: body", async () => {
+    sinon.replace(config, "disableCSRFCheck", true);
+    await supertest(server).post("/presets/slack/U010GLS73TJ/use").expect(400);
   });
 
   it("should call slack", async () => {
