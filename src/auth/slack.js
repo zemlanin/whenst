@@ -12,7 +12,7 @@ module.exports = async function authSlack(req, res) {
   const error = !query ? "something's wrong" : query.error;
 
   if (error) {
-    res.writeHead(TODO_BAD_REQUEST);
+    res.statusCode = TODO_BAD_REQUEST;
     return error;
   }
 
@@ -45,7 +45,7 @@ module.exports = async function authSlack(req, res) {
 
       if (existing_oauth) {
         if (existing_oauth.revoked) {
-          res.writeHead(TODO_BAD_REQUEST);
+          res.statusCode = TODO_BAD_REQUEST;
           return;
         }
 
@@ -93,12 +93,14 @@ module.exports = async function authSlack(req, res) {
     }
   }
 
-  res.writeHead(302, {
-    Location: url.resolve(
+  res.statusCode = 302;
+  res.setHeader(
+    "Location",
+    url.resolve(
       req.absolute,
       req.app.routes.slackPresetsList.stringify({
         user_id: slackResp.user_id,
       })
-    ),
-  });
+    )
+  );
 };

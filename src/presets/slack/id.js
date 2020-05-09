@@ -15,9 +15,11 @@ const tmpl = require.resolve("./templates/id.handlebars");
 module.exports = async function slackPresetId(req, res) {
   const slackOauths = await req.getSlackOauths();
   if (!slackOauths.length) {
-    res.writeHead(302, {
-      Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
-    });
+    res.statusCode = 302;
+    res.setHeader(
+      "Location",
+      url.resolve(req.absolute, req.app.routes.landing.stringify())
+    );
     return;
   }
 

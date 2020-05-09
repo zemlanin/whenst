@@ -18,20 +18,24 @@ module.exports = async function slackPresetsList(req, res) {
   let slacks = [];
   const slackOauths = await req.getSlackOauths();
   if (!slackOauths.length) {
-    res.writeHead(302, {
-      Location: url.resolve(req.absolute, req.app.routes.landing.stringify()),
-    });
+    res.statusCode = 302;
+    res.setHeader(
+      "Location",
+      url.resolve(req.absolute, req.app.routes.landing.stringify())
+    );
     return;
   }
 
   if (!(req.params && req.params.user_id)) {
     const { user_id } = slackOauths[0];
-    res.writeHead(302, {
-      Location: url.resolve(
+    res.statusCode = 302;
+    res.setHeader(
+      "Location",
+      url.resolve(
         req.absolute,
         req.app.routes.slackPresetsList.stringify({ user_id })
-      ),
-    });
+      )
+    );
     return;
   }
 
@@ -39,12 +43,14 @@ module.exports = async function slackPresetsList(req, res) {
 
   if (!user_oauth) {
     const { user_id } = slackOauths[0];
-    res.writeHead(302, {
-      Location: url.resolve(
+    res.statusCode = 302;
+    res.setHeader(
+      "Location",
+      url.resolve(
         req.absolute,
         req.app.routes.slackPresetsList.stringify({ user_id })
-      ),
-    });
+      )
+    );
     return;
   }
 

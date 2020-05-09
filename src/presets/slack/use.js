@@ -59,10 +59,12 @@ module.exports = async function slackPresetUse(req, res) {
   const userId = user_oauth.user_id;
   await redis.del(`slack:users.profile.get:${userId}`);
 
-  res.writeHead(303, {
-    Location: url.resolve(
+  res.statusCode = 303;
+  res.setHeader(
+    "Location",
+    url.resolve(
       req.absolute,
       req.app.routes.slackPresetsList.stringify({ user_id: userId })
-    ),
-  });
+    )
+  );
 };

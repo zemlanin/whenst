@@ -253,8 +253,13 @@ app.use((req, res, next) => {
       } else if (body || resType === "application/json") {
         res.writeHead(res.statusCode, { "Content-Type": "application/json" });
         res.end(JSON.stringify(body));
+      } else if (!body && res.statusCode === 404) {
+        // TODO
+        res.writeHead(res.statusCode, { "Content-Type": "text/plain" });
+        res.end(`404 Not Found`);
       } else {
-        res.end();
+        res.writeHead(res.statusCode, { "Content-Type": "text/plain" });
+        res.end(`${res.statusCode}`);
       }
 
       next();
