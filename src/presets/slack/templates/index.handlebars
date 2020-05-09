@@ -67,7 +67,7 @@
                 <li>
                   [{{{status_emoji_html}}}] {{{status_text_html}}}
 
-                  <a href="{{ route "slackPresetId" user_id=../user_id preset_id=id }}">&infin;</a>
+                  <a href="{{ route "slackPresetId" user_id=../user_id ?status_emoji=status_emoji ?status_text=status_text }}">&infin;</a>
 
                   <form
                     style="display: inline-block"
@@ -75,7 +75,8 @@
                     action="{{ route "slackPresetUse" user_id=../user_id }}"
                   >
                     <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                    <input type="hidden" name="id" value="{{id}}">
+                    <input type="hidden" name="status_emoji" value="{{status_emoji}}">
+                    <input type="hidden" name="status_text" value="{{status_text}}">
                     <button type="submit">use</button>
                   </form>
 

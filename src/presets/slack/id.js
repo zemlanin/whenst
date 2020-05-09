@@ -1,5 +1,6 @@
 const url = require("url");
-const sql = require("pg-template-tag").default;
+
+const Handlebars = require("handlebars");
 
 const slackApi = require("../../external/slack.js");
 
@@ -8,9 +9,11 @@ const {
   getTeam,
   getTeamEmojis,
   emojiHTMLGetter,
+  processPresetForm,
 } = require("./common.js");
 
 const tmpl = require.resolve("./templates/id.handlebars");
+const TODO_BAD_REQUEST = 400;
 
 module.exports = async function slackPresetId(req, res) {
   const slackOauths = await req.getSlackOauths();
@@ -32,20 +35,15 @@ module.exports = async function slackPresetId(req, res) {
 
   const { access_token, user_id, team_id } = user_oauth;
 
-  const db = await req.db();
-  const redis = await req.redis();
+  const { status_text, status_emoji } = processPresetForm(req.query);
+  if (!status_emoji && !status_text) {
+    res.statusCode = TODO_BAD_REQUEST;
 
-  const dbPresetsRes = await db.query(sql`
-      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-      WHERE p.slack_user_id = ${user_id}
-        AND p.id = ${req.params.preset_id}
-      ORDER BY p.id DESC;
-    `);
-
-  if (!dbPresetsRes.rows.length) {
-    res.statusCode = 404;
     return;
   }
+
+  const db = await req.db();
+  const redis = await req.redis();
 
   const { profile } = await getProfile(db, redis, access_token, user_id);
   const { team } = await getTeam(db, redis, access_token, team_id);
@@ -58,14 +56,14 @@ module.exports = async function slackPresetId(req, res) {
   );
 
   const getEmojiHTML = emojiHTMLGetter(teamEmojis);
-  const presetRow = dbPresetsRes.rows[0];
+
   const preset = {
-    id: presetRow.id,
-    status_text: presetRow.status_text,
-    status_emoji: presetRow.status_emoji,
-    status_text_html: getEmojiHTML(presetRow.status_text),
-    status_emoji_html: getEmojiHTML(presetRow.status_emoji),
+    status_text,
+    status_emoji,
+    status_text_html: getEmojiHTML(Handlebars.escapeExpression(status_text)),
+    status_emoji_html: getEmojiHTML(status_emoji),
   };
+
   const current_status =
     profile.status_text || profile.status_emoji
       ? {

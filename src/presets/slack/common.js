@@ -2,7 +2,13 @@ const nodeEmoji = require("node-emoji");
 
 const slackApi = require("../../external/slack.js");
 
-module.exports = { emojiHTMLGetter, getProfile, getTeam, getTeamEmojis };
+module.exports = {
+  emojiHTMLGetter,
+  getProfile,
+  getTeam,
+  getTeamEmojis,
+  processPresetForm,
+};
 
 function emojiHTMLGetter(slacksEmojis) {
   function onMissing(name) {
@@ -85,4 +91,43 @@ async function getTeamEmojis(db, redis, token, teamId) {
   }
 
   return freshResp;
+}
+
+const EMOJI_REGEX = /:[a-z0-9+_'-]+:/;
+const INSIDE_COLONS_REGEX = /:[^:]+:/;
+
+function processPresetForm(body) {
+  let status_emoji = "";
+  if (body.status_emoji) {
+    const emoji_name = nodeEmoji.which(body.status_emoji, true);
+
+    if (emoji_name) {
+      status_emoji = emoji_name;
+    } else {
+      const status_emoji_inside_colons = body.status_emoji.match(
+        INSIDE_COLONS_REGEX
+      )
+        ? body.status_emoji
+        : `:${body.status_emoji}:`;
+
+      if (!status_emoji_inside_colons.match(EMOJI_REGEX)) {
+        return {};
+      }
+
+      status_emoji = status_emoji_inside_colons;
+    }
+  }
+
+  let status_text = body.status_text
+    ? nodeEmoji.replace(body.status_text.trim(), (emoji) => `:${emoji.key}:`)
+    : "";
+
+  // if `status_emoji` is empty, Slack uses emoji-only `status_text` instead
+  // so we're doing the same
+  if (!status_emoji && status_text.match(EMOJI_REGEX)) {
+    status_emoji = status_text;
+    status_text = "";
+  }
+
+  return { status_emoji, status_text };
 }

@@ -1,8 +1,7 @@
 const url = require("url");
 
-const sql = require("pg-template-tag").default;
-
 const slackApi = require("../../external/slack.js");
+const { processPresetForm } = require("./common.js");
 
 const TODO_BAD_REQUEST = 400;
 
@@ -22,18 +21,9 @@ module.exports = async function slackPresetUse(req, res) {
     return;
   }
 
-  const db = await req.db();
+  const { status_emoji, status_text } = processPresetForm(req.body);
 
-  const dbPresetResp = await db.query(sql`
-    SELECT id, status_text, status_emoji FROM slack_preset
-    WHERE id = ${req.body.id}
-      AND slack_user_id = ${user_oauth.user_id}
-    LIMIT 1
-  `);
-
-  const preset = dbPresetResp.rows[0];
-
-  if (!preset) {
+  if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
@@ -44,8 +34,8 @@ module.exports = async function slackPresetUse(req, res) {
     {
       token: user_oauth.access_token,
       profile: {
-        status_text: preset.status_text || "",
-        status_emoji: preset.status_emoji || "",
+        status_text: slackApi.escapeStatusText(status_text),
+        status_emoji: status_emoji,
       },
     },
     "application/json"
