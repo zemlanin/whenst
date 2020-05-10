@@ -30,8 +30,13 @@ function rawBodyVerifyHack(req, res, buf, _encoding) {
 app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
 app.use(bodyParser.urlencoded({ extended: false, verify: rawBodyVerifyHack })); // req.body
 app.use((req, res, next) => {
-  if (req.body) {
+  if (
+    req.headers["content-type"] === "application/x-www-form-urlencoded" &&
+    req.body
+  ) {
     req.formBody = new url.URLSearchParams(req.body);
+  } else {
+    req.formBody = new url.URLSearchParams();
   }
 
   next();
