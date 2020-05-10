@@ -42,12 +42,11 @@ describe("smoke", () => {
     });
 
     const code = Math.random().toString();
-    // TODO: replace 500 with 302
-    await supertest(server).get(`/auth/slack?code=${code}`).expect(500);
+    await supertest(server).get(`/auth/slack?code=${code}`).expect(302);
     sinon.assert.calledOnce(slackApi.apiPost);
     sinon.assert.calledWith(slackApi.apiPost, "oauth.access", {
       code,
-      redirect_uri: sinon.match.any,
+      redirect_uri: sinon.match((v) => v && v.endsWith("/auth/slack")),
       client_id: sinon.match.any,
       client_secret: sinon.match.any,
     });

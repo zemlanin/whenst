@@ -41,7 +41,6 @@ module.exports = {
       }
 
       encodedBody = querystring.stringify(body);
-      console.log(encodedBody);
     } else if (body && bodyContentType === APPLICATION_JSON) {
       if (body.token) {
         // https://api.slack.com/web#posting_json

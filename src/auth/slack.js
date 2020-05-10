@@ -27,7 +27,7 @@ module.exports = async function authSlack(req, res) {
     code,
     client_id,
     client_secret,
-    redirect_uri,
+    redirect_uri: redirect_uri.toString(),
   };
 
   const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
@@ -92,7 +92,7 @@ module.exports = async function authSlack(req, res) {
       req.session.slack_oauth_ids = [slack_oauth_id];
     }
   } else {
-    throw new Error(slackResp.error);
+    console.error(slackResp.error);
   }
 
   res.statusCode = 302;
