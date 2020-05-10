@@ -255,6 +255,10 @@ app.use((req, res, next) => {
         ? contentType.parse(contentTypeHeader).type
         : null;
 
+      const charset = contentTypeHeader
+        ? contentType.parse(contentTypeHeader).parameters.charset || "utf-8"
+        : "utf-8";
+
       if (
         typeof body === "string" ||
         resType === "text/xml" ||
@@ -262,21 +266,32 @@ app.use((req, res, next) => {
         resType === "text/plain" ||
         resType === "text/markdown" ||
         resType === "application/javascript" ||
-        (resType && resType.startsWith("image/"))
+        resType === "image/svg+xml"
       ) {
         res.writeHead(res.statusCode, {
-          "Content-Type": resType || "text/html",
+          "Content-Type": (resType || "text/html") + `; charset=${charset}`,
+        });
+        res.end(body);
+      } else if (resType && resType.startsWith("image/")) {
+        res.writeHead(res.statusCode, {
+          "Content-Type": resType,
         });
         res.end(body);
       } else if (body || resType === "application/json") {
-        res.writeHead(res.statusCode, { "Content-Type": "application/json" });
+        res.writeHead(res.statusCode, {
+          "Content-Type": `application/json; charset=${charset}`,
+        });
         res.end(JSON.stringify(body));
       } else if (!body && res.statusCode === 404) {
         // TODO
-        res.writeHead(res.statusCode, { "Content-Type": "text/plain" });
+        res.writeHead(res.statusCode, {
+          "Content-Type": `text/plain; charset=${charset}`,
+        });
         res.end(`404 Not Found`);
       } else {
-        res.writeHead(res.statusCode, { "Content-Type": "text/plain" });
+        res.writeHead(res.statusCode, {
+          "Content-Type": `text/plain; charset=${charset}`,
+        });
         res.end(`${res.statusCode}`);
       }
 
