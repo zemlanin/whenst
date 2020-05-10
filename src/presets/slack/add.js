@@ -7,7 +7,7 @@ const { processPresetForm } = require("./common.js");
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function slackPresetAdd(req, res) {
-  const { status_emoji, status_text } = processPresetForm(req.body);
+  const { status_emoji, status_text } = processPresetForm(req.formBody);
 
   if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;

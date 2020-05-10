@@ -31,7 +31,7 @@ app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
 app.use(bodyParser.urlencoded({ extended: false, verify: rawBodyVerifyHack })); // req.body
 app.use((req, res, next) => {
   if (req.body) {
-    req.body = new url.URLSearchParams(req.body);
+    req.formBody = new url.URLSearchParams(req.body);
   }
 
   next();
@@ -184,7 +184,7 @@ app.use(function slackAuthMiddleware(req, res, next) {
 const csurfInstance = csurf({
   value(req) {
     return (
-      (req.body && req.body.get("_csrf")) ||
+      (req.body && req.body._csrf) ||
       new url.URL(req.url, req.absolute).searchParams.get("_csrf") ||
       req.headers["csrf-token"] ||
       req.headers["x-csrf-token"]

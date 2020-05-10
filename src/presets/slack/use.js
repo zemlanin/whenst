@@ -21,7 +21,7 @@ module.exports = async function slackPresetUse(req, res) {
     return;
   }
 
-  const { status_emoji, status_text } = processPresetForm(req.body);
+  const { status_emoji, status_text } = processPresetForm(req.formBody);
 
   if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;

@@ -21,7 +21,7 @@ module.exports = async function slackPresetDelete(req, res) {
     return;
   }
 
-  const presetId = req.body.get("id");
+  const presetId = req.formBody.get("id");
 
   if (!presetId) {
     res.statusCode = TODO_BAD_REQUEST;
