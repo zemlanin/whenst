@@ -1,7 +1,6 @@
 const fs = require("fs");
 const url = require("url");
 
-const qs = require("qs");
 const Handlebars = require("handlebars");
 
 const config = require("./config.js");
@@ -14,18 +13,19 @@ function routeHelper(name, helperOptions) {
     throw new Error(`route not found: ${name}`);
   }
 
-  const queryHash = Object.keys(helperOptions.hash).reduce((acc, k) => {
-    if (k.startsWith("?")) {
-      acc[k.slice(1)] = helperOptions.hash[k];
+  if (Object.keys(helperOptions.hash).some((k) => k.startsWith("?"))) {
+    const query = new url.URLSearchParams();
+
+    for (const k of Object.keys(helperOptions.hash)) {
+      if (k.startsWith("?")) {
+        query.append(k.slice(1), helperOptions.hash[k]);
+      }
     }
 
-    return acc;
-  }, {});
-  const query = qs.stringify(queryHash);
+    return pattern.stringify(helperOptions.hash) + "?" + query.toString();
+  }
 
-  return (
-    pattern.stringify(helperOptions.hash) + (query.length ? "?" + query : "")
-  );
+  return pattern.stringify(helperOptions.hash);
 }
 
 Handlebars.registerHelper("route", routeHelper);

@@ -98,17 +98,20 @@ const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
 function processPresetForm(body) {
   let status_emoji = "";
-  if (body.status_emoji) {
-    const emoji_name = nodeEmoji.which(body.status_emoji, true);
+  const body_status_emoji = body.get("status_emoji");
+  const body_status_text = body.get("status_text");
+
+  if (body_status_emoji) {
+    const emoji_name = nodeEmoji.which(body_status_emoji, true);
 
     if (emoji_name) {
       status_emoji = emoji_name;
     } else {
-      const status_emoji_inside_colons = body.status_emoji.match(
+      const status_emoji_inside_colons = body_status_emoji.match(
         INSIDE_COLONS_REGEX
       )
-        ? body.status_emoji
-        : `:${body.status_emoji}:`;
+        ? body_status_emoji
+        : `:${body_status_emoji}:`;
 
       if (!status_emoji_inside_colons.match(EMOJI_REGEX)) {
         return {};
@@ -118,8 +121,8 @@ function processPresetForm(body) {
     }
   }
 
-  let status_text = body.status_text
-    ? nodeEmoji.replace(body.status_text.trim(), (emoji) => `:${emoji.key}:`)
+  let status_text = body_status_text
+    ? nodeEmoji.replace(body_status_text.trim(), (emoji) => `:${emoji.key}:`)
     : "";
 
   // if `status_emoji` is empty, Slack uses emoji-only `status_text` instead

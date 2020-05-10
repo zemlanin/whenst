@@ -35,7 +35,9 @@ module.exports = async function slackPresetId(req, res) {
 
   const { access_token, user_id, team_id } = user_oauth;
 
-  const { status_text, status_emoji } = processPresetForm(req.query);
+  const { status_text, status_emoji } = processPresetForm(
+    new url.URL(req.url, req.absolute).searchParams
+  );
   if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;
 

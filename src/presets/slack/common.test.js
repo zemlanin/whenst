@@ -1,3 +1,4 @@
+const url = require("url");
 const assert = require("assert");
 const { processPresetForm } = require("./common.js");
 
@@ -41,7 +42,7 @@ describe("/presets/slack/common", () => {
 
       for (const [body, result] of cases) {
         assert.strictEqual(
-          JSON.stringify(processPresetForm(body)),
+          JSON.stringify(processPresetForm(new url.URLSearchParams(body))),
           JSON.stringify(result)
         );
       }
@@ -58,7 +59,7 @@ describe("/presets/slack/common", () => {
 
       for (const body of cases) {
         assert.strictEqual(
-          JSON.stringify(processPresetForm(body)),
+          JSON.stringify(processPresetForm(new url.URLSearchParams(body))),
           "{}",
           JSON.stringify(body)
         );

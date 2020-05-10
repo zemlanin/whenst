@@ -21,11 +21,19 @@ module.exports = async function slackPresetDelete(req, res) {
     return;
   }
 
+  const presetId = req.body.get("id");
+
+  if (!presetId) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
   const db = await req.db();
 
   await db.query(sql`
     DELETE FROM slack_preset
-    WHERE id = ${req.body.id}
+    WHERE id = ${presetId}
       AND slack_user_id = ${user_oauth.user_id}
   `);
 

@@ -7,16 +7,16 @@ const slackApi = require("../external/slack.js");
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function authSlack(req, res) {
-  const query = req.query;
+  const query = new url.URL(req.url, req.absolute).searchParams;
 
-  const error = !query ? "something's wrong" : query.error;
+  const error = query.get("error");
 
   if (error) {
     res.statusCode = TODO_BAD_REQUEST;
     return error;
   }
 
-  const code = query.code;
+  const code = query.get("code");
   const { client_id, client_secret } = config.slack;
   const redirect_uri = url.resolve(
     req.absolute,

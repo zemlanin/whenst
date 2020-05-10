@@ -28,7 +28,15 @@ function rawBodyVerifyHack(req, res, buf, _encoding) {
 }
 
 app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
-app.use(bodyParser.urlencoded({ extended: true, verify: rawBodyVerifyHack })); // req.body
+app.use(bodyParser.urlencoded({ extended: false, verify: rawBodyVerifyHack })); // req.body
+app.use((req, res, next) => {
+  if (req.body) {
+    req.body = new url.URLSearchParams(req.body);
+  }
+
+  next();
+});
+
 app.use((req, res, next) => {
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
   const host = req.headers["x-forwarded-host"] || req.headers["host"];
@@ -41,10 +49,6 @@ app.use((req, res, next) => {
     port,
   });
 
-  next();
-});
-app.use((req, res, next) => {
-  req.query = url.parse(req.url, true).query;
   next();
 });
 app.use(renderMiddleware); // res.render
@@ -177,7 +181,16 @@ app.use(function slackAuthMiddleware(req, res, next) {
   next();
 });
 
-const csurfInstance = csurf();
+const csurfInstance = csurf({
+  value(req) {
+    return (
+      (req.body && req.body.get("_csrf")) ||
+      new url.URL(req.url, req.absolute).searchParams.get("_csrf") ||
+      req.headers["csrf-token"] ||
+      req.headers["x-csrf-token"]
+    );
+  },
+});
 
 app.use(function (req, res, next) {
   // do something better

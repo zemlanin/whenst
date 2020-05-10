@@ -7,7 +7,7 @@ const TODO_BAD_REQUEST = 400;
 const FIVE_MINUTES = 5 * 60 * 1000;
 
 async function eventCallback(req) {
-  const event = req.body.event;
+  const event = req.body.get("event");
 
   if (event.type === "user_change") {
     const redis = await req.redis();
@@ -18,14 +18,14 @@ async function eventCallback(req) {
 
   if (event.type === "emoji_changed") {
     const redis = await req.redis();
-    const teamId = req.body.team_id;
+    const teamId = req.body.get("team_id");
     await redis.del(`slack:emoji.list:${teamId}`);
     return;
   }
 
   if (event.type === "team_rename") {
     const redis = await req.redis();
-    const teamId = req.body.team_id;
+    const teamId = req.body.get("team_id");
     await redis.del(`slack:team.info:${teamId}`);
     return;
   }
@@ -56,7 +56,7 @@ module.exports = async function incomingWebhookSlack(req, res) {
     return;
   }
 
-  if (!req.body.type) {
+  if (!req.body.get("type")) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
@@ -90,9 +90,9 @@ module.exports = async function incomingWebhookSlack(req, res) {
     return;
   }
 
-  switch (req.body.type) {
+  switch (req.body.get("type")) {
     case "url_verification":
-      return { challenge: req.body.challenge };
+      return { challenge: req.body.get("challenge") };
     case "event_callback":
       await eventCallback(req);
       return {};
