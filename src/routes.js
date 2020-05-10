@@ -64,7 +64,10 @@ module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
 module.exports.getHandler = function getHandler(req) {
   let handler;
 
-  const pathname = url.parse(req.url).pathname.replace(/(.)\/$/, "$1");
+  const pathname = new url.URL(req.url, req.absolute).pathname.replace(
+    /(.)\/$/,
+    "$1"
+  );
 
   if (handlers[req.method]) {
     handler = (handlers[req.method].find(([pattern]) => {

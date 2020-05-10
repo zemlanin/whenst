@@ -10,9 +10,9 @@ module.exports = async function landing(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      url.resolve(
-        req.absolute,
-        req.app.routes.slackPresetsList.stringify({ user_id })
+      new url.URL(
+        req.app.routes.slackPresetsList.stringify({ user_id }),
+        req.absolute
       )
     );
     return;

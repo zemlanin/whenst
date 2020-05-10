@@ -52,9 +52,9 @@ module.exports = async function slackPresetUse(req, res) {
   res.statusCode = 303;
   res.setHeader(
     "Location",
-    url.resolve(
-      req.absolute,
-      req.app.routes.slackPresetsList.stringify({ user_id: userId })
+    new url.URL(
+      req.app.routes.slackPresetsList.stringify({ user_id: userId }),
+      req.absolute
     )
   );
 };

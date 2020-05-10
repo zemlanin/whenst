@@ -5,6 +5,6 @@ module.exports = async function authLogout(req, res) {
   res.statusCode = 302;
   res.setHeader(
     "Location",
-    url.resolve(req.absolute, req.app.routes.landing.stringify())
+    new url.URL(req.app.routes.landing.stringify(), req.absolute)
   );
 };

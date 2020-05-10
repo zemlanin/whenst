@@ -18,9 +18,9 @@ module.exports = async function authSlack(req, res) {
 
   const code = query.get("code");
   const { client_id, client_secret } = config.slack;
-  const redirect_uri = url.resolve(
-    req.absolute,
-    req.app.routes.authSlack.stringify()
+  const redirect_uri = new url.URL(
+    req.app.routes.authSlack.stringify(),
+    req.absolute
   );
 
   const accessRequestBody = {
@@ -96,11 +96,11 @@ module.exports = async function authSlack(req, res) {
   res.statusCode = 302;
   res.setHeader(
     "Location",
-    url.resolve(
-      req.absolute,
+    new url.URL(
       req.app.routes.slackPresetsList.stringify({
         user_id: slackResp.user_id,
-      })
+      }),
+      req.absolute
     )
   );
 };

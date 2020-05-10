@@ -40,9 +40,11 @@ module.exports = async function slackPresetDelete(req, res) {
   res.statusCode = 303;
   res.setHeader(
     "Location",
-    url.resolve(
-      req.absolute,
-      req.app.routes.slackPresetsList.stringify({ user_id: user_oauth.user_id })
+    new url.URL(
+      req.app.routes.slackPresetsList.stringify({
+        user_id: user_oauth.user_id,
+      }),
+      req.absolute
     )
   );
 };

@@ -32,7 +32,7 @@ Handlebars.registerHelper("route", routeHelper);
 
 const absoluteRoute = (base) =>
   function absoluteRoute(name, helperOptions) {
-    return url.resolve(base, routeHelper(name, helperOptions));
+    return new url.URL(routeHelper(name, helperOptions), base);
   };
 
 if (config.assets.manifest) {
@@ -47,13 +47,13 @@ if (config.assets.manifest) {
       throw new Error(`assets not found in manifest: "${file}"`);
     }
 
-    return url.resolve(base, manifest[file]);
+    return new url.URL(manifest[file], base);
   });
 } else if (config.assets.base) {
   const { base, cacheBuster } = config.assets;
 
   Handlebars.registerHelper("asset", function assetBase(file) {
-    return url.resolve(base, file + "?v=" + cacheBuster);
+    return new url.URL(file + "?v=" + cacheBuster, base);
   });
 } else {
   const { cacheBuster } = config.assets;

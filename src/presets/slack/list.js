@@ -23,7 +23,7 @@ module.exports = async function slackPresetsList(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      url.resolve(req.absolute, req.app.routes.landing.stringify())
+      new url.URL(req.app.routes.landing.stringify(), req.absolute)
     );
     return;
   }
@@ -33,9 +33,9 @@ module.exports = async function slackPresetsList(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      url.resolve(
-        req.absolute,
-        req.app.routes.slackPresetsList.stringify({ user_id })
+      new url.URL(
+        req.app.routes.slackPresetsList.stringify({ user_id }),
+        req.absolute
       )
     );
     return;
@@ -48,9 +48,9 @@ module.exports = async function slackPresetsList(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      url.resolve(
-        req.absolute,
-        req.app.routes.slackPresetsList.stringify({ user_id })
+      new url.URL(
+        req.app.routes.slackPresetsList.stringify({ user_id }),
+        req.absolute
       )
     );
     return;
