@@ -91,6 +91,8 @@ module.exports = async function authSlack(req, res) {
     } else {
       req.session.slack_oauth_ids = [slack_oauth_id];
     }
+  } else {
+    throw new Error(slackResp.error);
   }
 
   res.statusCode = 302;
