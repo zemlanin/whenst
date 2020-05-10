@@ -289,7 +289,7 @@ server.on("close", () => {
 });
 
 function start() {
-  Promise.resolve()
+  return Promise.resolve()
     .then(async function checkDBConnection() {
       const client = new pg.Client(config.pg);
 
@@ -324,14 +324,14 @@ function start() {
       server.listen(config.port);
 
       console.log(`running on ${config.port}`);
-    })
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
     });
 }
 
 if (require.main === module) {
+  process.on("unhandledRejection", (err) => {
+    throw err;
+  });
+
   start();
 } else {
   module.exports = {
