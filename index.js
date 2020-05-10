@@ -304,8 +304,10 @@ app.use((req, res, next) => {
 
 const server = http.createServer(app);
 
-server.on("close", () => {
-  sessionStore.client.unref();
+sessionStore.client.on("connect", () => {
+  server.on("close", () => {
+    sessionStore.client.unref();
+  });
 });
 
 function start() {
