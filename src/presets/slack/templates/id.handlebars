@@ -14,17 +14,13 @@
       {{/if}}
       ({{team.name}})
 
-      {{#with current_status}}
-        <span>
-          [{{{status_emoji_html}}}] {{{status_text_html}}}
-        </span>
-      {{/with}}
+      {{>partials_status current_status}}
 
       <hr>
 
-      {{#with preset}}
-        <div style="font-size: 2em; text-align: center;">
-          [{{{status_emoji_html}}}] {{{status_text_html}}}
+      <div style="font-size: 2em; text-align: center;">
+        {{>partials_status preset}}
+      </div>
 
           <form
             style="display: inline-block"
@@ -36,8 +32,6 @@
             <input type="hidden" name="status_text" value="{{status_text}}">
             <button type="submit">use</button>
           </form>
-        </div>
-      {{/with}}
     </div>
   </div>
 </body>
