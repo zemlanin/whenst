@@ -1,6 +1,7 @@
 const url = require("url");
 
 const Handlebars = require("handlebars");
+const sql = require("pg-template-tag").default;
 
 const slackApi = require("../../external/slack.js");
 
@@ -66,6 +67,17 @@ module.exports = async function slackPresetId(req, res) {
     status_emoji_html: getEmojiHTML(status_emoji),
   };
 
+  const presetAlreadySaved = (
+    await db.query(sql`
+      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
+      WHERE p.slack_user_id = ${user_id}
+        AND p.status_text = ${status_text}
+        AND p.status_emoji = ${status_emoji}
+      ORDER BY p.id DESC
+      LIMIT 1;
+    `)
+  ).rows.find(Boolean);
+
   const current_status =
     profile.status_text || profile.status_emoji
       ? {
@@ -76,6 +88,12 @@ module.exports = async function slackPresetId(req, res) {
         }
       : null;
 
+  const presetIsCurrentStatus = Boolean(
+    current_status &&
+      preset.status_text === current_status.status_text &&
+      preset.status_emoji === current_status.status_emoji
+  );
+
   return res.render(tmpl, {
     oauth_id: user_oauth.id,
     user_id,
@@ -83,5 +101,7 @@ module.exports = async function slackPresetId(req, res) {
     team,
     preset,
     current_status,
+    presetIsCurrentStatus,
+    presetAlreadySaved,
   });
 };

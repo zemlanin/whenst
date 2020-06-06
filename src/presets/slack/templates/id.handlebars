@@ -22,16 +22,41 @@
         {{>partials_status preset}}
       </div>
 
-          <form
-            style="display: inline-block"
-            method="post"
-            action="{{ route "slackPresetUse" user_id=../user_id }}"
-          >
-            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-            <input type="hidden" name="status_emoji" value="{{status_emoji}}">
-            <input type="hidden" name="status_text" value="{{status_text}}">
-            <button type="submit">use</button>
-          </form>
+      <form
+        style="display: inline-block"
+        method="post"
+        action="{{ route "slackPresetUse" user_id=@root.user_id }}"
+        {{#if presetIsCurrentStatus}}disabled{{/if}}
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
+        <input type="hidden" name="status_text" value="{{preset.status_text}}">
+        <button type="submit" {{#if presetIsCurrentStatus}}disabled{{/if}}>use</button>
+      </form>
+
+      {{#if presetAlreadySaved}}
+        <form
+          style="display: inline-block"
+          method="post"
+          action="{{ route "slackPresetDelete" user_id=@root.user_id }}"
+          onsubmit="return confirm('are you sure?')"
+        >
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <input type="hidden" name="id" value="{{presetAlreadySaved.id}}">
+          <button type="submit">delete</button>
+        </form>
+      {{else}}
+        <form
+          style="display: inline-block"
+          method="post"
+          action="{{ route "slackPresetAdd" user_id=@root.user_id }}"
+        >
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
+          <input type="hidden" name="status_text" value="{{preset.status_text}}">
+          <button type="submit">save</button>
+        </form>
+      {{/if}}
     </div>
   </div>
 </body>
