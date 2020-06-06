@@ -1,10 +1,33 @@
+body {
+  background: #490a3d;
+  color: white;
+}
+
+button {
+  color: black;
+}
+
 #layout {
+  background: #bd1550;
   width: 30em;
-  margin: 1em auto;
+  margin: 0em auto;
+  min-height: 100vh;
 }
 
 .custom-emoji {
   width: 1.35em;
   height: 1.35em;
   vertical-align: text-bottom;
+}
+
+.preset-row {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  padding: 0.5em;
+}
+
+.preset-row a {
+  flex-grow: 1;
+  color: white;
 }
