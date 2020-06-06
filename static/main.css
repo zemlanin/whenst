@@ -12,6 +12,7 @@ button {
   width: 30em;
   margin: 0em auto;
   min-height: 100vh;
+  max-width: 100%;
 }
 
 .custom-emoji {
