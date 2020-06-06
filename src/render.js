@@ -1,5 +1,6 @@
 const fs = require("fs");
 const url = require("url");
+const path = require("path");
 
 const Handlebars = require("handlebars");
 
@@ -61,6 +62,22 @@ if (config.assets.manifest) {
   Handlebars.registerHelper("asset", function assetLocal(file) {
     return routes.reverse["cdn"].stringify({ _: file }) + "?v=" + cacheBuster;
   });
+}
+
+const HANDLEBARS_EXT = ".handlebars";
+
+for (const file of fs.readdirSync(path.resolve(__dirname, "partials"))) {
+  const ext = path.extname(file);
+  if (ext !== HANDLEBARS_EXT) {
+    continue;
+  }
+
+  const basename = path.basename(file, HANDLEBARS_EXT);
+
+  Handlebars.registerPartial(
+    "partials_" + basename,
+    fs.readFileSync(path.resolve(__dirname, "partials", file)).toString()
+  );
 }
 
 const tmplMap = {};
