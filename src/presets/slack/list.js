@@ -17,7 +17,6 @@ const tmpl = require.resolve("./templates/index.handlebars");
 const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji);
 
 module.exports = async function slackPresetsList(req, res) {
-  let slacks = [];
   const slackOauths = await req.getSlackOauths();
   if (!slackOauths.length) {
     res.statusCode = 302;
@@ -59,12 +58,6 @@ module.exports = async function slackPresetsList(req, res) {
   const db = await req.db();
   const redis = await req.redis();
 
-  const dbPresetsRes = await db.query(sql`
-      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-      WHERE p.slack_user_id = ${user_oauth.user_id}
-      ORDER BY p.id DESC;
-    `);
-
   const profiles = await Promise.all(
     slackOauths.map((o) => getProfile(db, redis, o.access_token, o.user_id))
   );
@@ -77,21 +70,16 @@ module.exports = async function slackPresetsList(req, res) {
     slackOauths.map((o) => getTeamEmojis(db, redis, o.access_token, o.team_id))
   );
 
-  slacks = slackOauths.map((o, index) => {
+  const dbPresetsRes = await db.query(sql`
+      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
+      WHERE p.slack_user_id = ${user_oauth.user_id}
+      ORDER BY p.id DESC;
+    `);
+
+  const slacks = slackOauths.map((o, index) => {
     const profile = profiles[index].profile;
     const teamEmoji = teamEmojis[index].emoji;
     const getEmojiHTML = emojiHTMLGetter(teamEmoji);
-    const presets = dbPresetsRes.rows
-      .filter((presetRow) => o.user_id === presetRow.slack_user_id)
-      .map((presetRow) => ({
-        id: presetRow.id,
-        status_text: presetRow.status_text,
-        status_emoji: presetRow.status_emoji,
-        status_text_html: getEmojiHTML(
-          Handlebars.escapeExpression(presetRow.status_text)
-        ),
-        status_emoji_html: getEmojiHTML(presetRow.status_emoji),
-      }));
     const current_status =
       profile.status_text || profile.status_emoji
         ? {
@@ -99,12 +87,6 @@ module.exports = async function slackPresetsList(req, res) {
             status_emoji: profile.status_emoji,
             status_text_html: getEmojiHTML(profile.status_text),
             status_emoji_html: getEmojiHTML(profile.status_emoji),
-            already_saved: presets.find(
-              (presetRow) =>
-                presetRow.status_text ===
-                  slackApi.decodeStatusText(profile.status_text) &&
-                presetRow.status_emoji === profile.status_emoji
-            ),
           }
         : null;
 
@@ -115,13 +97,38 @@ module.exports = async function slackPresetsList(req, res) {
       user_id: o.user_id,
       profile,
       team,
-      presets,
+      teamEmoji,
+      getEmojiHTML,
       current_status,
-      emoji_options: DEFAULT_EMOJI_LIST.concat(Object.keys(teamEmoji)),
     };
   });
 
+  const activeSlack = slacks.find((s) => s.user_id === user_oauth.user_id);
+  const presets = dbPresetsRes.rows.map((presetRow) => ({
+    id: presetRow.id,
+    status_text: presetRow.status_text,
+    status_emoji: presetRow.status_emoji,
+    status_text_html: activeSlack.getEmojiHTML(
+      Handlebars.escapeExpression(presetRow.status_text)
+    ),
+    status_emoji_html: activeSlack.getEmojiHTML(presetRow.status_emoji),
+  }));
+  const currentStatusAlreadySaved = Boolean(
+    activeSlack.current_status &&
+      presets.find(
+        (presetRow) =>
+          presetRow.status_text === activeSlack.current_status.status_text &&
+          presetRow.status_emoji === activeSlack.current_status.status_emoji
+      )
+  );
+
   return res.render(tmpl, {
-    slacks: slacks,
+    slacks,
+    activeSlack,
+    presets,
+    currentStatusAlreadySaved,
+    emoji_options: DEFAULT_EMOJI_LIST.concat(
+      Object.keys(activeSlack.teamEmoji)
+    ),
   });
 };
