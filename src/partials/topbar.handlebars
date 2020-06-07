@@ -24,20 +24,24 @@
   <a
     href="{{ route "settingsSlack" user_id=user_id }}"
     class="current-account"
+    {{#unless team.icon.image_default}}
+      style="padding-bottom: 2px; padding-right: 2px;"
+    {{/unless}}
   >
     <img
-      src="{{profile.image_48}}"
+      src="{{profile.image_72}}"
       {{#if profile.display_name}}
         alt="{{profile.display_name}} ({{team.name}})"
       {{else}}
         alt="{{profile.real_name}} ({{team.name}})"
       {{/if}}
+      style="width: 100%"
     >
     {{#unless team.icon.image_default}}
       <img
-        src="{{team.icon.image_34}}"
+        src="{{team.icon.image_44}}"
         alt="{{team.name}}"
-        style="position: absolute; bottom: 0; right: 0; width: 50%"
+        style="position: absolute; bottom: 0px; right: 0px; width: 50%; border-radius: 0.8em 0 0 0; border: #d40505 2px solid; border-right: 0; border-bottom: 0"
       >
     {{/unless}}
   </a>

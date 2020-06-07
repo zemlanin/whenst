@@ -47,6 +47,7 @@ button {
   background: #d40505;
   width: 3em;
   position: relative;
+  line-height: 0;
 }
 
 .custom-emoji {
