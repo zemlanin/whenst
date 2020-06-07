@@ -13,7 +13,7 @@
 
     <div class="pure-u-1">
       <form
-        style="display: flex; padding: 0.5em; flex-directon: row;"
+        style="display: flex; padding: 0.5em; flex-direction: row;"
         method="post"
         action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
       >
@@ -23,8 +23,14 @@
           name="status_emoji"
           placeholder="emoji"
           list="emoji_datalist_{{activeSlack.oauth_id}}"
+          style="flex-grow: 1; flex-basis: 0; width: 5em;"
         >
-        <input type="text" name="status_text" placeholder="text" style="flex-grow: 1">
+        <input
+          type="text"
+          name="status_text"
+          placeholder="text"
+          style="flex-grow: 2; flex-basis: 0;"
+        >
         <button type="submit">save</button>
       </form>
 
