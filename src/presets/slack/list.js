@@ -114,6 +114,18 @@ module.exports = async function slackPresetsList(req, res) {
     status_emoji_html: activeSlack.getEmojiHTML(presetRow.status_emoji),
   }));
 
+  if (activeSlack.current_status) {
+    const current_status = activeSlack.current_status;
+    for (const preset of presets) {
+      if (
+        preset.status_text === current_status.status_text &&
+        preset.status_emoji === current_status.status_emoji
+      ) {
+        preset.is_current_status = true;
+      }
+    }
+  }
+
   return res.render(tmpl, {
     slacks,
     activeSlack,

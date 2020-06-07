@@ -17,15 +17,19 @@
         style="display: inline-block"
         method="post"
         action="{{ route "slackPresetUse" user_id=@root.user_id }}"
-        {{#if presetIsCurrentStatus}}disabled{{/if}}
+        {{#if preset.is_current_status}}disabled{{/if}}
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
         <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
         <input type="hidden" name="status_text" value="{{preset.status_text}}">
-        <button type="submit" {{#if presetIsCurrentStatus}}disabled{{/if}}>use</button>
+        {{#if preset.is_current_status}}
+          <button type="submit" disabled>current</button>
+        {{else}}
+          <button type="submit">use</button>
+        {{/if}}
       </form>
 
-      {{#if presetAlreadySaved}}
+      {{#if preset.already_saved}}
         <form
           style="display: inline-block"
           method="post"
@@ -33,7 +37,7 @@
           onsubmit="return confirm('are you sure?')"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <input type="hidden" name="id" value="{{presetAlreadySaved.id}}">
+          <input type="hidden" name="id" value="{{preset.already_saved}}">
           <button type="submit">delete</button>
         </form>
       {{else}}
