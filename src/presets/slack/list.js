@@ -113,20 +113,11 @@ module.exports = async function slackPresetsList(req, res) {
     ),
     status_emoji_html: activeSlack.getEmojiHTML(presetRow.status_emoji),
   }));
-  const currentStatusAlreadySaved = Boolean(
-    activeSlack.current_status &&
-      presets.find(
-        (presetRow) =>
-          presetRow.status_text === activeSlack.current_status.status_text &&
-          presetRow.status_emoji === activeSlack.current_status.status_emoji
-      )
-  );
 
   return res.render(tmpl, {
     slacks,
     activeSlack,
     presets,
-    currentStatusAlreadySaved,
     emoji_options: DEFAULT_EMOJI_LIST.concat(
       Object.keys(activeSlack.teamEmoji)
     ),

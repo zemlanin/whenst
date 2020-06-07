@@ -1,58 +1,32 @@
 {{>partials_head}}
 <body>
   <div id="layout" class="pure-g">
+    {{#with activeSlack}}
+      {{>partials_topbar
+        back_href=""
+        user_id=user_id
+        profile=profile
+        team=team
+        current_status=current_status
+      }}
+    {{/with}}
+
     <div class="pure-u-1">
-      {{#with activeSlack}}
-        <img src="{{profile.image_48}}">
-        {{#unless team.icon.image_default}}
-          <img src="{{team.icon.image_34}}">
-        {{/unless}}
-        {{#if profile.display_name}}
-          {{profile.display_name}}
-        {{else}}
-          {{profile.real_name}}
-        {{/if}}
-        ({{team.name}})
-
-        {{#with current_status}}
-          <span>
-            {{>partials_status .}}
-
-            {{#unless @root.currentStatusAlreadySaved}}
-              <form
-                style="display: inline-block"
-                method="post"
-                action="{{ route "slackPresetAdd" user_id=@root.activeSlack.user_id }}"
-              >
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                <input type="hidden" name="status_emoji" value="{{status_emoji}}">
-                <input type="hidden" name="status_text" value="{{status_text}}">
-                <button type="submit">save</button>
-              </form>
-            {{/unless}}
-          </span>
-        {{/with}}
-      {{/with}}
-
-      <hr>
-
-      <div>
-        <form
-          style="display: inline-block"
-          method="post"
-          action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
+      <form
+        style="display: flex; padding: 0.5em; flex-directon: row;"
+        method="post"
+        action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input
+          type="text"
+          name="status_emoji"
+          placeholder="emoji"
+          list="emoji_datalist_{{activeSlack.oauth_id}}"
         >
-          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <input
-            type="text"
-            name="status_emoji"
-            placeholder="emoji"
-            list="emoji_datalist_{{activeSlack.oauth_id}}"
-          >
-          <input type="text" name="status_text" placeholder="text">
-          <button type="submit">save</button>
-        </form>
-      </div>
+        <input type="text" name="status_text" placeholder="text" style="flex-grow: 1">
+        <button type="submit">save</button>
+      </form>
 
       {{#each presets}}
         <form
@@ -77,11 +51,6 @@
           <option value="{{this}}"></option>
         {{/each}}
       </datalist>
-
-      <form method="POST" action="{{ route "authLogout" }}">
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <button type="submit">logout</button>
-      </form>
     </div>
   </div>
 </body>

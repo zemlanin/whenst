@@ -15,6 +15,36 @@ button {
   max-width: 100%;
 }
 
+#topbar {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+
+#topbar .back,
+#topbar .current-status,
+#topbar .account {
+  flex-basis: 3em;
+  text-align: center;
+}
+
+#topbar .back {
+  background: #d40505;
+  width: 3em;
+}
+
+#topbar .current-status {
+  flex-grow: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+#topbar .current-account {
+  background: #d40505;
+  width: 3em;
+}
+
 .custom-emoji {
   width: 1.35em;
   height: 1.35em;

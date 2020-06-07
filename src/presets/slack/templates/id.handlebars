@@ -1,23 +1,14 @@
 {{>partials_head}}
 <body>
   <div id="layout" class="pure-g">
+    {{>partials_topbar
+      back_href=(route "slackPresetsList" user_id=user_id)
+      user_id=user_id
+      profile=profile
+      team=team
+      current_status=current_status
+    }}
     <div class="pure-u-1">
-      <a href="{{ route "slackPresetsList" user_id=user_id }}">&larr;</a>
-      <img src="{{profile.image_48}}">
-      {{#unless team.icon.image_default}}
-        <img src="{{team.icon.image_34}}">
-      {{/unless}}
-      {{#if profile.display_name}}
-        {{profile.display_name}}
-      {{else}}
-        {{profile.real_name}}
-      {{/if}}
-      ({{team.name}})
-
-      {{>partials_status current_status}}
-
-      <hr>
-
       <div style="font-size: 2em; text-align: center;">
         {{>partials_status preset}}
       </div>
