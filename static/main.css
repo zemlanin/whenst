@@ -20,6 +20,7 @@ button {
   display: flex;
   flex: 1;
   flex-direction: row;
+  align-items: stretch;
 }
 
 #topbar .back,
@@ -27,18 +28,19 @@ button {
 #topbar .account {
   flex-basis: 3em;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #topbar .back {
   background: #d40505;
   width: 3em;
+  justify-content: space-around;
 }
 
 #topbar .current-status {
   flex-grow: 1;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
 }
 
 #topbar .current-account {

@@ -1,17 +1,18 @@
 <header id="topbar" class="pure-u-1">
   {{#if back_href}}
-    <a class="back" href="{{back_href}}">⬅︎</a>
+    <a class="back" href="{{back_href}}"><span>⬅︎</span></a>
   {{else}}
     <span class="back"></span>
   {{/if}}
 
   <div class="current-status">
-    <span style="color: gray; font-size: 0.8em; font-weight: bold">Current status</span>
+    <span style="color: lightgray; font-size: 0.8em; font-weight: bold">Current status</span>
     {{#if current_status}}
       <a
         href="{{ route "slackPresetId" user_id=user_id
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
+        style="flex-grow: 1; width: 100%"
       >
         {{>partials_status current_status}}
       </a>
