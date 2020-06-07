@@ -15,6 +15,8 @@ const routes = [
   // TODO: rename `presets/slack/id.js`
   ["GET /presets/slack/:user_id/use", require("./presets/slack/id.js")],
   ["POST /presets/slack/:user_id/use", require("./presets/slack/use.js")],
+  ["GET /settings", require("./settings/index.js")],
+  ["GET /settings/slack(/:user_id)", require("./settings/slack.js")],
   ["POST /incoming-webhooks/slack", require("./incoming-webhooks/slack.js")],
   ["GET /cdn/*", require("./cdn.js"), CDN],
 ];

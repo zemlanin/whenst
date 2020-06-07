@@ -44,6 +44,7 @@ button {
 #topbar .current-account {
   background: #d40505;
   width: 3em;
+  position: relative;
 }
 
 .custom-emoji {

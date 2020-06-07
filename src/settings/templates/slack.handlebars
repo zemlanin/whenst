@@ -1,0 +1,21 @@
+{{>partials_head}}
+<body>
+  <div id="layout" class="pure-g">
+    {{#with activeSlack}}
+      {{>partials_topbar
+        back_href=(route "slackPresetsList" user_id=user_id)
+        user_id=user_id
+        profile=profile
+        team=team
+        current_status=current_status
+      }}
+    {{/with}}
+
+    <div class="pure-u-1">
+      <form method="POST" action="{{ route "authLogout" }}">
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <button type="submit">logout</button>
+      </form>
+    </div>
+  </div>
+</body>

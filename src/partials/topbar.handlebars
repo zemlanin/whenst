@@ -20,27 +20,24 @@
     {{/if}}
   </div>
 
-  <details class="current-account">
-    <summary style="position: relative;">
+  <a
+    href="{{ route "settingsSlack" user_id=user_id }}"
+    class="current-account"
+  >
+    <img
+      src="{{profile.image_48}}"
+      {{#if profile.display_name}}
+        alt="{{profile.display_name}} ({{team.name}})"
+      {{else}}
+        alt="{{profile.real_name}} ({{team.name}})"
+      {{/if}}
+    >
+    {{#unless team.icon.image_default}}
       <img
-        src="{{profile.image_48}}"
-        {{#if profile.display_name}}
-          alt="{{profile.display_name}} ({{team.name}})"
-        {{else}}
-          alt="{{profile.real_name}} ({{team.name}})"
-        {{/if}}
+        src="{{team.icon.image_34}}"
+        alt="{{team.name}}"
+        style="position: absolute; bottom: 0; right: 0; width: 50%"
       >
-      {{#unless team.icon.image_default}}
-        <img
-          src="{{team.icon.image_34}}"
-          alt="{{team.name}}"
-          style="position: absolute; bottom: 0; right: 0; width: 50%"
-        >
-      {{/unless}}
-    </summary>
-    <form method="POST" action="{{ route "authLogout" }}">
-      <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-      <button type="submit">logout</button>
-    </form>
-  </details>
+    {{/unless}}
+  </a>
 </header>
