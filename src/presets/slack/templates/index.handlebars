@@ -13,7 +13,7 @@
 
     <div class="pure-u-1">
       <form
-        style="display: flex; padding: 0.5em; flex-direction: row;"
+        style="display: flex; padding: 0.5em; flex-direction: row; line-height: 1.35em; min-height: 2em;"
         method="post"
         action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
       >
@@ -42,9 +42,22 @@
           {{#if is_current_status}}disabled{{/if}}
         >
           <a
-            href="{{ route "slackPresetId" user_id=@root.activeSlack.user_id ?status_emoji=status_emoji ?status_text=status_text }}"
+            class="status"
+            href="{{ route "slackPresetId"
+              user_id=@root.activeSlack.user_id
+              ?status_emoji=status_emoji
+              ?status_text=status_text }}"
           >
             {{>partials_status .}}
+          </a>
+          <a
+            style="text-decoration: none; color: white; flex-grow: 1; align-self: center; padding: 0 0.5em;"
+            href="{{ route "slackPresetId"
+              user_id=@root.activeSlack.user_id
+              ?status_emoji=status_emoji
+              ?status_text=status_text }}"
+          >
+            ❯
           </a>
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <input type="hidden" name="status_emoji" value="{{status_emoji}}">

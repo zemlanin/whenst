@@ -12,10 +12,12 @@
     {{/with}}
 
     <div class="pure-u-1">
-      <form method="POST" action="{{ route "authLogout" }}">
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <button type="submit">logout</button>
-      </form>
+      <div style="padding: 0.5em; text-align: center;">
+        <form method="POST" action="{{ route "authLogout" }}">
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <button type="submit">logout</button>
+        </form>
+      </div>
     </div>
   </div>
 </body>

@@ -9,48 +9,53 @@
       current_status=current_status
     }}
     <div class="pure-u-1">
-      <div style="font-size: 2em; text-align: center;">
-        {{>partials_status preset}}
+      <div style="padding: 0.5em; text-align: center;">
+        <span class="status" style="font-size: 2em;">
+          {{>partials_status preset}}
+        </span>
       </div>
 
-      <form
-        style="display: inline-block"
-        method="post"
-        action="{{ route "slackPresetUse" user_id=@root.user_id }}"
-        {{#if preset.is_current_status}}disabled{{/if}}
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
-        <input type="hidden" name="status_text" value="{{preset.status_text}}">
-        {{#if preset.is_current_status}}
-          <button type="submit" disabled>current</button>
-        {{else}}
-          <button type="submit">use</button>
-        {{/if}}
-      </form>
-
-      {{#if preset.already_saved}}
+      <div style="padding: 0.5em; text-align: center;">
         <form
-          style="display: inline-block"
+          style="font-size: 2em;"
           method="post"
-          action="{{ route "slackPresetDelete" user_id=@root.user_id }}"
-          onsubmit="return confirm('are you sure?')"
-        >
-          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <input type="hidden" name="id" value="{{preset.already_saved}}">
-          <button type="submit">delete</button>
-        </form>
-      {{else}}
-        <form
-          style="display: inline-block"
-          method="post"
-          action="{{ route "slackPresetAdd" user_id=@root.user_id }}"
+          action="{{ route "slackPresetUse" user_id=@root.user_id }}"
+          {{#if preset.is_current_status}}disabled{{/if}}
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
           <input type="hidden" name="status_text" value="{{preset.status_text}}">
-          <button type="submit">save</button>
+          {{#if preset.is_current_status}}
+            <button type="submit" disabled>current</button>
+          {{else}}
+            <button type="submit">use</button>
+          {{/if}}
         </form>
+      </div>
+
+      {{#if preset.already_saved}}
+        <div style="padding: 0.5em; text-align: center;">
+          <form
+            method="post"
+            action="{{ route "slackPresetDelete" user_id=@root.user_id }}"
+            onsubmit="return confirm('are you sure?')"
+          >
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <input type="hidden" name="id" value="{{preset.already_saved}}">
+            <button type="submit">delete</button>
+          </form>
+        {{else}}
+          <form
+            style="display: inline-block"
+            method="post"
+            action="{{ route "slackPresetAdd" user_id=@root.user_id }}"
+          >
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
+            <input type="hidden" name="status_text" value="{{preset.status_text}}">
+            <button type="submit">save</button>
+          </form>
+        </div>
       {{/if}}
     </div>
   </div>

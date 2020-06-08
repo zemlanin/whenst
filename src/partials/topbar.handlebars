@@ -1,6 +1,6 @@
 <header id="topbar" class="pure-u-1">
   {{#if back_href}}
-    <a class="back" href="{{back_href}}"><span>⬅︎</span></a>
+    <a class="back" href="{{back_href}}"><span>❮</span></a>
   {{else}}
     <span class="back"></span>
   {{/if}}
@@ -9,10 +9,10 @@
     <span style="color: lightgray; font-size: 0.8em; font-weight: bold">Current status</span>
     {{#if current_status}}
       <a
+        class="status"
         href="{{ route "slackPresetId" user_id=user_id
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
-        style="flex-grow: 1; width: 100%"
       >
         {{>partials_status current_status}}
       </a>
@@ -24,9 +24,6 @@
   <a
     href="{{ route "settingsSlack" user_id=user_id }}"
     class="current-account"
-    {{#unless team.icon.image_default}}
-      style="padding-bottom: 2px; padding-right: 2px;"
-    {{/unless}}
   >
     <img
       src="{{profile.image_72}}"
@@ -41,7 +38,7 @@
       <img
         src="{{team.icon.image_44}}"
         alt="{{team.name}}"
-        style="position: absolute; bottom: 0px; right: 0px; width: 50%; border-radius: 0.8em 0 0 0; border: #d40505 2px solid; border-right: 0; border-bottom: 0"
+        class="team-icon"
       >
     {{/unless}}
   </a>
