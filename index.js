@@ -133,8 +133,12 @@ const sessionStore = new (require("connect-redis")(session))({
 app.use(
   session({
     secret: config.session.secret,
-    secure: config.production,
     name: "whenst.sid",
+    cookie: {
+      secure: config.production,
+      sameSite: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    },
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
