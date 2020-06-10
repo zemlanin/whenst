@@ -75,19 +75,27 @@ button {
   background: white;
   color: black;
   min-height: 2em;
+  text-align: initial;
 }
 
 .status > i {
   min-width: 2em;
   color: gray;
   text-align: center;
+  font-style: normal;
+}
+
+.status > hr {
+  width: 0;
+  height: 1.35em;
+  border: 0;
+  border-left: 1px solid lightgray;
 }
 
 .status > span {
   flex-grow: 1;
   flex-shrink: 1;
   padding: 0 0.5em;
-  border-left: 1px solid lightgray;
   line-height: 1.35em;
 }
 
