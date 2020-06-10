@@ -138,6 +138,7 @@ app.use(
       secure: config.production,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     },
+    proxy: config.production || undefined,
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
