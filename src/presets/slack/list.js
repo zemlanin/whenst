@@ -134,6 +134,6 @@ module.exports = async function slackPresetsList(req, res) {
     presets,
     emoji_options: DEFAULT_EMOJI_LIST.concat(
       Object.keys(activeSlack.teamEmoji)
-    ),
+    ).map((name) => ({ name, html: activeSlack.getEmojiHTML(`:${name}:`) })),
   });
 };

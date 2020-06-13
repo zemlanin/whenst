@@ -20,24 +20,33 @@
 
     <div class="pure-u-1">
       <form
-        class="preset-row"
+        class="preset-row status-form"
         method="post"
         action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <input
-          type="text"
-          name="status_emoji"
-          placeholder="emoji"
-          list="emoji_datalist_{{activeSlack.oauth_id}}"
-          style="flex-grow: 1; flex-shrink: 1; flex-basis: 0; width: 5em;"
-        >
-        <input
-          type="text"
-          name="status_text"
-          placeholder="text"
-          style="flex-grow: 2; flex-shrink: 1; flex-basis: 0; width: 5em;"
-        >
+        {{! chrome doesn't support flexbox in `<fieldset>` }}
+        <div role="group" class="status">
+          <label for="status-form-status_emoji" class="status_emoji">
+            <span class="current-emoji">💬</span>
+          </label>
+          <input
+            id="status-form-status_emoji"
+            type="text"
+            name="status_emoji"
+            list="emoji_datalist"
+            aria-label="emoji"
+            placeholder="emoji"
+          >
+          <hr>
+          <input
+            type="text"
+            name="status_text"
+            placeholder="text"
+            class="status_text"
+          >
+        </div>
+        <div style="width: 2em;"></div>
         <button type="submit">save</button>
       </form>
 
@@ -78,11 +87,35 @@
         </form>
       {{/each}}
 
-      <datalist id="emoji_datalist_{{activeSlack.oauth_id}}">
+      <datalist id="emoji_datalist">
         {{#each emoji_options}}
-          <option value="{{this}}"></option>
+          <option value="{{name}}" data-html="{{html}}"></option>
         {{/each}}
       </datalist>
     </div>
   </div>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      function updateCurrentEmoji(event) {
+        var form = event.target.form;
+        var value = event.target.value;
+        var datalistOption = event.target.list.querySelector('[value="' + value +'"]');
+
+        if (datalistOption) {
+          form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
+        } else {
+          form.querySelector('.current-emoji').textContent = ":(";
+        }
+
+        event.target.blur();
+      }
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll('input[list="emoji_datalist"]'),
+        function (input) {
+          input.addEventListener("change", updateCurrentEmoji)
+        }
+      )
+    });
+  </script>
 </body>
