@@ -140,6 +140,7 @@ a.deeper {
   flex-shrink: 1;
   padding-left: 0.5em;
   line-height: 1.35em;
+  flex-basis: 0;
 }
 
 #topbar .status {
@@ -154,6 +155,7 @@ a.deeper {
   border: none;
   margin-left: 0.5em;
   padding: 0;
+  width: 3em;
 }
 
 .status-form .status .status_text {
