@@ -60,7 +60,7 @@
             onsubmit="return confirm('are you sure?')"
           >
             <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-            <input type="hidden" name="id" value="{{preset.already_saved}}">
+            <input type="hidden" name="id" value="{{preset.already_saved.id}}">
             <button type="submit">delete</button>
           </form>
         {{else}}
