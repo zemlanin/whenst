@@ -3,7 +3,6 @@
   <div id="layout" class="pure-g">
     {{#with activeSlack}}
       {{>partials_topbar
-        back_href=(route "slackPresetsList" user_id=user_id)
         user_id=user_id
         profile=profile
         team=team
@@ -12,7 +11,20 @@
     {{/with}}
 
     <div class="pure-u-1">
-      <div style="padding: 0.5em; text-align: center;">
+      <div class="preset-row">
+        <a href="{{ route "slackPresetsList" user_id=user_id }}">
+          presets
+        </a>
+        <a
+          class="deeper"
+          role="presentation"
+          href="{{ route "slackPresetsList" user_id=user_id }}"
+        >
+          ❯
+        </a>
+      </div>
+
+      <div style="padding: 3em 0.5em 0.5em;">
         <form method="POST" action="{{ route "authLogout" }}">
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <button type="submit">logout</button>

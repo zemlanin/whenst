@@ -1,13 +1,32 @@
 {{>partials_head}}
 <body>
   <div id="layout" class="pure-g">
-    {{>partials_topbar
-      back_href=(route "slackPresetsList" user_id=user_id)
+    {{#> partials_topbar
       user_id=user_id
       profile=profile
       team=team
       current_status=current_status
+
+      preset=preset
     }}
+      {{#*inline "breadcrumbs"}}
+        <li>
+          <a href="{{ route "slackPresetsList" user_id=user_id }}">
+            presets
+          </a>
+        </li>
+        <li>
+          <a
+            href="{{ route "slackPresetId" user_id=user_id
+              ?status_emoji=preset.status_emoji
+              ?status_text=preset.status_text }}"
+            title="preset"
+          >
+            🔗
+          </a>
+        </li>
+      {{/inline}}
+    {{/ partials_topbar }}
     <div class="pure-u-1">
       <div style="padding: 0.5em; text-align: center;">
         <span class="status" style="font-size: 2em;">

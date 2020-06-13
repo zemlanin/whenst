@@ -2,18 +2,25 @@
 <body>
   <div id="layout" class="pure-g">
     {{#with activeSlack}}
-      {{>partials_topbar
-        back_href=""
+      {{#> partials_topbar
         user_id=user_id
         profile=profile
         team=team
         current_status=current_status
       }}
+        {{#*inline "breadcrumbs"}}
+          <li>
+            <a href="{{ route "slackPresetsList" user_id=user_id }}">
+              presets
+            </a>
+          </li>
+        {{/inline}}
+      {{/ partials_topbar }}
     {{/with}}
 
     <div class="pure-u-1">
       <form
-      class="preset-row"
+        class="preset-row"
         method="post"
         action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
       >
@@ -51,7 +58,8 @@
             {{>partials_status .}}
           </a>
           <a
-            style="text-decoration: none; color: white; flex-grow: 1; align-self: center; padding: 0 0.5em;"
+            class="deeper"
+            role="presentation"
             href="{{ route "slackPresetId"
               user_id=@root.activeSlack.user_id
               ?status_emoji=status_emoji

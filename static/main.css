@@ -1,6 +1,5 @@
 body {
-  background: #490a3d;
-  color: white;
+  color: black;
 }
 
 input,
@@ -12,59 +11,101 @@ button {
   border-radius: 0;
 }
 
+a {
+  text-decoration: none;
+}
+
+a:link,
+a:visited {
+  color: blue;
+}
+
+a.deeper {
+  opacity: 0.5;
+  flex-grow: 1;
+  align-self: center;
+  padding: 0 0.5em;
+}
+
 #layout {
-  background: #bd1550;
   width: 30em;
   margin: 0em auto;
   min-height: 100vh;
   max-width: 100%;
 }
 
-#topbar {
+#topbar nav,
+#topbar .current-status {
   display: flex;
   flex: 1;
   flex-direction: row;
   align-items: stretch;
 }
 
-#topbar .back,
-#topbar .current-status,
-#topbar .account {
-  flex-basis: 3em;
-  text-align: center;
+#topbar nav ol {
+  list-style: none;
   display: flex;
-  flex-direction: column;
+  flex-flow: row wrap;
+  margin: 0;
+  padding: 0;
+  height: 3em;
   align-items: center;
 }
 
-#topbar .back {
-  background: #d40505;
-  width: 3em;
-  justify-content: space-around;
-  color: white;
-  text-decoration: none;
+#topbar nav ol li {
+  box-sizing: border-box;
 }
 
-#topbar .current-status {
-  flex-grow: 1;
-  justify-content: space-between;
+#topbar nav ol li a {
+  text-decoration: none;
+  padding: 0.5em;
+  display: inline-block;
+}
+
+#topbar nav ol li a::before {
+  content: "❯";
+  display: inline-block;
+  opacity: 0.5;
+}
+
+#topbar nav ol li.no-chevron a::before {
+  content: "";
+  width: 0;
+  display: none;
 }
 
 #topbar .current-account {
-  width: 3em;
+  height: 100%;
   position: relative;
   line-height: 0;
+  box-sizing: border-box;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  height: 3em;
+}
+
+#topbar .current-account img {
+  border-radius: 100%;
+  max-height: 100%;
+  border: blue 1px solid;
 }
 
 #topbar .current-account .team-icon {
   position: absolute;
-  bottom: -2px;
-  right: 0px;
-  width: 50%;
-  border-radius: 0.8em 0 0 0;
-  border: #bd1550 2px solid;
-  border-right: 0;
-  border-bottom: 0;
+  bottom: -0.2em;
+  right: -0.2em;
+  height: 1.5em;
+  border: white 2px solid;
+}
+
+#topbar .current-status {
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-grow: 1;
+  padding: 0.5em;
 }
 
 .status {
@@ -72,10 +113,10 @@ button {
   display: inline-flex;
   align-items: center;
   flex-direction: row;
-  background: white;
-  color: black;
   min-height: 2em;
   text-align: initial;
+  border: lightgray 1px solid;
+  border-radius: 0.5em;
 }
 
 .status > i {
