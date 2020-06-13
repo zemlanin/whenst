@@ -166,17 +166,16 @@ a.deeper {
   cursor: pointer;
 }
 
-.status-form input[name="status_emoji"] {
-  width: 0;
-  flex-shrink: 1;
-  flex-basis: 0;
-  margin-left: 0;
-}
-
-.status-form input[name="status_emoji"]:focus {
+.status-form input[name="status_emoji"],
+.status-form input[name="status_emoji"]:focus:valid {
   width: 7em;
   margin-left: 0.5em;
-  transition: width 0.3s ease-in-out;
+}
+
+.status-form input[name="status_emoji"]:valid {
+  width: 0;
+  margin-left: 0;
+  transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
 }
 
 .custom-emoji {

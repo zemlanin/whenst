@@ -96,24 +96,61 @@
   </div>
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
+      function getDatalistOption(list, value) {
+        return list.querySelector('[value="' + value +'"]');
+      }
+
       function updateCurrentEmoji(event) {
         var form = event.target.form;
-        var value = event.target.value;
-        var datalistOption = event.target.list.querySelector('[value="' + value +'"]');
+        var value = event.target.value.trim();
 
-        if (datalistOption) {
-          form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
-        } else {
-          form.querySelector('.current-emoji').textContent = ":(";
+        if (!value) {
+          value = "speech_balloon";
         }
 
-        event.target.blur();
+        var datalistOption = getDatalistOption(event.target.list, value);
+        var target = event.target
+
+        if (datalistOption) {
+          event.target.setCustomValidity("");
+          form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
+        } else {
+          event.target.setCustomValidity("emoji not found");
+          form.querySelector('.current-emoji').innerHTML = "<div class='custom-emoji'>☹︎</div>";
+          form.querySelector('.current-emoji').title = event.target.validationMessage;
+          event.target.reportValidity();
+        }
       }
 
       Array.prototype.forEach.call(
         document.querySelectorAll('input[list="emoji_datalist"]'),
         function (input) {
-          input.addEventListener("change", updateCurrentEmoji)
+          input.addEventListener("change", updateCurrentEmoji);
+        }
+      )
+
+      function updateRequiredFields(event) {
+        var form = event.target.form;
+
+        if (form.status_text.value) {
+          form.status_emoji.removeAttribute("required");
+        } else {
+          form.status_emoji.setAttribute("required", "required");
+        }
+
+        if (form.status_emoji.value) {
+          form.status_text.removeAttribute("required");
+        } else {
+          form.status_text.setAttribute("required", "required");
+        }
+      }
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll('form.status-form'),
+        function (form) {
+          updateRequiredFields({ target: { form: form }});
+          form.status_text.addEventListener("input", updateRequiredFields);
+          form.status_emoji.addEventListener("input", updateRequiredFields);
         }
       )
     });
