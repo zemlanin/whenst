@@ -32,7 +32,7 @@ describe("/presets/slack/common", () => {
         ],
         [
           { status_text: "hello world", status_emoji: "" },
-          { status_emoji: ":speech_baloon:", status_text: "hello world" },
+          { status_emoji: ":speech_balloon:", status_text: "hello world" },
         ],
         [
           { status_text: ":banana: :phone:", status_emoji: "" },
