@@ -143,6 +143,11 @@ a.deeper {
   line-height: 1.35em;
 }
 
+#topbar .status {
+  flex-grow: 1;
+  color: black;
+}
+
 .custom-emoji {
   width: 1.35em;
   height: 1.35em;
