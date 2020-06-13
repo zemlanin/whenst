@@ -38,15 +38,23 @@
   </nav>
   <div class="current-status">
     {{#if current_status}}
-    <span style="color: gray; font-size: 0.8em; font-weight: bold">Current status</span>
       <a
         class="status"
         href="{{ route "slackPresetId" user_id=user_id
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
+        title="Current status"
       >
         {{>partials_status current_status}}
       </a>
+      <a
+        class="deeper"
+        style="flex-grow: 0; padding-right: 0;"
+        role="presentation"
+        href="{{ route "slackPresetId" user_id=user_id
+          ?status_emoji=current_status.status_emoji
+          ?status_text=current_status.status_text }}"
+      >❯</a>
     {{else}}
       <span></span>
     {{/if}}

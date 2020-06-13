@@ -52,8 +52,8 @@
         </form>
       </div>
 
-      {{#if preset.already_saved}}
-        <div style="padding: 0.5em; text-align: center;">
+      <div style="padding: 0.5em; text-align: center;">
+        {{#if preset.already_saved}}
           <form
             method="post"
             action="{{ route "slackPresetDelete" user_id=@root.user_id }}"
@@ -74,8 +74,8 @@
             <input type="hidden" name="status_text" value="{{preset.status_text}}">
             <button type="submit">save</button>
           </form>
-        </div>
-      {{/if}}
+        {{/if}}
+      </div>
     </div>
   </div>
 </body>
