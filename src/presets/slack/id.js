@@ -36,9 +36,10 @@ module.exports = async function slackPresetId(req, res) {
 
   const { access_token, user_id, team_id } = user_oauth;
 
-  const { status_text, status_emoji } = processPresetForm(
+  let { status_text, status_emoji } = processPresetForm(
     new url.URL(req.url, req.absolute).searchParams
   );
+
   if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;
 
@@ -77,21 +78,36 @@ module.exports = async function slackPresetId(req, res) {
     status_emoji_html: getEmojiHTML(status_emoji),
   };
 
-  preset.already_saved = (
-    await db.query(sql`
-      SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-      WHERE p.slack_user_id = ${user_id}
-        AND p.status_text = ${status_text}
-        AND p.status_emoji = ${status_emoji}
-      ORDER BY p.id DESC
-      LIMIT 1;
-    `)
-  ).rows.find(Boolean);
+  if (status_emoji && status_emoji !== slackApi.DEFAULT_STATUS_EMOJI) {
+    preset.already_saved = (
+      await db.query(sql`
+        SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
+        WHERE p.slack_user_id = ${user_id}
+          AND p.status_text = ${status_text}
+          AND p.status_emoji = ${status_emoji}
+        ORDER BY p.id DESC
+        LIMIT 1;
+      `)
+    ).rows.find(Boolean);
+  } else {
+    preset.already_saved = (
+      await db.query(sql`
+        SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
+        WHERE p.slack_user_id = ${user_id}
+          AND p.status_text = ${status_text}
+          AND (p.status_emoji = '' OR p.status_emoji = ${slackApi.DEFAULT_STATUS_EMOJI})
+        ORDER BY p.id DESC
+        LIMIT 1;
+      `)
+    ).rows.find(Boolean);
+  }
 
   preset.is_current_status = Boolean(
     current_status &&
       preset.status_text === current_status.status_text &&
-      preset.status_emoji === current_status.status_emoji
+      (preset.status_emoji === current_status.status_emoji ||
+        (!preset.status_emoji &&
+          current_status.status_emoji === slackApi.DEFAULT_STATUS_EMOJI))
   );
 
   return res.render(tmpl, {

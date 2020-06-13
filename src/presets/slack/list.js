@@ -107,11 +107,13 @@ module.exports = async function slackPresetsList(req, res) {
   const presets = dbPresetsRes.rows.map((presetRow) => ({
     id: presetRow.id,
     status_text: presetRow.status_text,
-    status_emoji: presetRow.status_emoji,
+    status_emoji: presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI,
     status_text_html: activeSlack.getEmojiHTML(
       Handlebars.escapeExpression(presetRow.status_text)
     ),
-    status_emoji_html: activeSlack.getEmojiHTML(presetRow.status_emoji),
+    status_emoji_html: activeSlack.getEmojiHTML(
+      presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI
+    ),
   }));
 
   if (activeSlack.current_status) {
