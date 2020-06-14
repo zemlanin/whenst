@@ -102,6 +102,6 @@ module.exports = async function settingsSlack(req, res) {
       client_id: config.slack.client_id,
       scope: config.slack.scope,
       state: "", // TODO
-    }
+    },
   });
 };
