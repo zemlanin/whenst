@@ -1,7 +1,49 @@
 body {
   color: black;
+  /*
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  */
+  font-family: "iA Writer Quattro S", "SF Mono", "Menlo-Regular", Consolas,
+    "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter",
+    "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono",
+    "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/iAWriterQuattroS-Regular.woff2") format("woff2"),
+    url("fonts/iAWriterQuattroS-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/iAWriterQuattroS-Italic.woff2") format("woff2"),
+    url("fonts/iAWriterQuattroS-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/iAWriterQuattroS-Bold.woff2") format("woff2"),
+    url("fonts/iAWriterQuattroS-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/iAWriterQuattroS-BoldItalic.woff2") format("woff2"),
+    url("fonts/iAWriterQuattroS-BoldItalic.woff") format("woff");
 }
 
 input,
@@ -175,8 +217,14 @@ a.status {
 }
 
 .status .status_emoji {
-  color: gray;
   text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.status .status_emoji .not-found {
+  font-family: inherit;
+  color: gray;
 }
 
 .status > hr {
@@ -208,18 +256,14 @@ a.status {
   flex-grow: 1;
 }
 
-.status-form input {
+.status-form .status input {
   border: none;
   margin-left: 0.5em;
-  padding: 0;
+  padding: 0 0.5em;
   width: 3em;
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 0;
-}
-
-.status-form .status .status_text {
-  padding: 0;
 }
 
 .status-form label {
@@ -232,12 +276,14 @@ a.status {
   margin-left: 0.5em;
   line-height: 1.35em;
   max-width: initial;
+  padding: 0 0.5em;
 }
 
 .status-form input[name="status_emoji"]:valid {
   width: 0;
   margin-left: 0;
   max-width: 0;
+  padding: 0;
 }
 
 .custom-emoji {

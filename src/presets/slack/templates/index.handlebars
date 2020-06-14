@@ -116,7 +116,7 @@
           form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
         } else {
           event.target.setCustomValidity("emoji not found");
-          form.querySelector('.current-emoji').innerHTML = "<div class='custom-emoji'>☹︎</div>";
+          form.querySelector('.current-emoji').innerHTML = "<div class='custom-emoji' style='color: red'>☹︎</div>";
           form.querySelector('.current-emoji').title = event.target.validationMessage;
           event.target.reportValidity();
         }

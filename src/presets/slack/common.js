@@ -22,7 +22,7 @@ function emojiHTMLGetter(slacksEmojis) {
       }
     }
 
-    return `:${name}:`;
+    return `<span class="not-found">:${name}:</span>`;
   }
 
   function getEmojiHTML(stringWithEmojis) {
