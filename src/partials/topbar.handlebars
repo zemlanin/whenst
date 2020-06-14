@@ -1,10 +1,7 @@
 <header id="topbar">
-  <div style="padding: 0; line-height: 0; image-rendering: pixelated; image-rendering: crisp-edges; text-align: right">
-    <a href="/"><img src="{{ asset "header.png" }}"></a>
-  </div>
   <nav>
-    <ol>
-      {{#if profile }}
+    {{#if profile }}
+      <ol>
         <li class="no-chevron">
           <a
             href="{{ route "settingsSlack" user_id=user_id }}"
@@ -34,12 +31,17 @@
             </span>
           </a>
         </li>
-      {{/if}}
       {{#> breadcrumbs . }}{{/ breadcrumbs }}
-    </ol>
+      </ol>
+    {{else}}
+      <div></div>
+    {{/if}}
+    <div style="padding: 0; line-height: 0; image-rendering: pixelated; image-rendering: crisp-edges; text-align: right;">
+      <a href="/"><img src="{{ asset "header.png" }}"></a>
+    </div>
   </nav>
-  <div class="current-status">
-    {{#if current_status}}
+  {{#if current_status}}
+    <div class="current-status">
       <a
         class="status"
         href="{{ route "slackPresetId" user_id=user_id
@@ -57,8 +59,6 @@
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
       >❯</a>
-    {{else}}
-      <span></span>
-    {{/if}}
-  </div>
+    </div>
+  {{/if}}
 </header>
