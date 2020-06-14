@@ -92,6 +92,7 @@ module.exports = async function settingsSlack(req, res) {
   });
 
   const activeSlack = slacks.find((s) => s.user_id === user_oauth.user_id);
+  activeSlack.is_active = true;
 
   return res.render(tmpl, {
     slacks,

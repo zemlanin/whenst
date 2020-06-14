@@ -27,12 +27,100 @@
           ❯
         </a>
       </div>
+      {{! history ❯ }}
+      {{! support ❯ }}
 
-      <div style="padding: 3em 0.5em 0.5em;">
-        <form method="POST" action="{{ route "authLogout" }}">
-          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <button type="submit">logout</button>
-        </form>
+      <div style="height: 10em;"></div>
+
+      <div>
+        {{#each slacks}}
+          {{#if is_active}}
+            <div class="preset-row">
+              <span style="padding-right: 0.2em;">
+                <span class="icon-group">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
+                    <img
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
+                      class="team-icon"
+                    >
+                  {{/unless}}
+                </span>
+              </span>
+              <strong>
+                {{#if profile.display_name}}
+                  {{profile.display_name}}
+                {{else}}
+                  {{profile.real_name}}
+                {{/if}}
+                ({{team.name}})
+              </strong>
+              <div style="flex-grow: 1"></div>
+              <form method="POST" action="{{ route "authLogout" }}">
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
+                <button type="submit">logout</button>
+              </form>
+            </div>
+          {{else}}
+            <div class="preset-row">
+              <a href="{{ route "settingsSlack" user_id=user_id }}" style="padding-right: 0.2em;">
+                <span class="icon-group">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
+                    <img
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
+                      class="team-icon"
+                    >
+                  {{/unless}}
+                </span>
+              </a>
+              <a href="{{ route "settingsSlack" user_id=user_id }}">
+                {{#if profile.display_name}}
+                  {{profile.display_name}}
+                {{else}}
+                  {{profile.real_name}}
+                {{/if}}
+                ({{team.name}})
+              </a>
+              <a
+                class="deeper"
+                role="presentation"
+                href="{{ route "settingsSlack" user_id=user_id }}"
+              >
+                ❯
+              </a>
+              <form method="POST" action="{{ route "authLogout" }}">
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
+                <button type="submit">logout</button>
+              </form>
+            </div>
+          {{/if}}
+        {{/each}}
+        <div class="preset-row">
+          <div style="flex-grow: 1"></div>
+          <form method="POST" action="{{ route "authLogout" }}">
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <button type="submit">logout from all</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
