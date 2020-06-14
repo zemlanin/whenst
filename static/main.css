@@ -123,8 +123,6 @@ a.deeper {
   position: relative;
   line-height: 0;
   box-sizing: border-box;
-  padding-top: 0.2em;
-  padding-bottom: 0.2em;
   height: 3em;
 }
 
