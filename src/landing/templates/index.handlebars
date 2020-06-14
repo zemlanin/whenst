@@ -1,7 +1,8 @@
 {{>partials_head}}
 <body>
   <div id="layout">
-    <div>
+    {{> partials_topbar . }}
+    <div style="padding: 0.5em;">
       <form method="GET" action="https://slack.com/oauth/authorize">
         <input type="hidden" name="client_id" value="{{client_id}}">
         <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
