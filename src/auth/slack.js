@@ -85,8 +85,7 @@ module.exports = async function authSlack(req, res) {
     if (req.session.slack_oauth_ids) {
       req.session.slack_oauth_ids = [
         slack_oauth_id,
-        // TODO: support multiple slacks per session
-        // ...req.session.slack_oauth_ids.filter((id) => id !== slack_oauth_id),
+        ...req.session.slack_oauth_ids.filter((id) => id !== slack_oauth_id),
       ];
     } else {
       req.session.slack_oauth_ids = [slack_oauth_id];

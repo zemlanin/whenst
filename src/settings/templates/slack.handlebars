@@ -13,7 +13,7 @@
     <div>
       <div class="preset-row">
         <a
-          href="{{ route "slackPresetsList" user_id=user_id }}"
+          href="{{ route "slackPresetsList" user_id=activeSlack.user_id }}"
           style="font-size: 2em;"
         >
           presets
@@ -21,7 +21,7 @@
         <a
           class="deeper"
           role="presentation"
-          href="{{ route "slackPresetsList" user_id=user_id }}"
+          href="{{ route "slackPresetsList" user_id=activeSlack.user_id }}"
           style="font-size: 2em;"
         >
           ❯
@@ -115,6 +115,15 @@
           {{/if}}
         {{/each}}
         <div class="preset-row">
+          {{#with slackAuth}}
+            <form method="GET" action="https://slack.com/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">add another slack</button>
+            </form>
+          {{/with}}
           <div style="flex-grow: 1"></div>
           <form method="POST" action="{{ route "authLogout" }}">
             <input type="hidden" name="_csrf" value="{{@csrfToken}}">

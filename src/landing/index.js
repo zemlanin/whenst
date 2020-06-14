@@ -20,6 +20,7 @@ module.exports = async function landing(req, res) {
 
   return res.render(tmpl, {
     client_id: config.slack.client_id,
+    scope: config.slack.scope,
     state: "", // TODO
   });
 };

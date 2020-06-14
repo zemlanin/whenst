@@ -38,6 +38,7 @@ function getSlackConfig() {
     client_id: SLACK_CLIENT_ID,
     client_secret: SLACK_CLIENT_SECRET,
     signing_secret: SLACK_SIGNING_SECRET,
+    scope: "team:read users.profile:read users.profile:write dnd:write emoji:read"
   };
 }
 

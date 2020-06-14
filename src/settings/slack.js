@@ -7,6 +7,7 @@ const {
   getTeamEmojis,
   emojiHTMLGetter,
 } = require("../presets/slack/common.js");
+const config = require("../config.js");
 
 const tmpl = require.resolve("./templates/slack.handlebars");
 
@@ -97,5 +98,10 @@ module.exports = async function settingsSlack(req, res) {
   return res.render(tmpl, {
     slacks,
     activeSlack,
+    slackAuth: {
+      client_id: config.slack.client_id,
+      scope: config.slack.scope,
+      state: "", // TODO
+    }
   });
 };
