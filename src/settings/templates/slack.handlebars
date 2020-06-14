@@ -12,13 +12,17 @@
 
     <div class="pure-u-1">
       <div class="preset-row">
-        <a href="{{ route "slackPresetsList" user_id=user_id }}">
+        <a
+          href="{{ route "slackPresetsList" user_id=user_id }}"
+          style="font-size: 2em;"
+        >
           presets
         </a>
         <a
           class="deeper"
           role="presentation"
           href="{{ route "slackPresetsList" user_id=user_id }}"
+          style="font-size: 2em;"
         >
           ❯
         </a>

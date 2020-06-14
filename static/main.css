@@ -51,6 +51,7 @@ a.deeper {
   margin: 0;
   padding: 0;
   padding-right: 0.5em;
+  padding-left: 0.5em;
   align-items: center;
 }
 
@@ -61,7 +62,7 @@ a.deeper {
 #topbar nav ol li a {
   text-decoration: none;
   padding: 0.5em;
-  padding-right: 0em;
+  padding-left: 0em;
   display: inline-block;
 }
 
@@ -69,7 +70,7 @@ a.deeper {
   content: "❯";
   display: inline-block;
   opacity: 0.5;
-  padding-right: 0.2em;
+  padding-left: 0.2em;
 }
 
 #topbar nav ol li.no-chevron a::before {
@@ -99,7 +100,7 @@ a.deeper {
   bottom: -0.2em;
   right: -0.2em;
   height: 1.5em;
-  border: white 2px solid;
+  border: white 1px solid;
 }
 
 #topbar .current-status {
@@ -121,6 +122,11 @@ a.deeper {
   border-radius: 0.5em;
   padding-left: 0.5em;
   padding-right: 0.5em;
+}
+
+.status a,
+a.status {
+  color: black;
 }
 
 .status .status_emoji {
@@ -147,6 +153,10 @@ a.deeper {
   flex-grow: 1;
 }
 
+.status-form {
+  flex-flow: row wrap;
+}
+
 .status-form .status {
   flex-grow: 1;
 }
@@ -156,6 +166,9 @@ a.deeper {
   margin-left: 0.5em;
   padding: 0;
   width: 3em;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 0;
 }
 
 .status-form .status .status_text {
@@ -168,8 +181,8 @@ a.deeper {
 
 .status-form input[name="status_emoji"],
 .status-form input[name="status_emoji"]:focus:valid {
-  width: 7em;
   margin-left: 0.5em;
+  line-height: 1.35em;
 }
 
 .status-form input[name="status_emoji"]:valid {
