@@ -1,6 +1,6 @@
 {{>partials_head}}
 <body>
-  <div id="layout" class="pure-g">
+  <div id="layout">
     {{#with activeSlack}}
       {{#> partials_topbar
         user_id=user_id
@@ -18,7 +18,7 @@
       {{/ partials_topbar }}
     {{/with}}
 
-    <div class="pure-u-1">
+    <div>
       <form
         class="preset-row status-form"
         method="post"

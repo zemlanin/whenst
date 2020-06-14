@@ -1,6 +1,6 @@
 {{>partials_head}}
 <body>
-  <div id="layout" class="pure-g">
+  <div id="layout">
     {{#> partials_topbar
       user_id=user_id
       profile=profile
@@ -27,7 +27,7 @@
         </li>
       {{/inline}}
     {{/ partials_topbar }}
-    <div class="pure-u-1">
+    <div>
       <div style="padding: 0.5em; text-align: center;">
         <span class="status" style="font-size: 2em;">
           {{>partials_status preset}}
