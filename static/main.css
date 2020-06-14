@@ -11,6 +11,38 @@ button {
   border-radius: 0;
 }
 
+.button,
+button[type="submit"] {
+  color: black;
+  border-radius: 0.5em;
+  background-color: lightgray;
+  padding: 0.5em;
+  box-sizing: border-box;
+  border: none;
+}
+
+.button.primary,
+button.primary[type="submit"] {
+  background-color: royalblue;
+  color: white;
+}
+
+.button.danger,
+button.danger[type="submit"] {
+  background-color: rgb(202, 60, 60);
+  color: white;
+}
+
+.button:disabled,
+.button.primary:disabled,
+button[type="submit"]:disabled,
+button.primary[type="submit"]:disabled,
+form:invalid button[type="submit"],
+form:invalid button.primary[type="submit"] {
+  background-color: #e6e6e6;
+  color: #555;
+}
+
 a {
   text-decoration: none;
 }
@@ -181,14 +213,16 @@ a.status {
 
 .status-form input[name="status_emoji"],
 .status-form input[name="status_emoji"]:focus:valid {
+  width: 3em;
   margin-left: 0.5em;
   line-height: 1.35em;
+  max-width: initial;
 }
 
 .status-form input[name="status_emoji"]:valid {
   width: 0;
   margin-left: 0;
-  transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+  max-width: 0;
 }
 
 .custom-emoji {

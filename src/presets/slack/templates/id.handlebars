@@ -45,9 +45,9 @@
           <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">
           <input type="hidden" name="status_text" value="{{preset.status_text}}">
           {{#if preset.is_current_status}}
-            <button type="submit" disabled>current</button>
+            <button type="submit" class="primary" disabled>current</button>
           {{else}}
-            <button type="submit">use</button>
+            <button type="submit" class="primary">use</button>
           {{/if}}
         </form>
       </div>
@@ -61,7 +61,7 @@
           >
             <input type="hidden" name="_csrf" value="{{@csrfToken}}">
             <input type="hidden" name="id" value="{{preset.already_saved.id}}">
-            <button type="submit">delete</button>
+            <button type="submit" class="danger">delete</button>
           </form>
         {{else}}
           <form
