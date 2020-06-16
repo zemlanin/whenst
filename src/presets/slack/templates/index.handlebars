@@ -96,8 +96,17 @@
   </div>
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
+      const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
       function getDatalistOption(list, value) {
-        return list.querySelector('[value="' + value +'"]');
+        value = value.trim();
+
+        if (value && value.match(INSIDE_COLONS_REGEX)) {
+          value = value.slice(1, value.length - 1);
+          return list.querySelector('[value="' + value +'"]');
+        }
+
+        // `data-html` for native emoji's is the emoji itself
+        return list.querySelector('[value="' + value +'"], [data-html="' + value + '"]');
       }
 
       function updateCurrentEmoji(event) {

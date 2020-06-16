@@ -14,7 +14,10 @@ const {
 
 const tmpl = require.resolve("./templates/index.handlebars");
 
-const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji);
+const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji).map((name) => ({
+  name,
+  html: nodeEmoji.emoji[name],
+}));
 
 module.exports = async function slackPresetsList(req, res) {
   const slackOauths = await req.getSlackOauths();
@@ -133,7 +136,10 @@ module.exports = async function slackPresetsList(req, res) {
     activeSlack,
     presets,
     emoji_options: DEFAULT_EMOJI_LIST.concat(
-      Object.keys(activeSlack.teamEmoji)
-    ).map((name) => ({ name, html: activeSlack.getEmojiHTML(`:${name}:`) })),
+      Object.keys(activeSlack.teamEmoji).map((name) => ({
+        name,
+        html: activeSlack.getEmojiHTML(`:${name}:`),
+      }))
+    ),
   });
 };
