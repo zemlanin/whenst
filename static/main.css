@@ -51,6 +51,14 @@ button {
   color: black;
 }
 
+div,
+span,
+input,
+button {
+  color: black;
+  line-height: 1.35em;
+}
+
 button {
   border-radius: 0;
   cursor: pointer;
@@ -65,20 +73,24 @@ form:invalid button[type="submit"] {
 button[type="submit"] {
   color: black;
   background-color: lightgray;
+  border-color: lightgray;
   padding: 0.5em;
   box-sizing: border-box;
-  border: none;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .button.primary,
 button.primary[type="submit"] {
   background-color: royalblue;
+  border-color: royalblue;
   color: white;
 }
 
 .button.danger,
 button.danger[type="submit"] {
   background-color: rgb(202, 60, 60);
+  border-color: rgb(202, 60, 60);
   color: white;
 }
 
@@ -89,6 +101,7 @@ button.primary[type="submit"]:disabled,
 form:invalid button[type="submit"],
 form:invalid button.primary[type="submit"] {
   background-color: #e6e6e6;
+  border-color: #e6e6e6;
   color: #555;
 }
 
@@ -207,7 +220,6 @@ a.deeper {
   min-height: 2em;
   text-align: initial;
   border: lightgray 1px solid;
-  padding: 0.3em 0.5em;
   background: white;
 }
 
@@ -228,7 +240,7 @@ a.status {
 }
 
 .status > hr {
-  width: 0.5em;
+  width: 0;
   height: 1em;
   border: 0;
   padding: 0;
@@ -240,7 +252,6 @@ a.status {
   flex-grow: 1;
   flex-shrink: 1;
   padding-left: 0.5em;
-  line-height: 1.35em;
   flex-basis: 0;
 }
 
@@ -258,32 +269,40 @@ a.status {
 
 .status-form .status input {
   border: none;
-  margin-left: 0.5em;
-  padding: 0 0.5em;
   width: 3em;
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 0;
 }
 
+.status .status_emoji,
+.status .status_text,
+.status-form .status input {
+  padding: 0.5em;
+}
+
 .status-form label {
   cursor: pointer;
+}
+
+.status-form input[name="status_text"] {
+  margin-left: 0.5em;
 }
 
 .status-form input[name="status_emoji"],
 .status-form input[name="status_emoji"]:focus:valid {
   width: 3em;
-  margin-left: 0.5em;
-  line-height: 1.35em;
+  margin-right: 0.5em;
   max-width: initial;
-  padding: 0 0.5em;
+  padding: 0.5em;
 }
 
 .status-form input[name="status_emoji"]:valid {
   width: 0;
-  margin-left: 0;
+  margin-right: 0;
   max-width: 0;
-  padding: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .custom-emoji {
