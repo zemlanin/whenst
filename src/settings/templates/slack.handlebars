@@ -27,6 +27,14 @@
           ❯
         </a>
       </div>
+      <div style="height: 4em;"></div>
+      <div class="preset-row">
+        <form method="POST" action="{{ route "authLogout" }}">
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <input type="hidden" name="slack_oauth_id" value="{{activeSlack.oauth_id}}">
+          <button type="submit">logout</button>
+        </form>
+      </div>
       {{! history ❯ }}
       {{! support ❯ }}
 
@@ -64,11 +72,6 @@
                 ({{team.name}})
               </strong>
               <div style="flex-grow: 1"></div>
-              <form method="POST" action="{{ route "authLogout" }}">
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
-                <button type="submit">logout</button>
-              </form>
             </div>
           {{else}}
             <div class="preset-row">
@@ -106,29 +109,25 @@
               >
                 ❯
               </a>
-              <form method="POST" action="{{ route "authLogout" }}">
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
-                <button type="submit">logout</button>
-              </form>
             </div>
           {{/if}}
         {{/each}}
         <div class="preset-row">
+          <span style="padding-right: 0.2em;">
+            <strong>
+              login into another
+            </strong>
+          </span>
+          <div style="flex-grow: 1"></div>
           {{#with slackAuth}}
             <form method="GET" action="https://slack.com/oauth/authorize">
               <input type="hidden" name="client_id" value="{{ client_id }}">
               <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
               <input type="hidden" name="state" value="{{ state }}">
               <input type="hidden" name="scope" value="{{ scope }}">
-              <button type="submit">add another slack</button>
+              <button type="submit">slack</button>
             </form>
           {{/with}}
-          <div style="flex-grow: 1"></div>
-          <form method="POST" action="{{ route "authLogout" }}">
-            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-            <button type="submit">logout from all</button>
-          </form>
         </div>
       </div>
     </div>
