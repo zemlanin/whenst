@@ -27,16 +27,17 @@
         </li>
       {{/inline}}
     {{/ partials_topbar }}
-    <div>
-      <div style="padding: 0.5em; text-align: center;">
-        <span class="status" style="font-size: 2em;">
+
+    <div style="padding: 1em 0.5em 3em 0.5em;">
+      <div style="text-align: center;">
+        <span class="status" style="font-size: 1.5em;">
           {{>partials_status preset}}
         </span>
       </div>
 
-      <div style="padding: 0.5em; text-align: center;">
+      <div style="padding: 1em 0.5em 0.5em 0.5em; text-align: center;">
         <form
-          style="font-size: 2em;"
+          style="font-size: 1.5em;"
           method="post"
           action="{{ route "slackPresetUse" user_id=@root.user_id }}"
           {{#if preset.is_current_status}}disabled{{/if}}
@@ -77,5 +78,8 @@
         {{/if}}
       </div>
     </div>
+
+    {{> partials_footer . }}
+
   </div>
 </body>

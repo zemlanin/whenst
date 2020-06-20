@@ -18,7 +18,7 @@
       {{/ partials_topbar }}
     {{/with}}
 
-    <div>
+    <div style="padding: 1em 0.5em 0 0.5em;">
       <form
         class="preset-row status-form"
         method="post"
@@ -86,14 +86,17 @@
           {{/if}}
         </form>
       {{/each}}
-
-      <datalist id="emoji_datalist">
-        {{#each emoji_options}}
-          <option value="{{name}}" data-html="{{html}}"></option>
-        {{/each}}
-      </datalist>
     </div>
+
+    {{> partials_footer . }}
   </div>
+
+  <datalist id="emoji_datalist">
+    {{#each emoji_options}}
+      <option value="{{name}}" data-html="{{html}}"></option>
+    {{/each}}
+  </datalist>
+
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
       const INSIDE_COLONS_REGEX = /^:[^:]+:$/;

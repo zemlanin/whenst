@@ -10,11 +10,11 @@
       }}
     {{/with}}
 
-    <div>
+    <div style="padding: 1em 0.5em 0 0.5em;">
       <div class="preset-row">
         <a
           href="{{ route "slackPresetsList" user_id=activeSlack.user_id }}"
-          style="font-size: 2em;"
+          style="font-size: 1.5em;"
         >
           presets
         </a>
@@ -22,18 +22,10 @@
           class="deeper"
           role="presentation"
           href="{{ route "slackPresetsList" user_id=activeSlack.user_id }}"
-          style="font-size: 2em;"
+          style="font-size: 1.5em;"
         >
           ❯
         </a>
-      </div>
-      <div style="height: 4em;"></div>
-      <div class="preset-row">
-        <form method="POST" action="{{ route "authLogout" }}">
-          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <input type="hidden" name="slack_oauth_id" value="{{activeSlack.oauth_id}}">
-          <button type="submit">logout</button>
-        </form>
       </div>
       {{! history ❯ }}
       {{! support ❯ }}
@@ -72,6 +64,11 @@
                 ({{team.name}})
               </strong>
               <div style="flex-grow: 1"></div>
+              <form method="POST" action="{{ route "authLogout" }}">
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
+                <button type="submit">logout</button>
+              </form>
             </div>
           {{else}}
             <div class="preset-row">
@@ -131,5 +128,7 @@
         </div>
       </div>
     </div>
+    {{> partials_footer . }}
+
   </div>
 </body>

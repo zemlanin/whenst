@@ -130,6 +130,7 @@ a.deeper {
 
 #topbar {
   border-bottom: lightgray 1px solid;
+  padding: 0.5em 0.5em 1em 0.5em;
 }
 
 #topbar nav {
@@ -146,8 +147,6 @@ a.deeper {
   flex-flow: row wrap;
   margin: 0;
   padding: 0;
-  padding-right: 0.5em;
-  padding-left: 0.5em;
   align-items: center;
 }
 
@@ -157,8 +156,7 @@ a.deeper {
 
 #topbar nav ol li a {
   text-decoration: none;
-  padding: 0.5em;
-  padding-left: 0em;
+  padding-right: 0.5em;
   display: inline-block;
 }
 
@@ -210,7 +208,7 @@ a.deeper {
   flex-direction: row;
   align-items: center;
   flex-grow: 1;
-  padding: 0.5em;
+  padding-top: 1em;
 }
 
 .status {
@@ -316,11 +314,19 @@ a.status {
   display: flex;
   flex: 1;
   flex-direction: row;
-  padding: 0.5em;
+  padding-bottom: 1em;
   justify-content: space-between;
   align-items: center;
 }
 
 .preset-row button {
   flex-shrink: 0;
+}
+
+footer {
+  border-top: lightgray 1px solid;
+  padding: 1em 0.5em 0;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
 }

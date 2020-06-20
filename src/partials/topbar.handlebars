@@ -34,11 +34,10 @@
       {{#> breadcrumbs . }}{{/ breadcrumbs }}
       </ol>
     {{else}}
-      <div></div>
+      <div style="image-rendering: pixelated; image-rendering: crisp-edges; text-align: center; width: 100%; padding-top: 0.5em">
+        <a href="/"><img src="{{ asset "logo-white.png" }}"></a>
+      </div>
     {{/if}}
-    <div style="padding: 0; line-height: 0; image-rendering: pixelated; image-rendering: crisp-edges; text-align: right;">
-      <a href="/"><img src="{{ asset "header.png" }}"></a>
-    </div>
   </nav>
   {{#if current_status}}
     <div class="current-status">
