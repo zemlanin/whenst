@@ -285,15 +285,17 @@ a.status {
 }
 
 .status-form input[name="status_text"] {
-  margin-left: 0.5em;
+  margin-left: 0.25em;
+  padding-left: 0.25em;
 }
 
 .status-form input[name="status_emoji"],
 .status-form input[name="status_emoji"]:focus:valid {
   width: 3em;
-  margin-right: 0.5em;
+  margin-right: 0.25em;
   max-width: initial;
   padding: 0.5em;
+  padding-left: 0.25em;
 }
 
 .status-form input[name="status_emoji"]:valid {
