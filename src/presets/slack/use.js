@@ -1,9 +1,13 @@
 const url = require("url");
 
+const nodeEmoji = require("node-emoji");
+
 const slackApi = require("../../external/slack.js");
-const { processPresetForm } = require("./common.js");
+const { processPresetForm, getTeamEmojis } = require("./common.js");
 
 const TODO_BAD_REQUEST = 400;
+
+const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji);
 
 module.exports = async function slackPresetUse(req, res) {
   const slackOauths = await req.getSlackOauths();
@@ -29,6 +33,31 @@ module.exports = async function slackPresetUse(req, res) {
     return;
   }
 
+  const db = await req.db();
+  const redis = await req.redis();
+  const { emoji: teamEmoji } = await getTeamEmojis(
+    db,
+    redis,
+    user_oauth.access_token,
+    user_oauth.team_id
+  );
+
+  if (status_emoji) {
+    const isCommonEmoji = DEFAULT_EMOJI_LIST.some(
+      (name) => `:${name}:` === status_emoji
+    );
+
+    if (!isCommonEmoji) {
+      if (
+        !Object.keys(teamEmoji).some((name) => `:${name}:` === status_emoji)
+      ) {
+        res.statusCode = TODO_BAD_REQUEST;
+
+        return;
+      }
+    }
+  }
+
   const slackResp = await slackApi.apiPost(
     "users.profile.set",
     {
@@ -45,7 +74,6 @@ module.exports = async function slackPresetUse(req, res) {
     throw new Error(slackResp.error);
   }
 
-  const redis = await req.redis();
   const userId = user_oauth.user_id;
   await redis.del(`slack:users.profile.get:${userId}`);
 

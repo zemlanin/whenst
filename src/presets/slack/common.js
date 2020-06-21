@@ -16,21 +16,32 @@ function emojiHTMLGetter(slacksEmojis) {
 
     if (customEmoji) {
       if (customEmoji.startsWith("alias:")) {
-        return getEmojiHTML(`:${customEmoji.slice("alias:".length)}:`);
+        return getEmojiHTML(`:${customEmoji.slice("alias:".length)}:`).html;
       } else {
         return `<img class="custom-emoji" src="${customEmoji}" alt="${name}" title=":${name}:">`;
       }
     }
 
+    // `unknown_emoji = result.startWith("<span")`
+    //
+    // this won't catch unknown emojis in status_text
+    // because `unknown :xxxx: emoji` is a valid status
     return `<span class="not-found">:${name}:</span>`;
   }
 
   function getEmojiHTML(stringWithEmojis) {
     if (!stringWithEmojis) {
-      return "";
+      return { html: "" };
     }
 
-    return nodeEmoji.emojify(stringWithEmojis, onMissing);
+    const html = nodeEmoji.emojify(stringWithEmojis, onMissing);
+    const unknown_emoji = html.startsWith("<span");
+
+    if (unknown_emoji) {
+      return { html, unknown_emoji };
+    }
+
+    return { html };
   }
 
   return getEmojiHTML;

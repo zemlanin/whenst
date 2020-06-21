@@ -56,6 +56,7 @@
           method="post"
           action="{{ route "slackPresetUse" user_id=@root.activeSlack.user_id }}"
           {{#if is_current_status}}disabled{{/if}}
+          {{#if unknown_emoji}}disabled{{/if}}
         >
           <a
             class="status"
@@ -82,7 +83,11 @@
           {{#if is_current_status}}
             <button type="submit" disabled>current</button>
           {{else}}
-            <button type="submit">use</button>
+            {{#if unknown_emoji}}
+              <button type="submit" disabled>unknown emoji</button>
+            {{else}}
+              <button type="submit">use</button>
+            {{/if}}
           {{/if}}
         </form>
       {{/each}}

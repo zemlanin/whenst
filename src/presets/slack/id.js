@@ -52,30 +52,37 @@ module.exports = async function slackPresetId(req, res) {
   const { profile } = await getProfile(db, redis, access_token, user_id);
   const { team } = await getTeam(db, redis, access_token, team_id);
 
-  const { emoji: teamEmojis } = await getTeamEmojis(
+  const { emoji: teamEmoji } = await getTeamEmojis(
     db,
     redis,
     access_token,
     team_id
   );
 
-  const getEmojiHTML = emojiHTMLGetter(teamEmojis);
+  let current_status = null;
+  const getEmojiHTML = emojiHTMLGetter(teamEmoji);
 
-  const current_status =
-    profile.status_text || profile.status_emoji
-      ? {
-          status_text: slackApi.decodeStatusText(profile.status_text),
-          status_emoji: profile.status_emoji,
-          status_text_html: getEmojiHTML(profile.status_text),
-          status_emoji_html: getEmojiHTML(profile.status_emoji),
-        }
-      : null;
+  if (profile.status_text || profile.status_emoji) {
+    const status_emoji_html = getEmojiHTML(profile.status_emoji);
+
+    current_status = {
+      status_emoji: profile.status_emoji,
+      status_text: slackApi.decodeStatusText(profile.status_text),
+      status_emoji_html: status_emoji_html.html,
+      status_text_html: getEmojiHTML(profile.status_text).html,
+      unknown_emoji: status_emoji_html.unknown_emoji,
+    };
+  }
+
+  const status_emoji_html = getEmojiHTML(status_emoji);
 
   const preset = {
-    status_text,
     status_emoji,
-    status_text_html: getEmojiHTML(Handlebars.escapeExpression(status_text)),
-    status_emoji_html: getEmojiHTML(status_emoji),
+    status_text,
+    status_emoji_html: status_emoji_html.html,
+    status_text_html: getEmojiHTML(Handlebars.escapeExpression(status_text))
+      .html,
+    unknown_emoji: status_emoji_html.unknown_emoji,
   };
 
   if (status_emoji && status_emoji !== slackApi.DEFAULT_STATUS_EMOJI) {

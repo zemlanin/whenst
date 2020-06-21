@@ -66,20 +66,24 @@ module.exports = async function settingsSlack(req, res) {
   );
 
   const slacks = slackOauths.map((o, index) => {
-    const profile = profiles[index].profile;
-    const teamEmoji = teamEmojis[index].emoji;
+    const { profile } = profiles[index];
+    const { emoji: teamEmoji } = teamEmojis[index];
     const getEmojiHTML = emojiHTMLGetter(teamEmoji);
-    const current_status =
-      profile.status_text || profile.status_emoji
-        ? {
-            status_text: slackApi.decodeStatusText(profile.status_text),
-            status_emoji: profile.status_emoji,
-            status_text_html: getEmojiHTML(profile.status_text),
-            status_emoji_html: getEmojiHTML(profile.status_emoji),
-          }
-        : null;
+    let current_status = null;
 
-    const team = teams[index].team;
+    if (profile.status_text || profile.status_emoji) {
+      const status_emoji_html = getEmojiHTML(profile.status_emoji);
+
+      current_status = {
+        status_emoji: profile.status_emoji,
+        status_text: slackApi.decodeStatusText(profile.status_text),
+        status_emoji_html: status_emoji_html.html,
+        status_text_html: getEmojiHTML(profile.status_text).html,
+        unknown_emoji: status_emoji_html.unknown_emoji,
+      };
+    }
+
+    const { team } = teams[index];
 
     return {
       oauth_id: o.id,
