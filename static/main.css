@@ -124,7 +124,6 @@ a.deeper {
 #layout {
   width: 30em;
   margin: 0em auto;
-  padding-bottom: 3em;
   max-width: 100%;
 }
 
@@ -327,7 +326,7 @@ a.status {
 
 footer {
   border-top: lightgray 1px solid;
-  padding: 1em 0.5em 0;
+  padding: 1em 0.5em;
   display: flex;
   flex-flow: row;
   justify-content: space-between;
