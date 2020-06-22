@@ -43,7 +43,7 @@
     <div class="current-status">
       <a
         class="status"
-        href="{{ route "slackPresetId" oauth_id=oauth_id
+        href="{{ route "statusIndex"
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
         title="Current status"
@@ -54,7 +54,7 @@
         class="deeper"
         style="flex-grow: 0; padding-right: 0;"
         role="presentation"
-        href="{{ route "slackPresetId" oauth_id=oauth_id
+        href="{{ route "statusIndex"
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
       >❯</a>

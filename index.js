@@ -18,6 +18,14 @@ const config = require("./src/config.js");
 const routes = require("./src/routes.js");
 const renderMiddleware = require("./src/render.js");
 
+const {
+  getProfile,
+  getTeam,
+  getTeamEmojis,
+  emojiHTMLGetter,
+} = require("./src/presets/slack/common.js");
+const slackApi = require("./src/external/slack.js");
+
 const app = connect();
 
 // https://github.com/expressjs/body-parser/issues/208#issuecomment-263805902
@@ -104,11 +112,9 @@ app.use(function redisMiddleware(req, res, next) {
   let client;
 
   req.redis = async () => {
-    if (client) {
-      return client;
+    if (!client) {
+      client = new redis.createClient(config.redis);
     }
-
-    client = new redis.createClient(config.redis);
 
     return {
       get: util.promisify(client.get).bind(client),
@@ -186,6 +192,66 @@ app.use(function slackAuthMiddleware(req, res, next) {
     });
 
     return oauthTokens;
+  };
+
+  req.getActiveSlack = async function () {
+    const slackOauths = await req.getSlackOauths();
+
+    if (!slackOauths.length) {
+      return null;
+    }
+
+    let user_oauth;
+
+    if (req.params && req.params.oauth_id) {
+      user_oauth = slackOauths.find((o) => o.oauth_id === req.params.oauth_id);
+    } else {
+      user_oauth = slackOauths[0];
+    }
+
+    if (!user_oauth) {
+      return null;
+    }
+
+    const { oauth_id, access_token, user_id, team_id } = user_oauth;
+
+    const db = await req.db();
+    const redis = await req.redis();
+
+    const { profile } = await getProfile(db, redis, access_token, user_id);
+    const { team } = await getTeam(db, redis, access_token, team_id);
+
+    const { emoji: teamEmoji } = await getTeamEmojis(
+      db,
+      redis,
+      access_token,
+      team_id
+    );
+
+    let current_status = null;
+    const getEmojiHTML = emojiHTMLGetter(teamEmoji);
+
+    if (profile.status_text || profile.status_emoji) {
+      const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
+
+      current_status = {
+        status_emoji: profile.status_emoji,
+        status_text: slackApi.decodeStatusText(profile.status_text),
+        status_emoji_html: status_emoji_html.html,
+        status_text_html: getEmojiHTML(profile.status_text).html,
+        unknown_emoji: status_emoji_html.unknown_emoji,
+      };
+    }
+
+    return {
+      user_id,
+      oauth_id,
+      profile,
+      team,
+      teamEmoji,
+      getEmojiHTML,
+      current_status,
+    };
   };
 
   next();

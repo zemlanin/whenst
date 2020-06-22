@@ -16,7 +16,7 @@ function emojiHTMLGetter(slacksEmojis) {
 
     if (customEmoji) {
       if (customEmoji.startsWith("alias:")) {
-        return getEmojiHTML(`:${customEmoji.slice("alias:".length)}:`).html;
+        return getEmojiHTML(customEmoji.slice("alias:".length), true).html;
       } else {
         return `<img class="custom-emoji" src="${customEmoji}" alt="${name}" title=":${name}:">`;
       }
@@ -29,9 +29,13 @@ function emojiHTMLGetter(slacksEmojis) {
     return `<span class="not-found">:${name}:</span>`;
   }
 
-  function getEmojiHTML(stringWithEmojis) {
+  function getEmojiHTML(stringWithEmojis, wholeStringIsEmoji) {
     if (!stringWithEmojis) {
       return { html: "" };
+    }
+
+    if (wholeStringIsEmoji) {
+      stringWithEmojis = `:${stringWithEmojis}:`;
     }
 
     const html = nodeEmoji.emojify(stringWithEmojis, onMissing);
@@ -60,6 +64,16 @@ async function getProfile(db, redis, token, userId) {
   const freshResp = await slackApi.apiGet(apiMethod, { token });
 
   if (freshResp.ok) {
+    if (
+      freshResp.profile.status_emoji &&
+      freshResp.profile.status_emoji.match(INSIDE_COLONS_REGEX)
+    ) {
+      freshResp.profile.status_emoji = freshResp.profile.status_emoji.slice(
+        1,
+        -1
+      );
+    }
+
     await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
   }
 
@@ -104,7 +118,7 @@ async function getTeamEmojis(db, redis, token, teamId) {
   return freshResp;
 }
 
-const EMOJI_REGEX = /^:[a-z0-9+_'-]+:$/;
+const EMOJI_REGEX = /^[a-z0-9+_'-]+$/;
 const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
 function processPresetForm(body) {
@@ -113,22 +127,22 @@ function processPresetForm(body) {
   const body_status_text = body.get("status_text");
 
   if (body_status_emoji) {
-    const emoji_name = nodeEmoji.which(body_status_emoji, true);
+    const emoji_name = nodeEmoji.which(body_status_emoji, false);
 
     if (emoji_name) {
       status_emoji = emoji_name;
     } else {
-      const status_emoji_inside_colons = body_status_emoji.match(
+      const status_emoji_without_colons = body_status_emoji.match(
         INSIDE_COLONS_REGEX
       )
-        ? body_status_emoji
-        : `:${body_status_emoji}:`;
+        ? body_status_emoji.slice(1, -1)
+        : body_status_emoji;
 
-      if (!status_emoji_inside_colons.match(EMOJI_REGEX)) {
+      if (!status_emoji_without_colons.match(EMOJI_REGEX)) {
         return {};
       }
 
-      status_emoji = status_emoji_inside_colons;
+      status_emoji = status_emoji_without_colons;
     }
   }
 
@@ -138,8 +152,12 @@ function processPresetForm(body) {
 
   // if `status_emoji` is empty, Slack uses emoji-only `status_text` instead
   // so we're doing the same
-  if (!status_emoji && status_text.match(EMOJI_REGEX)) {
-    status_emoji = status_text;
+  if (
+    !status_emoji &&
+    status_text.match(INSIDE_COLONS_REGEX) &&
+    status_text.slice(1, -1).match(EMOJI_REGEX)
+  ) {
+    status_emoji = status_text.slice(1, -1);
     status_text = "";
   } else if (!status_emoji && !status_text) {
     return {};

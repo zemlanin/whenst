@@ -14,7 +14,7 @@ module.exports = async function slackPresetDelete(req, res) {
   }
 
   const user_oauth = slackOauths.find(
-    (o) => o.aouth_id === req.params.aouth_id
+    (o) => o.oauth_id === req.formBody.get("oauth_id")
   );
 
   if (!user_oauth) {

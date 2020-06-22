@@ -22,9 +22,10 @@
       <form
         class="preset-row status-form"
         method="post"
-        action="{{ route "slackPresetAdd" oauth_id=activeSlack.oauth_id }}"
+        action="{{ route "slackPresetAdd" }}"
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
         {{! chrome doesn't support flexbox in `<fieldset>` }}
         <div role="group" class="status">
           <label for="status-form-status_emoji" class="status_emoji">
@@ -54,14 +55,13 @@
         <form
           class="preset-row"
           method="post"
-          action="{{ route "slackPresetUse" oauth_id=@root.activeSlack.oauth_id }}"
+          action="{{ route "statusUse" }}"
           {{#if is_current_status}}disabled{{/if}}
           {{#if unknown_emoji}}disabled{{/if}}
         >
           <a
             class="status"
-            href="{{ route "slackPresetId"
-              oauth_id=@root.activeSlack.oauth_id
+            href="{{ route "statusIndex"
               ?status_emoji=status_emoji
               ?status_text=status_text }}"
           >
@@ -70,14 +70,14 @@
           <a
             class="deeper"
             role="presentation"
-            href="{{ route "slackPresetId"
-              oauth_id=@root.activeSlack.oauth_id
+            href="{{ route "statusIndex"
               ?status_emoji=status_emoji
               ?status_text=status_text }}"
           >
             ❯
           </a>
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
           <input type="hidden" name="status_emoji" value="{{status_emoji}}">
           <input type="hidden" name="status_text" value="{{status_text}}">
           {{#if is_current_status}}

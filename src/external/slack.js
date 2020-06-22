@@ -19,7 +19,7 @@ module.exports = {
 
     return slackGet(`${apiMethod}${encodedBody}`);
   },
-  DEFAULT_STATUS_EMOJI: ":speech_balloon:",
+  DEFAULT_STATUS_EMOJI: "speech_balloon",
   apiPost: async function apiPost(
     apiMethod,
     body,

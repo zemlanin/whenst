@@ -8,36 +8,36 @@ describe("/presets/slack/common", () => {
       const cases = [
         [
           { status_text: ">", status_emoji: "" },
-          { status_emoji: ":speech_balloon:", status_text: ">" },
+          { status_emoji: "speech_balloon", status_text: ">" },
         ],
         [
           { status_text: ">", status_emoji: "slack" },
-          { status_emoji: ":slack:", status_text: ">" },
+          { status_emoji: "slack", status_text: ">" },
         ],
         [
           { status_text: ">", status_emoji: ":slack:" },
-          { status_emoji: ":slack:", status_text: ">" },
+          { status_emoji: "slack", status_text: ">" },
         ],
         [
           { status_text: "", status_emoji: ":slack:" },
-          { status_emoji: ":slack:", status_text: "" },
+          { status_emoji: "slack", status_text: "" },
         ],
         [
           { status_text: "", status_emoji: "slack" },
-          { status_emoji: ":slack:", status_text: "" },
+          { status_emoji: "slack", status_text: "" },
         ],
         [
           { status_text: ":slack:", status_emoji: "" },
-          { status_emoji: ":slack:", status_text: "" },
+          { status_emoji: "slack", status_text: "" },
         ],
         [
           { status_text: "hello world", status_emoji: "" },
-          { status_emoji: ":speech_balloon:", status_text: "hello world" },
+          { status_emoji: "speech_balloon", status_text: "hello world" },
         ],
         [
           { status_text: ":banana: :phone:", status_emoji: "" },
           {
-            status_emoji: ":speech_balloon:",
+            status_emoji: "speech_balloon",
             status_text: ":banana: :phone:",
           },
         ],

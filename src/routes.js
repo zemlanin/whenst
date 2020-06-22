@@ -14,11 +14,11 @@ const routes = [
   ["POST /auth/logout", require("./auth/logout.js")],
 
   ["GET (/a/:oauth_id)/presets", require("./presets/slack/list.js")],
-  ["POST (/a/:oauth_id)/presets/add", require("./presets/slack/add.js")],
-  ["POST (/a/:oauth_id)/presets/delete", require("./presets/slack/delete.js")],
-  // TODO: rename `presets/slack/id.js`
-  ["GET (/a/:oauth_id)/presets/use", require("./presets/slack/id.js")],
-  ["POST (/a/:oauth_id)/presets/use", require("./presets/slack/use.js")],
+  ["POST /presets/add", require("./presets/slack/add.js")],
+  ["POST /presets/delete", require("./presets/slack/delete.js")],
+
+  ["GET /status", require("./status/index.js")],
+  ["POST /status/use", require("./status/use.js")],
 
   ["GET /settings", require("./settings/index.js")],
   ["GET /a/:oauth_id", require("./settings/slack.js")],
