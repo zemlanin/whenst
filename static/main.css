@@ -292,6 +292,7 @@ a.status {
 .status-form input[name="status_emoji"],
 .status-form input[name="status_emoji"]:focus:valid {
   width: 3em;
+  min-width: 1em;
   margin-right: 0.25em;
   max-width: initial;
   padding: 0.5em;
@@ -300,6 +301,7 @@ a.status {
 
 .status-form input[name="status_emoji"]:valid {
   width: 0;
+  min-width: 0;
   margin-right: 0;
   max-width: 0;
   padding-left: 0;
