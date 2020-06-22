@@ -107,7 +107,7 @@ module.exports = async function statusIndex(req, res) {
   }
 
   const slackPresets = slacks.reduce((acc, slack) => {
-    const { profile, user_id } = slack;
+    const { profile, user_id, getEmojiHTML } = slack;
 
     acc[slack.oauth_id] = {
       is_current_status: Boolean(
@@ -119,6 +119,7 @@ module.exports = async function statusIndex(req, res) {
       already_saved: existingSlackPresets.find(
         (p) => p.slack_user_id === user_id
       ),
+      unknown_emoji: getEmojiHTML(status.status_emoji, true).unknown_emoji,
     };
 
     return acc;
