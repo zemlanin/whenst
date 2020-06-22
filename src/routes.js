@@ -7,18 +7,21 @@ const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
 const routes = [
   ["GET /", require("./landing/index.js")],
-  ["GET /auth/slack", require("./auth/slack.js")],
-  ["POST /auth/logout", require("./auth/logout.js")],
-  ["GET /presets/slack(/:user_id)", require("./presets/slack/list.js")],
-  ["POST /presets/slack/:user_id/add", require("./presets/slack/add.js")],
-  ["POST /presets/slack/:user_id/delete", require("./presets/slack/delete.js")],
-  // TODO: rename `presets/slack/id.js`
-  ["GET /presets/slack/:user_id/use", require("./presets/slack/id.js")],
-  ["POST /presets/slack/:user_id/use", require("./presets/slack/use.js")],
-  ["GET /settings", require("./settings/index.js")],
-  ["GET /settings/slack(/:user_id)", require("./settings/slack.js")],
   ["POST /incoming-webhooks/slack", require("./incoming-webhooks/slack.js")],
   ["GET /cdn/*", require("./cdn.js"), CDN],
+
+  ["GET /auth/slack", require("./auth/slack.js")],
+  ["POST /auth/logout", require("./auth/logout.js")],
+
+  ["GET (/a/:oauth_id)/presets", require("./presets/slack/list.js")],
+  ["POST (/a/:oauth_id)/presets/add", require("./presets/slack/add.js")],
+  ["POST (/a/:oauth_id)/presets/delete", require("./presets/slack/delete.js")],
+  // TODO: rename `presets/slack/id.js`
+  ["GET (/a/:oauth_id)/presets/use", require("./presets/slack/id.js")],
+  ["POST (/a/:oauth_id)/presets/use", require("./presets/slack/use.js")],
+
+  ["GET /settings", require("./settings/index.js")],
+  ["GET /a/:oauth_id", require("./settings/slack.js")],
 ];
 
 const handlers = routes.reduce((acc, [route, handler]) => {

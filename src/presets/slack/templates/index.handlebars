@@ -3,14 +3,14 @@
   <div id="layout">
     {{#with activeSlack}}
       {{#> partials_topbar
-        user_id=user_id
+        oauth_id=oauth_id
         profile=profile
         team=team
         current_status=current_status
       }}
         {{#*inline "breadcrumbs"}}
           <li>
-            <a href="{{ route "slackPresetsList" user_id=user_id }}">
+            <a href="{{ route "slackPresetsList" oauth_id=oauth_id }}">
               presets
             </a>
           </li>
@@ -22,7 +22,7 @@
       <form
         class="preset-row status-form"
         method="post"
-        action="{{ route "slackPresetAdd" user_id=activeSlack.user_id }}"
+        action="{{ route "slackPresetAdd" oauth_id=activeSlack.oauth_id }}"
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
         {{! chrome doesn't support flexbox in `<fieldset>` }}
@@ -54,14 +54,14 @@
         <form
           class="preset-row"
           method="post"
-          action="{{ route "slackPresetUse" user_id=@root.activeSlack.user_id }}"
+          action="{{ route "slackPresetUse" oauth_id=@root.activeSlack.oauth_id }}"
           {{#if is_current_status}}disabled{{/if}}
           {{#if unknown_emoji}}disabled{{/if}}
         >
           <a
             class="status"
             href="{{ route "slackPresetId"
-              user_id=@root.activeSlack.user_id
+              oauth_id=@root.activeSlack.oauth_id
               ?status_emoji=status_emoji
               ?status_text=status_text }}"
           >
@@ -71,7 +71,7 @@
             class="deeper"
             role="presentation"
             href="{{ route "slackPresetId"
-              user_id=@root.activeSlack.user_id
+              oauth_id=@root.activeSlack.oauth_id
               ?status_emoji=status_emoji
               ?status_text=status_text }}"
           >

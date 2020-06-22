@@ -13,7 +13,9 @@ module.exports = async function slackPresetDelete(req, res) {
     return;
   }
 
-  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  const user_oauth = slackOauths.find(
+    (o) => o.aouth_id === req.params.aouth_id
+  );
 
   if (!user_oauth) {
     res.statusCode = TODO_BAD_REQUEST;
@@ -42,7 +44,7 @@ module.exports = async function slackPresetDelete(req, res) {
     "Location",
     new url.URL(
       req.app.routes.slackPresetsList.stringify({
-        user_id: user_oauth.user_id,
+        oauth_id: user_oauth.oauth_id,
       }),
       req.absolute
     )

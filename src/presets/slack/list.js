@@ -30,28 +30,30 @@ module.exports = async function slackPresetsList(req, res) {
     return;
   }
 
-  if (!(req.params && req.params.user_id)) {
-    const { user_id } = slackOauths[0];
+  if (!(req.params && req.params.oauth_id)) {
+    const { oauth_id } = slackOauths[0];
     res.statusCode = 302;
     res.setHeader(
       "Location",
       new url.URL(
-        req.app.routes.slackPresetsList.stringify({ user_id }),
+        req.app.routes.slackPresetsList.stringify({ oauth_id }),
         req.absolute
       )
     );
     return;
   }
 
-  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  const user_oauth = slackOauths.find(
+    (o) => o.oauth_id === req.params.oauth_id
+  );
 
   if (!user_oauth) {
-    const { user_id } = slackOauths[0];
+    const { oauth_id } = slackOauths[0];
     res.statusCode = 302;
     res.setHeader(
       "Location",
       new url.URL(
-        req.app.routes.slackPresetsList.stringify({ user_id }),
+        req.app.routes.slackPresetsList.stringify({ oauth_id }),
         req.absolute
       )
     );
@@ -110,7 +112,7 @@ module.exports = async function slackPresetsList(req, res) {
     };
   });
 
-  const activeSlack = slacks.find((s) => s.user_id === user_oauth.user_id);
+  const activeSlack = slacks.find((s) => s.oauth_id === user_oauth.oauth_id);
   const presets = dbPresetsRes.rows.map((presetRow) => {
     const status_emoji_html = activeSlack.getEmojiHTML(
       presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI

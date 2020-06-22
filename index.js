@@ -178,6 +178,7 @@ app.use(function slackAuthMiddleware(req, res, next) {
     oauthTokens = dbOauthRes.rows.map((row) => {
       return {
         id: row.id,
+        oauth_id: row.id,
         user_id: row.user_id,
         team_id: row.team_id,
         access_token: row.access_token,

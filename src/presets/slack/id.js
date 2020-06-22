@@ -27,14 +27,16 @@ module.exports = async function slackPresetId(req, res) {
     return;
   }
 
-  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  const user_oauth = slackOauths.find(
+    (o) => o.oauth_id === req.params.oauth_id
+  );
 
   if (!user_oauth) {
     res.statusCode = 404;
     return;
   }
 
-  const { access_token, user_id, team_id } = user_oauth;
+  const { oauth_id, access_token, user_id, team_id } = user_oauth;
 
   let { status_text, status_emoji } = processPresetForm(
     new url.URL(req.url, req.absolute).searchParams
@@ -118,7 +120,7 @@ module.exports = async function slackPresetId(req, res) {
   );
 
   return res.render(tmpl, {
-    oauth_id: user_oauth.id,
+    oauth_id,
     user_id,
     profile,
     team,

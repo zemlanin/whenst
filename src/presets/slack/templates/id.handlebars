@@ -2,7 +2,7 @@
 <body>
   <div id="layout">
     {{#> partials_topbar
-      user_id=user_id
+      oauth_id=oauth_id
       profile=profile
       team=team
       current_status=current_status
@@ -11,13 +11,13 @@
     }}
       {{#*inline "breadcrumbs"}}
         <li>
-          <a href="{{ route "slackPresetsList" user_id=user_id }}">
+          <a href="{{ route "slackPresetsList" oauth_id=oauth_id }}">
             presets
           </a>
         </li>
         <li>
           <a
-            href="{{ route "slackPresetId" user_id=user_id
+            href="{{ route "slackPresetId" oauth_id=oauth_id
               ?status_emoji=preset.status_emoji
               ?status_text=preset.status_text }}"
             title="preset"
@@ -39,7 +39,7 @@
         <form
           style="font-size: 1.5em;"
           method="post"
-          action="{{ route "slackPresetUse" user_id=@root.user_id }}"
+          action="{{ route "slackPresetUse" oauth_id=@root.oauth_id }}"
           {{#if preset.is_current_status}}disabled{{/if}}
           {{#if preset.unknown_emoji}}disabled{{/if}}
         >
@@ -62,7 +62,7 @@
         {{#if preset.already_saved}}
           <form
             method="post"
-            action="{{ route "slackPresetDelete" user_id=@root.user_id }}"
+            action="{{ route "slackPresetDelete" oauth_id=@root.oauth_id }}"
             onsubmit="return confirm('are you sure?')"
           >
             <input type="hidden" name="_csrf" value="{{@csrfToken}}">
@@ -73,7 +73,7 @@
           <form
             style="display: inline-block"
             method="post"
-            action="{{ route "slackPresetAdd" user_id=@root.user_id }}"
+            action="{{ route "slackPresetAdd" oauth_id=@root.oauth_id }}"
           >
             <input type="hidden" name="_csrf" value="{{@csrfToken}}">
             <input type="hidden" name="status_emoji" value="{{preset.status_emoji}}">

@@ -22,28 +22,30 @@ module.exports = async function settingsSlack(req, res) {
     return;
   }
 
-  if (!(req.params && req.params.user_id)) {
-    const { user_id } = slackOauths[0];
+  if (!(req.params && req.params.oauth_id)) {
+    const { oauth_id } = slackOauths[0];
     res.statusCode = 302;
     res.setHeader(
       "Location",
       new url.URL(
-        req.app.routes.settingsSlack.stringify({ user_id }),
+        req.app.routes.settingsSlack.stringify({ oauth_id }),
         req.absolute
       )
     );
     return;
   }
 
-  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  const user_oauth = slackOauths.find(
+    (o) => o.oauth_id === req.params.oauth_id
+  );
 
   if (!user_oauth) {
-    const { user_id } = slackOauths[0];
+    const { oauth_id } = slackOauths[0];
     res.statusCode = 302;
     res.setHeader(
       "Location",
       new url.URL(
-        req.app.routes.settingsSlack.stringify({ user_id }),
+        req.app.routes.settingsSlack.stringify({ oauth_id }),
         req.absolute
       )
     );
@@ -86,7 +88,7 @@ module.exports = async function settingsSlack(req, res) {
     const { team } = teams[index];
 
     return {
-      oauth_id: o.id,
+      oauth_id: o.oauth_id,
       user_id: o.user_id,
       profile,
       team,
@@ -96,7 +98,7 @@ module.exports = async function settingsSlack(req, res) {
     };
   });
 
-  const activeSlack = slacks.find((s) => s.user_id === user_oauth.user_id);
+  const activeSlack = slacks.find((s) => s.oauth_id === user_oauth.oauth_id);
   activeSlack.is_active = true;
 
   return res.render(tmpl, {

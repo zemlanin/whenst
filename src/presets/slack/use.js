@@ -18,7 +18,9 @@ module.exports = async function slackPresetUse(req, res) {
     return;
   }
 
-  const user_oauth = slackOauths.find((o) => o.user_id === req.params.user_id);
+  const user_oauth = slackOauths.find(
+    (o) => o.oauth_id === req.params.oauth_id
+  );
   if (!user_oauth) {
     res.statusCode = TODO_BAD_REQUEST;
 
@@ -81,7 +83,9 @@ module.exports = async function slackPresetUse(req, res) {
   res.setHeader(
     "Location",
     new url.URL(
-      req.app.routes.slackPresetsList.stringify({ user_id: userId }),
+      req.app.routes.slackPresetsList.stringify({
+        oauth_id: user_oauth.oauth_id,
+      }),
       req.absolute
     )
   );

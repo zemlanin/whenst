@@ -4,7 +4,7 @@
       <ol>
         <li class="no-chevron">
           <a
-            href="{{ route "settingsSlack" user_id=user_id }}"
+            href="{{ route "settingsSlack" oauth_id=oauth_id }}"
             class="current-account"
             {{#if profile.display_name}}
               title="{{profile.display_name}} ({{team.name}})"
@@ -43,7 +43,7 @@
     <div class="current-status">
       <a
         class="status"
-        href="{{ route "slackPresetId" user_id=user_id
+        href="{{ route "slackPresetId" oauth_id=oauth_id
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
         title="Current status"
@@ -54,7 +54,7 @@
         class="deeper"
         style="flex-grow: 0; padding-right: 0;"
         role="presentation"
-        href="{{ route "slackPresetId" user_id=user_id
+        href="{{ route "slackPresetId" oauth_id=oauth_id
           ?status_emoji=current_status.status_emoji
           ?status_text=current_status.status_text }}"
       >❯</a>
