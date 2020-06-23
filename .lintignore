@@ -1,4 +1,4 @@
 .env
 .DS_Store
 node_modules/
-static/normalize.min.css
+static/*.min.css

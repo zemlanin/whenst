@@ -47,7 +47,7 @@ module.exports = async function slackPresetsList(req, res) {
       ORDER BY p.id DESC;
     `);
 
-  const presets = dbPresetsRes.rows.map((presetRow) => {
+  let presets = dbPresetsRes.rows.map((presetRow) => {
     const status_emoji_html = activeSlack.getEmojiHTML(
       presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI,
       true
@@ -67,14 +67,18 @@ module.exports = async function slackPresetsList(req, res) {
 
   if (activeSlack.current_status) {
     const current_status = activeSlack.current_status;
-    for (const preset of presets) {
-      if (
+
+    const already_saved = presets.find(
+      (preset) =>
         preset.status_text === current_status.status_text &&
         preset.status_emoji === current_status.status_emoji
-      ) {
-        preset.is_current_status = true;
-      }
+    );
+
+    if (already_saved) {
+      presets = presets.filter((preset) => preset.id !== already_saved.id);
     }
+
+    activeSlack.current_status.already_saved = already_saved;
   }
 
   return res.render(tmpl, {

@@ -39,25 +39,4 @@
       </div>
     {{/if}}
   </nav>
-  {{#if current_status}}
-    <div class="current-status">
-      <a
-        class="status"
-        href="{{ route "statusIndex"
-          ?status_emoji=current_status.status_emoji
-          ?status_text=current_status.status_text }}"
-        title="Current status"
-      >
-        {{>partials_status current_status}}
-      </a>
-      <a
-        class="deeper"
-        style="flex-grow: 0; padding-right: 0;"
-        role="presentation"
-        href="{{ route "statusIndex"
-          ?status_emoji=current_status.status_emoji
-          ?status_text=current_status.status_text }}"
-      >❯</a>
-    </div>
-  {{/if}}
 </header>

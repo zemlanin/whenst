@@ -19,6 +19,59 @@
     {{/with}}
 
     <div style="padding: 1em 0.5em 0 0.5em;">
+      {{#if activeSlack.current_status}}
+        {{#with activeSlack}}
+          <div class="flex flex-column pb3">
+            <span>{{!-- current status --}}</span>
+            <div class="flex flex-row justify-between">
+              <a
+                class="flex flex-row"
+                href="{{ route "statusIndex"
+                  ?status_emoji=current_status.status_emoji
+                  ?status_text=current_status.status_text }}"
+                title="Current status"
+              >
+                <span class="status">
+                  {{>partials_status current_status}}
+                </span>
+                <span
+                  class="deeper"
+                  role="presentation"
+                >❯</span>
+              </a>
+
+              <div class="flex">
+                <form
+                  method="post"
+                  action="{{ route "statusUse" }}"
+                  onsubmit="return confirm('are you sure?')"
+                >
+                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                  <input type="hidden" name="oauth_id" value="{{oauth_id}}">
+                  <input type="hidden" name="status_emoji" value="">
+                  <input type="hidden" name="status_text" value="">
+                  <button type="submit">clear</button>
+                </form>
+
+                {{#unless current_status.already_saved}}
+                  <form
+                    method="post"
+                    action="{{ route "statusUse" }}"
+                    class="pl2"
+                  >
+                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                    <input type="hidden" name="oauth_id" value="{{oauth_id}}">
+                    <input type="hidden" name="status_emoji" value="{{current_status.status_emoji}}">
+                    <input type="hidden" name="status_text" value="{{current_status.status_text}}">
+                    <button type="submit">save</button>
+                  </form>
+                {{/unless}}
+              </div>
+            </div>
+          </div>
+        {{/with}}
+      {{/if}}
+
       <form
         class="preset-row status-form"
         method="post"

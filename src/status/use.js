@@ -32,12 +32,6 @@ module.exports = async function statusUse(req, res) {
 
   const { status_emoji, status_text } = processPresetForm(req.formBody);
 
-  if (!status_emoji && !status_text) {
-    res.statusCode = TODO_BAD_REQUEST;
-
-    return;
-  }
-
   const db = await req.db();
   const redis = await req.redis();
   const { emoji: teamEmoji } = await getTeamEmojis(
@@ -66,8 +60,8 @@ module.exports = async function statusUse(req, res) {
     {
       token: user_oauth.access_token,
       profile: {
-        status_text: slackApi.escapeStatusText(status_text),
-        status_emoji: status_emoji ? `:${status_emoji}:` : status_emoji,
+        status_text: status_text ? slackApi.escapeStatusText(status_text) : "",
+        status_emoji: status_emoji ? `:${status_emoji}:` : null,
       },
     },
     "application/json"
