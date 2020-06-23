@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "bin": "index.js",
+  "bin": [
+    "index.js",
+    "migrate.js"
+  ],
   "scripts": {
     "test": "mocha \"./{src,test}/**/*.test.js\"",
     "lint": "npm run eslint && npm run prettier -- -c",

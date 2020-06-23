@@ -2,7 +2,6 @@
 
 const url = require("url");
 const http = require("http");
-const path = require("path");
 const util = require("util");
 
 const pg = require("pg");
@@ -392,23 +391,6 @@ function start() {
 
       await client.end();
     })
-    .then(
-      config.production
-        ? null
-        : async function migrate() {
-            const marv = require("marv/api/promise");
-            const driver = require("marv-pg-driver");
-            const directory = path.resolve("migrations");
-
-            const migrations = await marv.scan(directory);
-            await marv.migrate(
-              migrations,
-              driver({
-                connection: config.pg,
-              })
-            );
-          }
-    )
     .then(() => {
       server.on("clientError", (err, socket) => {
         socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
