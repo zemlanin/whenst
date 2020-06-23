@@ -50,7 +50,13 @@
                   <input type="hidden" name="oauth_id" value="{{oauth_id}}">
                   <input type="hidden" name="status_emoji" value="">
                   <input type="hidden" name="status_text" value="">
-                  <button type="submit" title="clear">×</button>
+                  <button type="submit" title="clear">
+                    {{#if current_status.already_saved}}
+                      clear
+                    {{else}}
+                      ×
+                    {{/if}}
+                  </button>
                 </form>
 
                 {{#unless current_status.already_saved}}
