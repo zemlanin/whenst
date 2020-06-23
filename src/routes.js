@@ -19,6 +19,7 @@ const routes = [
 
   ["GET /status", require("./status/index.js")],
   ["POST /status/use", require("./status/use.js")],
+  ["POST /status/bulk", require("./status/bulk.js")],
 
   ["GET /settings", require("./settings/index.js")],
   ["GET /a/:oauth_id", require("./settings/slack.js")],

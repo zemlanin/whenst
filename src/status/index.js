@@ -17,11 +17,12 @@ const tmpl = require.resolve("./templates/index.handlebars");
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function statusIndex(req, res) {
-  let { status_text, status_emoji } = processPresetForm(
-    new url.URL(req.url, req.absolute).searchParams
-  );
+  const formBody = new url.URL(req.url, req.absolute).searchParams;
+
+  let { status_text, status_emoji } = processPresetForm(formBody);
 
   if (!status_emoji && !status_text) {
+    // TODO: empty status page to clear account statuses
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
@@ -52,6 +53,21 @@ module.exports = async function statusIndex(req, res) {
     const { emoji: teamEmoji } = teamEmojis[index];
     const getEmojiHTML = emojiHTMLGetter(teamEmoji);
 
+    let status = null;
+    if (profile.status_text || profile.status_emoji) {
+      const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
+
+      status = {
+        status_emoji: profile.status_emoji,
+        status_text: profile.status_text,
+        status_emoji_html: status_emoji_html.html,
+        status_text_html: getEmojiHTML(
+          Handlebars.escapeExpression(profile.status_text)
+        ).html,
+        unknown_emoji: status_emoji_html.unknown_emoji,
+      };
+    }
+
     return {
       oauth_id: o.oauth_id,
       user_id: o.user_id,
@@ -60,6 +76,7 @@ module.exports = async function statusIndex(req, res) {
       teamEmoji,
       getEmojiHTML,
       is_active: o.oauth_id === activeSlack.oauth_id,
+      status,
     };
   });
 
@@ -130,5 +147,6 @@ module.exports = async function statusIndex(req, res) {
     status,
     slacks,
     slackPresets,
+    select_all: formBody.get("select") === "all",
   });
 };
