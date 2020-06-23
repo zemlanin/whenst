@@ -183,6 +183,7 @@ a:visited {
 .icon-group {
   display: inline-block;
   height: 2.6em;
+  width: 2.6em;
   position: relative;
   line-height: 0;
   padding-right: 0.5em;
