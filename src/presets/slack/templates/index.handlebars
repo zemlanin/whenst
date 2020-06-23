@@ -23,7 +23,7 @@
         {{#with activeSlack}}
           <div class="flex flex-column pb3">
             <span>{{!-- current status --}}</span>
-            <div class="flex flex-row justify-between">
+            <div class="flex flex-row justify-between items-center">
               <a
                 class="flex flex-row"
                 href="{{ route "statusIndex"
@@ -109,7 +109,6 @@
           class="preset-row"
           method="post"
           action="{{ route "statusUse" }}"
-          {{#if is_current_status}}disabled{{/if}}
           {{#if unknown_emoji}}disabled{{/if}}
         >
           <a
@@ -133,14 +132,10 @@
           <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
           <input type="hidden" name="status_emoji" value="{{status_emoji}}">
           <input type="hidden" name="status_text" value="{{status_text}}">
-          {{#if is_current_status}}
-            <button type="submit" disabled>current</button>
+          {{#if unknown_emoji}}
+            <button type="submit" disabled>unknown emoji</button>
           {{else}}
-            {{#if unknown_emoji}}
-              <button type="submit" disabled>unknown emoji</button>
-            {{else}}
-              <button type="submit">use</button>
-            {{/if}}
+            <button type="submit">use</button>
           {{/if}}
         </form>
       {{/each}}
