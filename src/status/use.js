@@ -1,42 +1,28 @@
 const url = require("url");
 
-const nodeEmoji = require("node-emoji");
-
 const slackApi = require("../external/slack.js");
-const {
-  processPresetForm,
-  getTeamEmojis,
-} = require("../presets/slack/common.js");
+const { processPresetForm } = require("../presets/slack/common.js");
 
 const TODO_BAD_REQUEST = 400;
 
-const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji);
-
 async function bulkUse(req, res, user_oauths, status_emoji, status_text) {
-  const db = await req.db();
   const redis = await req.redis();
 
   for (const user_oauth of user_oauths) {
-    const { emoji: teamEmoji } = await getTeamEmojis(
-      db,
-      redis,
-      user_oauth.access_token,
-      user_oauth.team_id
-    );
+    // TODO: handle custom emoji
+    // if (status_emoji) {
+    //   const isCommonEmoji = DEFAULT_EMOJI_LIST.some(
+    //     (name) => name === status_emoji
+    //   );
 
-    if (status_emoji) {
-      const isCommonEmoji = DEFAULT_EMOJI_LIST.some(
-        (name) => name === status_emoji
-      );
+    //   if (!isCommonEmoji) {
+    //     if (!Object.keys(teamEmoji).some((name) => name === status_emoji)) {
+    //       res.statusCode = TODO_BAD_REQUEST;
 
-      if (!isCommonEmoji) {
-        if (!Object.keys(teamEmoji).some((name) => name === status_emoji)) {
-          res.statusCode = TODO_BAD_REQUEST;
-
-          return;
-        }
-      }
-    }
+    //       return;
+    //     }
+    //   }
+    // }
 
     const slackResp = await slackApi.apiPost(
       "users.profile.set",

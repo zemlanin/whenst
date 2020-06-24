@@ -59,7 +59,7 @@ module.exports = async function authSlack(req, res) {
         if (!req.session.account_id) {
           req.session.account_id = existing_oauth.account_id;
         } else if (req.session.account_id !== existing_oauth.account_id) {
-          req.session.account_id_to_merge = existing_oauth.account_id;
+          req.session.slack_oauth_id_to_merge = existing_oauth.id;
         }
       } else {
         let account_id = req.session.account_id;
@@ -101,8 +101,13 @@ module.exports = async function authSlack(req, res) {
   }
 
   res.statusCode = 302;
-  res.setHeader(
-    "Location",
-    new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
-  );
+
+  if (req.session.slack_oauth_id_to_merge) {
+    res.setHeader("Location", req.app.routes.authMerge.stringify());
+  } else {
+    res.setHeader(
+      "Location",
+      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+    );
+  }
 };

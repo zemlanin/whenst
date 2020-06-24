@@ -1,0 +1,53 @@
+{{>partials_head}}
+<body>
+  <div id="layout">
+    {{> partials_topbar }}
+
+    {{#with targetOauth}}
+      <p>
+        This {{service}} user is already linked to another account
+      </p>
+    {{/with}}
+
+    <p>
+      Linking it to the current account will:
+      <ul>
+        <li>
+          move {{accountToMerge.oauths.length}} linked users:
+          <ul>
+            {{#each accountToMerge.oauths}}
+              <li>
+                {{#if profile.display_name}}
+                  {{profile.display_name}}
+                {{else}}
+                  {{profile.real_name}}
+                {{/if}}
+                ({{team.name}} {{service}})
+              </li>
+            {{/each}}
+          </ul>
+        </li>
+        <li>combine presets from both accounts</li>
+        <li>logout everyone from another account</li>
+      </ul>
+    </p>
+
+    <div class="flex flex-row justify-around pb4">
+      <form method="POST"
+        action="{{ route "authMerge" }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <button type="submit" name="action" value="proceed">Link anyway</button>
+      </form>
+
+      <form method="POST"
+        action="{{ route "authMerge" }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <button type="submit" name="action" value="cancel">Don't link</button>
+      </form>
+    </div>
+
+    {{> partials_footer . }}
+  </div>
+</body>

@@ -11,6 +11,8 @@ const routes = [
   ["GET /cdn/*", require("./cdn.js"), CDN],
 
   ["GET /auth/slack", require("./auth/slack.js")],
+  ["GET /auth/merge", require("./auth/merge.js")],
+  ["POST /auth/merge", require("./auth/merge.js")],
   ["POST /auth/logout", require("./auth/logout.js")],
   ["POST /auth/unlink", require("./auth/unlink.js")],
 
