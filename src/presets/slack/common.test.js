@@ -8,7 +8,11 @@ describe("/presets/slack/common", () => {
       const cases = [
         [
           { status_text: ">", status_emoji: "" },
-          { status_emoji: "speech_balloon", status_text: ">" },
+          {
+            status_emoji: "speech_balloon",
+            status_text: ">",
+            default_status_emoji: true,
+          },
         ],
         [
           { status_text: ">", status_emoji: "slack" },
@@ -32,13 +36,18 @@ describe("/presets/slack/common", () => {
         ],
         [
           { status_text: "hello world", status_emoji: "" },
-          { status_emoji: "speech_balloon", status_text: "hello world" },
+          {
+            status_emoji: "speech_balloon",
+            status_text: "hello world",
+            default_status_emoji: true,
+          },
         ],
         [
           { status_text: ":banana: :phone:", status_emoji: "" },
           {
             status_emoji: "speech_balloon",
             status_text: ":banana: :phone:",
+            default_status_emoji: true,
           },
         ],
       ];

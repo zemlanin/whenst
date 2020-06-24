@@ -33,10 +33,9 @@ module.exports = async function authSlack(req, res) {
   const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
 
   if (slackResp.ok) {
-    let slack_oauth_id;
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id, scopes, revoked from slack_oauth
+        SELECT id, account_id, scopes, revoked from slack_oauth
         WHERE access_token = ${slackResp.access_token}
         LIMIT 1;
       `);
@@ -49,8 +48,6 @@ module.exports = async function authSlack(req, res) {
           return;
         }
 
-        slack_oauth_id = existingOauthResp.rows[0].id;
-
         if (existing_oauth.scopes.join(",") !== slackResp.scope) {
           await db.query(sql`
             UPDATE slack_oauth
@@ -58,10 +55,29 @@ module.exports = async function authSlack(req, res) {
             WHERE access_token = ${slackResp.access_token};
           `);
         }
+
+        if (!req.session.account_id) {
+          req.session.account_id = existing_oauth.account_id;
+        } else if (req.session.account_id !== existing_oauth.account_id) {
+          req.session.account_id_to_merge = existing_oauth.account_id;
+        }
       } else {
-        const dbOauthResp = await db.query(sql`
+        let account_id = req.session.account_id;
+
+        if (!account_id) {
+          const dbAccountResp = await db.query(sql`
+            INSERT INTO account DEFAULT VALUES RETURNING id;
+          `);
+
+          account_id = dbAccountResp.rows[0].id;
+
+          req.session.account_id = account_id;
+        }
+
+        await db.query(sql`
           INSERT INTO
           slack_oauth (
+            account_id,
             access_token,
             scopes,
             user_id,
@@ -69,6 +85,7 @@ module.exports = async function authSlack(req, res) {
             enterprise_id
           )
           VALUES (
+            ${account_id},
             ${slackResp.access_token},
             ${slackResp.scope.split(",")},
             ${slackResp.user_id},
@@ -77,19 +94,8 @@ module.exports = async function authSlack(req, res) {
           )
           RETURNING id;
         `);
-
-        slack_oauth_id = dbOauthResp.rows[0].id;
       }
     });
-
-    if (req.session.slack_oauth_ids) {
-      req.session.slack_oauth_ids = [
-        slack_oauth_id,
-        ...req.session.slack_oauth_ids.filter((id) => id !== slack_oauth_id),
-      ];
-    } else {
-      req.session.slack_oauth_ids = [slack_oauth_id];
-    }
   } else {
     console.error(slackResp.error);
   }
@@ -97,11 +103,6 @@ module.exports = async function authSlack(req, res) {
   res.statusCode = 302;
   res.setHeader(
     "Location",
-    new url.URL(
-      req.app.routes.slackPresetsList.stringify({
-        user_id: slackResp.user_id,
-      }),
-      req.absolute
-    )
+    new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
   );
 };

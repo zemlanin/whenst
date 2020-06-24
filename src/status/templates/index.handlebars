@@ -1,31 +1,7 @@
 {{>partials_head}}
 <body>
   <div id="layout">
-    {{#with activeSlack}}
-      {{#> partials_topbar
-        oauth_id=oauth_id
-        profile=profile
-        team=team
-      }}
-        {{#*inline "breadcrumbs"}}
-          <li>
-            <a href="{{ route "slackPresetsList" oauth_id=oauth_id }}">
-              presets
-            </a>
-          </li>
-          <li>
-            <a
-              href="{{ route "statusIndex"
-                ?status_emoji=@root.status.status_emoji
-                ?status_text=@root.status.status_text }}"
-              title="preset"
-            >
-              🔗
-            </a>
-          </li>
-        {{/inline}}
-      {{/ partials_topbar }}
-    {{/with}}
+    {{> partials_topbar }}
 
     <div style="padding: 1em 0.5em 3em 0.5em;">
       <div style="text-align: center;">
@@ -34,6 +10,27 @@
         </span>
       </div>
     </div>
+
+    {{#if already_saved}}
+      <form
+        method="POST"
+        action="{{ route "presetDelete" }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input type="hidden" name="id" value="{{already_saved.id}}">
+        <button type="submit" onclick="return confirm('are you sure?')">delete</button>
+      </form>
+    {{else}}
+      <form
+        method="POST"
+        action="{{ route "presetSave" }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+        <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+        <button type="submit">save</button>
+      </form>
+    {{/if}}
 
     <div style="padding: 1em 0.5em 0 0.5em;">
       <div class="flex flex-row pb3 justify-between">
@@ -47,14 +44,12 @@
         <form
           id="bulk"
           method="POST"
-          action="{{ route "statusBulk" }}"
+          action="{{ route "statusUse" }}"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
           <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit" name="action" value="save">save</button>
-          <button type="submit" name="action" value="delete" onclick="return confirm('are you sure?')">delete</button>
-          <button type="submit" name="action" value="use">use</button>
+          <button type="submit">use</button>
         </form>
       </div>
       {{#each slacks}}
@@ -102,33 +97,6 @@
 
           <div class="flex flex-row">
             {{#with (lookup @root.slackPresets [oauth_id])}}
-              {{#if already_saved}}
-                <form
-                  method="post"
-                  action="{{ route "slackPresetDelete" }}"
-                  onsubmit="return confirm('are you sure?')"
-                  class="pl2"
-                >
-                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                  <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
-                  <input type="hidden" name="id" value="{{already_saved.id}}">
-                  <button type="submit" class="danger">delete</button>
-                </form>
-              {{else}}
-                <form
-                  style="display: inline-block"
-                  method="post"
-                  action="{{ route "slackPresetAdd" }}"
-                  class="pl2"
-                >
-                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                  <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
-                  <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-                  <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-                  <button type="submit">save</button>
-                </form>
-              {{/if}}
-
               {{#unless is_current_status}}
                 <form
                   method="post"
@@ -137,13 +105,13 @@
                   {{#if unknown_emoji}}disabled{{/if}}
                 >
                   <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                  <input type="hidden" name="oauth_id" value="{{@root.activeSlack.oauth_id}}">
+                  <input type="hidden" name="oauth_id" value="{{../oauth_id}}">
                   <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
                   <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
                   {{#if unknown_emoji}}
-                    <button type="submit" class="primary" disabled>unknown emoji</button>
+                    <button type="submit" disabled>unknown emoji</button>
                   {{else}}
-                    <button type="submit" class="primary">use</button>
+                    <button type="submit">use</button>
                   {{/if}}
                 </form>
               {{/unless}}

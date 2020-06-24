@@ -162,7 +162,11 @@ function processPresetForm(body) {
   } else if (!status_emoji && !status_text) {
     return {};
   } else if (!body_status_emoji) {
-    return { status_emoji: slackApi.DEFAULT_STATUS_EMOJI, status_text };
+    return {
+      status_emoji: slackApi.DEFAULT_STATUS_EMOJI,
+      status_text,
+      default_status_emoji: true,
+    };
   }
 
   return { status_emoji, status_text };

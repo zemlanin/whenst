@@ -2,11 +2,11 @@ const url = require("url");
 
 const sql = require("pg-template-tag").default;
 
-const { processPresetForm } = require("./common.js");
+const { processPresetForm } = require("./slack/common.js");
 
 const TODO_BAD_REQUEST = 400;
 
-module.exports = async function slackPresetAdd(req, res) {
+module.exports = async function presetSave(req, res) {
   const { status_emoji, status_text } = processPresetForm(req.formBody);
 
   if (!status_emoji && !status_text) {
@@ -15,19 +15,9 @@ module.exports = async function slackPresetAdd(req, res) {
     return;
   }
 
-  const slackOauths = await req.getSlackOauths();
+  const account = await req.getAccount();
 
-  if (!slackOauths.length) {
-    res.statusCode = TODO_BAD_REQUEST;
-
-    return;
-  }
-
-  const user_oauth = slackOauths.find(
-    (o) => o.oauth_id === req.formBody.get("oauth_id")
-  );
-
-  if (!user_oauth) {
+  if (!account) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;
@@ -36,13 +26,13 @@ module.exports = async function slackPresetAdd(req, res) {
   const db = await req.db();
 
   await db.query(sql`
-    INSERT INTO slack_preset (
-      slack_user_id,
+    INSERT INTO status_preset (
+      account_id,
       status_text,
       status_emoji
     )
     VALUES (
-      ${user_oauth.user_id},
+      ${account.id},
       ${status_text},
       ${status_emoji}
     )
@@ -53,11 +43,6 @@ module.exports = async function slackPresetAdd(req, res) {
   res.statusCode = 303;
   res.setHeader(
     "Location",
-    new url.URL(
-      req.app.routes.slackPresetsList.stringify({
-        oauth_id: user_oauth.oauth_id,
-      }),
-      req.absolute
-    )
+    new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
   );
 };

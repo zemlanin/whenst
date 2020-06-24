@@ -4,16 +4,12 @@ const config = require("../config.js");
 const tmpl = require.resolve("./templates/index.handlebars");
 
 module.exports = async function landing(req, res) {
-  const slackOauths = await req.getSlackOauths();
-  if (slackOauths.length) {
-    const { user_id } = slackOauths[0];
+  const account = await req.getAccount();
+  if (account) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      new url.URL(
-        req.app.routes.slackPresetsList.stringify({ user_id }),
-        req.absolute
-      )
+      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
     );
     return;
   }

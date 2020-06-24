@@ -235,7 +235,10 @@ a.status {
 }
 
 .status .status_emoji .not-found {
-  font-family: inherit;
+  font-family: "iA Writer Quattro S", "SF Mono", "Menlo-Regular", Consolas,
+    "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter",
+    "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono",
+    "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
   color: gray;
 }
 

@@ -1,42 +1,5 @@
-<header id="topbar">
-  <nav>
-    {{#if profile }}
-      <ol>
-        <li class="no-chevron">
-          <a
-            href="{{ route "settingsSlack" oauth_id=oauth_id }}"
-            class="current-account"
-            {{#if profile.display_name}}
-              title="{{profile.display_name}} ({{team.name}})"
-            {{else}}
-              title="{{profile.real_name}} ({{team.name}})"
-            {{/if}}
-          >
-            <span class="icon-group">
-              <img
-                src="{{profile.image_72}}"
-                {{#if profile.display_name}}
-                  alt="{{profile.display_name}} ({{team.name}})"
-                {{else}}
-                  alt="{{profile.real_name}} ({{team.name}})"
-                {{/if}}
-              >
-              {{#unless team.icon.image_default}}
-                <img
-                  src="{{team.icon.image_44}}"
-                  alt="{{team.name}}"
-                  class="team-icon"
-                >
-              {{/unless}}
-            </span>
-          </a>
-        </li>
-      {{#> breadcrumbs . }}{{/ breadcrumbs }}
-      </ol>
-    {{else}}
-      <div style="image-rendering: pixelated; image-rendering: crisp-edges; text-align: center; width: 100%; padding-top: 0.5em">
-        <a href="/"><img src="{{ asset "logo-white.png" }}"></a>
-      </div>
-    {{/if}}
-  </nav>
-</header>
+<nav>
+  <a href="{{ route "presetsIndex" }}">presets</a>
+
+  <a href="{{ route "settingsIndex" }}">settings</a>
+</nav>

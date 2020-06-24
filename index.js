@@ -17,37 +17,13 @@ const config = require("./src/config.js");
 const routes = require("./src/routes.js");
 const renderMiddleware = require("./src/render.js");
 
-const {
-  getProfile,
-  getTeam,
-  getTeamEmojis,
-  emojiHTMLGetter,
-} = require("./src/presets/slack/common.js");
+const { getProfile, getTeam } = require("./src/presets/slack/common.js");
+
+const { getEmojiHTML } = require("./src/presets/common.js");
+
 const slackApi = require("./src/external/slack.js");
 
 const app = connect();
-
-// https://github.com/expressjs/body-parser/issues/208#issuecomment-263805902
-function rawBodyVerifyHack(req, res, buf, _encoding) {
-  if (!req.rawBody) {
-    req.rawBody = buf;
-  }
-}
-
-app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
-app.use(bodyParser.urlencoded({ extended: false, verify: rawBodyVerifyHack })); // req.body
-app.use((req, res, next) => {
-  if (
-    req.headers["content-type"] === "application/x-www-form-urlencoded" &&
-    req.body
-  ) {
-    req.formBody = new url.URLSearchParams(req.body);
-  } else {
-    req.formBody = new url.URLSearchParams();
-  }
-
-  next();
-});
 
 app.use((req, res, next) => {
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
@@ -63,6 +39,38 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// https://github.com/expressjs/body-parser/issues/208#issuecomment-263805902
+function rawBodyVerifyHack(req, res, buf, _encoding) {
+  if (!req.rawBody) {
+    req.rawBody = buf;
+  }
+}
+
+app.use(bodyParser.json({ verify: rawBodyVerifyHack })); // req.body
+app.use(bodyParser.urlencoded({ extended: false, verify: rawBodyVerifyHack })); // req.body
+app.use((req, res, next) => {
+  const decodedURL = new url.URL(req.url, req.absolute).searchParams;
+
+  if (
+    req.headers["content-type"] === "application/x-www-form-urlencoded" &&
+    req.body
+  ) {
+    req.formBody = new url.URLSearchParams(req.body);
+    const decodedFormKeys = new Set(req.formBody.keys());
+
+    for (const [name, value] of decodedURL) {
+      if (!decodedFormKeys.has(name)) {
+        req.formBody.append(name, value);
+      }
+    }
+  } else {
+    req.formBody = decodedURL;
+  }
+
+  next();
+});
+
 app.use(renderMiddleware); // res.render
 
 app.use(function dbMiddleware(req, res, next) {
@@ -150,6 +158,86 @@ app.use(
   })
 );
 
+app.use(function accountAuthMiddleware(req, res, next) {
+  req.getAccount = async function getAccount() {
+    if (req.session.account_id_to_merge) {
+      // redirectToMergePage()
+      throw new Error();
+    }
+
+    if (!req.session.account_id) {
+      return null;
+    }
+
+    const db = await req.db();
+
+    const dbAccountRes = await db.query(sql`
+      SELECT a.id
+      FROM account a
+      WHERE a.id = ${req.session.account_id}
+      LIMIT 1;
+    `);
+
+    if (!dbAccountRes.rows.length) {
+      return null;
+    }
+
+    const account_id = dbAccountRes.rows[0].id;
+
+    const dbSlackOauthRes = await db.query(sql`
+      SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
+      WHERE s.account_id = ${account_id} AND s.revoked = false
+      -- DISTINCT ON s.user_id;
+    `);
+
+    const redis = await req.redis();
+
+    const oauths = [];
+
+    if (!dbSlackOauthRes.rows.length) {
+      return null;
+    }
+
+    for (const row of dbSlackOauthRes.rows) {
+      const { access_token, user_id, team_id } = row;
+
+      const { profile } = await getProfile(db, redis, access_token, user_id);
+      const { team } = await getTeam(db, redis, access_token, team_id);
+
+      let current_status = null;
+      if (profile.status_text || profile.status_emoji) {
+        const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
+
+        current_status = {
+          status_emoji: profile.status_emoji,
+          status_text: slackApi.decodeStatusText(profile.status_text),
+          status_emoji_html: status_emoji_html.html,
+          status_text_html: getEmojiHTML(profile.status_text).html,
+          unknown_emoji: status_emoji_html.unknown_emoji,
+        };
+      }
+
+      oauths.push({
+        service: "slack",
+        profile,
+        team,
+        user_id,
+        oauth_id: row.id,
+        access_token,
+        current_status,
+      });
+    }
+
+    return {
+      id: account_id,
+      account_id,
+      oauths,
+    };
+  };
+
+  next();
+});
+
 app.use(function slackAuthMiddleware(req, res, next) {
   let oauthTokens;
 
@@ -191,66 +279,6 @@ app.use(function slackAuthMiddleware(req, res, next) {
     });
 
     return oauthTokens;
-  };
-
-  req.getActiveSlack = async function () {
-    const slackOauths = await req.getSlackOauths();
-
-    if (!slackOauths.length) {
-      return null;
-    }
-
-    let user_oauth;
-
-    if (req.params && req.params.oauth_id) {
-      user_oauth = slackOauths.find((o) => o.oauth_id === req.params.oauth_id);
-    } else {
-      user_oauth = slackOauths[0];
-    }
-
-    if (!user_oauth) {
-      return null;
-    }
-
-    const { oauth_id, access_token, user_id, team_id } = user_oauth;
-
-    const db = await req.db();
-    const redis = await req.redis();
-
-    const { profile } = await getProfile(db, redis, access_token, user_id);
-    const { team } = await getTeam(db, redis, access_token, team_id);
-
-    const { emoji: teamEmoji } = await getTeamEmojis(
-      db,
-      redis,
-      access_token,
-      team_id
-    );
-
-    let current_status = null;
-    const getEmojiHTML = emojiHTMLGetter(teamEmoji);
-
-    if (profile.status_text || profile.status_emoji) {
-      const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
-
-      current_status = {
-        status_emoji: profile.status_emoji,
-        status_text: slackApi.decodeStatusText(profile.status_text),
-        status_emoji_html: status_emoji_html.html,
-        status_text_html: getEmojiHTML(profile.status_text).html,
-        unknown_emoji: status_emoji_html.unknown_emoji,
-      };
-    }
-
-    return {
-      user_id,
-      oauth_id,
-      profile,
-      team,
-      teamEmoji,
-      getEmojiHTML,
-      current_status,
-    };
   };
 
   next();

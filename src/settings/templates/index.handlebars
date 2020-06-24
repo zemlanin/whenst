@@ -1,0 +1,74 @@
+{{>partials_head}}
+<body>
+  <div id="layout">
+    {{>partials_topbar}}
+
+    <div style="padding: 1em 0.5em 0 0.5em;">
+      <h2>Accounts</h2>
+      <div>
+        {{#each slacks}}
+            <div class="preset-row">
+              <span style="padding-right: 0.2em;">
+                <span class="icon-group">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
+                    <img
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
+                      class="team-icon"
+                    >
+                  {{/unless}}
+                </span>
+              </span>
+              <strong>
+                {{#if profile.display_name}}
+                  {{profile.display_name}}
+                {{else}}
+                  {{profile.real_name}}
+                {{/if}}
+                ({{team.name}})
+              </strong>
+              <div style="flex-grow: 1"></div>
+              <form method="POST" action="{{ route "authUnlink" }}">
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="service" value="slack">
+                <input type="hidden" name="oauth_id" value="{{oauth_id}}">
+                <button type="submit">unlink</button>
+              </form>
+            </div>
+        {{/each}}
+        <div class="preset-row">
+          <span style="padding-right: 0.2em;">
+            <strong>
+              link another account
+            </strong>
+          </span>
+          <div style="flex-grow: 1"></div>
+          {{#with slackAuth}}
+            <form method="GET" action="https://slack.com/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">slack</button>
+            </form>
+          {{/with}}
+        </div>
+
+        <form method="POST" action="{{ route "authLogout" }}">
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <button type="submit">logout</button>
+        </form>
+      </div>
+    </div>
+    {{> partials_footer . }}
+
+  </div>
+</body>

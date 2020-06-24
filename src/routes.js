@@ -12,17 +12,20 @@ const routes = [
 
   ["GET /auth/slack", require("./auth/slack.js")],
   ["POST /auth/logout", require("./auth/logout.js")],
+  ["POST /auth/unlink", require("./auth/unlink.js")],
 
-  ["GET (/a/:oauth_id)/presets", require("./presets/slack/list.js")],
-  ["POST /presets/add", require("./presets/slack/add.js")],
-  ["POST /presets/delete", require("./presets/slack/delete.js")],
+  ["GET /presets", require("./presets/index.js")],
+  ["POST /presets/save", require("./presets/save.js")],
+  ["POST /presets/delete", require("./presets/delete.js")],
 
   ["GET /status", require("./status/index.js")],
   ["POST /status/use", require("./status/use.js")],
-  ["POST /status/bulk", require("./status/bulk.js")],
 
   ["GET /settings", require("./settings/index.js")],
-  ["GET /a/:oauth_id", require("./settings/slack.js")],
+  // ["GET /account", require("./accounts/index.js")],
+  // ["GET /account/slack(/:user_id)", require("./account/slack.js")],
+  // ["POST /account/merge", require("./account/merge.js")],
+  // ["GET /a/:oauth_id", require("./settings/slack.js")],
 ];
 
 const handlers = routes.reduce((acc, [route, handler]) => {

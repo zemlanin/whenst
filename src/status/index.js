@@ -8,10 +8,10 @@ const slackApi = require("../external/slack.js");
 const {
   getProfile,
   getTeam,
-  getTeamEmojis,
-  emojiHTMLGetter,
   processPresetForm,
 } = require("../presets/slack/common.js");
+
+const { getEmojiHTML } = require("../presets/common.js");
 
 const tmpl = require.resolve("./templates/index.handlebars");
 const TODO_BAD_REQUEST = 400;
@@ -28,12 +28,14 @@ module.exports = async function statusIndex(req, res) {
     return;
   }
 
-  const activeSlack = await req.getActiveSlack();
+  const account = await req.getAccount();
 
   const db = await req.db();
   const redis = await req.redis();
 
-  const slackOauths = await req.getSlackOauths();
+  const slackOauths = account
+    ? account.oauths.filter((o) => o.service === "slack")
+    : [];
 
   const profiles = await Promise.all(
     slackOauths.map((o) => getProfile(db, redis, o.access_token, o.user_id))
@@ -43,15 +45,9 @@ module.exports = async function statusIndex(req, res) {
     slackOauths.map((o) => getTeam(db, redis, o.access_token, o.team_id))
   );
 
-  const teamEmojis = await Promise.all(
-    slackOauths.map((o) => getTeamEmojis(db, redis, o.access_token, o.team_id))
-  );
-
   const slacks = slackOauths.map((o, index) => {
     const { team } = teams[index];
     const { profile } = profiles[index];
-    const { emoji: teamEmoji } = teamEmojis[index];
-    const getEmojiHTML = emojiHTMLGetter(teamEmoji);
 
     let status = null;
     if (profile.status_text || profile.status_emoji) {
@@ -73,16 +69,9 @@ module.exports = async function statusIndex(req, res) {
       user_id: o.user_id,
       profile,
       team,
-      teamEmoji,
-      getEmojiHTML,
-      is_active: o.oauth_id === activeSlack.oauth_id,
       status,
     };
   });
-
-  const getEmojiHTML = activeSlack
-    ? activeSlack.getEmojiHTML
-    : emojiHTMLGetter();
 
   const status_emoji_html = getEmojiHTML(status_emoji, true);
 
@@ -95,36 +84,34 @@ module.exports = async function statusIndex(req, res) {
     unknown_emoji: status_emoji_html.unknown_emoji,
   };
 
-  let existingSlackPresets = [];
+  let already_saved = null;
 
   if (status_emoji && status_emoji !== slackApi.DEFAULT_STATUS_EMOJI) {
-    existingSlackPresets = (
+    already_saved = (
       await db.query(sql`
-        SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-        WHERE p.slack_user_id = ANY(${slacks.map((s) => s.user_id)})
+        SELECT p.id, p.account_id, p.status_text, p.status_emoji FROM status_preset p
+        WHERE p.account_id = ${account.id}
           AND p.status_text = ${status_text}
           AND p.status_emoji = ${status_emoji}
         ORDER BY p.id DESC
         LIMIT 1;
       `)
-    ).rows;
+    ).rows[0];
   } else {
-    existingSlackPresets = (
+    already_saved = (
       await db.query(sql`
-        SELECT p.id, p.slack_user_id, p.status_text, p.status_emoji FROM slack_preset p
-        WHERE p.slack_user_id = ANY(${slacks.map((s) => s.user_id)})
+        SELECT p.id, p.account_id, p.status_text, p.status_emoji FROM status_preset p
+        WHERE p.account_id = ${account.id}
           AND p.status_text = ${status_text}
-          AND (p.status_emoji = '' OR p.status_emoji = ${
-            slackApi.DEFAULT_STATUS_EMOJI
-          })
+          AND (p.status_emoji = '' OR p.status_emoji = ${slackApi.DEFAULT_STATUS_EMOJI})
         ORDER BY p.id DESC
         LIMIT 1;
       `)
-    ).rows;
+    ).rows[0];
   }
 
   const slackPresets = slacks.reduce((acc, slack) => {
-    const { profile, user_id, getEmojiHTML } = slack;
+    const { profile } = slack;
 
     acc[slack.oauth_id] = {
       is_current_status: Boolean(
@@ -133,9 +120,6 @@ module.exports = async function statusIndex(req, res) {
             (!status.status_emoji &&
               profile.status_emoji === slackApi.DEFAULT_STATUS_EMOJI))
       ),
-      already_saved: existingSlackPresets.find(
-        (p) => p.slack_user_id === user_id
-      ),
       unknown_emoji: getEmojiHTML(status.status_emoji, true).unknown_emoji,
     };
 
@@ -143,8 +127,9 @@ module.exports = async function statusIndex(req, res) {
   }, {});
 
   return res.render(tmpl, {
-    activeSlack,
+    account,
     status,
+    already_saved,
     slacks,
     slackPresets,
     select_all: formBody.get("select") === "all",
