@@ -63,13 +63,8 @@ module.exports = {
     });
 
     const { data } = await githubPost("graphql", encodedBody, headers);
-    if (data.profile) {
-      if (
-        data.profile.status.emoji &&
-        data.profile.status.emoji.match(INSIDE_COLONS_REGEX)
-      ) {
-        data.profile.status.emoji = data.profile.status.emoji.slice(1, -1);
-      }
+    if (data.profile.status?.emoji?.match(INSIDE_COLONS_REGEX)) {
+      data.profile.status.emoji = data.profile.status.emoji.slice(1, -1);
     }
 
     return data;

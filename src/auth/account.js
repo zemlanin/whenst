@@ -80,7 +80,7 @@ async function getAccount(db, redis, id) {
     const { profile } = await githubApi.getProfile(access_token);
 
     let current_status = null;
-    if (profile.status.emoji || profile.status.message) {
+    if (profile.status?.emoji || profile.status?.message) {
       current_status = normalizeStatus(
         {
           status_emoji: profile.status.emoji,

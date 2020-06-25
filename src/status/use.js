@@ -33,7 +33,6 @@ async function bulkUse(req, res, user_oauths, status_emoji, status_text) {
       const userId = user_oauth.user_id;
       await redis.del(`slack:users.profile.get:${userId}`);
     } else if (user_oauth.service === "github") {
-      console.log(arguments);
       const githubResp = await githubApi.setStatus(user_oauth.access_token, {
         emoji: status_emoji ? `:${status_emoji}:` : null,
         message: status_text ? githubApi.escapeStatusText(status_text) : "",

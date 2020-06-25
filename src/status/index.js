@@ -81,8 +81,8 @@ module.exports = async function statusIndex(req, res) {
   statusOnServices.github = githubs.reduce((acc, { oauth_id, profile }) => {
     const normalizedProfileStatus = normalizeStatus(
       {
-        status_emoji: profile.status.emoji,
-        status_text: profile.status.message,
+        status_emoji: profile.status?.emoji,
+        status_text: profile.status?.message,
       },
       { behavior: normalizeStatus.BEHAVIOR.github }
     );
