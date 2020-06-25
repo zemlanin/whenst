@@ -28,9 +28,24 @@ module.exports = async function authUnlink(req, res) {
       DELETE FROM slack_oauth
       WHERE account_id = ${account.id} AND id = ${slack_oauth_id};
     `);
+  } else if (req.formBody.get("service") === "github") {
+    const github_oauth_id = req.formBody.get("oauth_id");
+
+    if (!github_oauth_id) {
+      res.statusCode = TODO_BAD_REQUEST;
+
+      return;
+    }
+
+    const db = await req.db();
+
+    await db.query(sql`
+      DELETE FROM github_oauth
+      WHERE account_id = ${account.id} AND id = ${github_oauth_id};
+    `);
   }
 
-  res.statusCode = 302;
+  res.statusCode = 303;
   res.setHeader(
     "Location",
     new url.URL(req.app.routes.settingsIndex.stringify(), req.absolute)
