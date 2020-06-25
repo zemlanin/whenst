@@ -1,5 +1,8 @@
-<span class="status_emoji">
-  {{~#if status_emoji_html}}{{{status_emoji_html}}}{{else}}&nbsp;{{/if ~}}
-</span>
+{{~#if status_emoji_html~}}
+  <span class="status_emoji">{{{status_emoji_html}}}</span>
+{{~else~}}
+  <span class="status_emoji empty-emoji">&nbsp;</span>
+{{~/if ~}}
+
 
 {{~#if status_text_html}}<hr><span class="status_text">{{{status_text_html}}}</span>{{/if ~}}

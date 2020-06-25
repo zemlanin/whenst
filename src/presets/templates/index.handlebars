@@ -68,8 +68,20 @@
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
         {{! chrome doesn't support flexbox in `<fieldset>` }}
         <div role="group" class="status">
-          <label for="status-form-status_emoji" class="status_emoji">
-            <span class="current-emoji">💬</span>
+          <label for="status-form-status_emoji"
+            {{#if default_emoji_html}}
+              class="status_emoji"
+            {{else}}
+              class="status_emoji empty-emoji"
+            {{/if}}
+          >
+            <span class="current-emoji">
+              {{#if default_emoji_html}}
+                {{default_emoji_html}}
+              {{else}}
+                &nbsp;
+              {{/if}}
+            </span>
           </label>
           <input
             id="status-form-status_emoji"
@@ -137,7 +149,7 @@
 
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
-      const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
+      var INSIDE_COLONS_REGEX = /^:[^:]+:$/;
       function getDatalistOption(list, value) {
         value = value.trim();
 
@@ -155,11 +167,13 @@
         var value = event.target.value.trim();
 
         if (!value) {
-          value = "speech_balloon";
+          event.target.setCustomValidity("");
+          form.querySelector('.status_emoji').classList.add("empty-emoji")
+          return
         }
 
         var datalistOption = getDatalistOption(event.target.list, value);
-        var target = event.target
+        form.querySelector('.status_emoji').classList.remove("empty-emoji")
 
         if (datalistOption) {
           event.target.setCustomValidity("");

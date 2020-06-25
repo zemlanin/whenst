@@ -2,7 +2,7 @@ const url = require("url");
 
 const slackApi = require("../external/slack.js");
 const githubApi = require("../external/github.js");
-const { processPresetForm } = require("../presets/slack/common.js");
+const { normalizeStatus } = require("../normalize-status.js");
 
 const TODO_BAD_REQUEST = 400;
 
@@ -33,10 +33,13 @@ async function bulkUse(req, res, user_oauths, status_emoji, status_text) {
       const userId = user_oauth.user_id;
       await redis.del(`slack:users.profile.get:${userId}`);
     } else if (user_oauth.service === "github") {
+      console.log(arguments);
       const githubResp = await githubApi.setStatus(user_oauth.access_token, {
         emoji: status_emoji ? `:${status_emoji}:` : null,
         message: status_text ? githubApi.escapeStatusText(status_text) : "",
       });
+
+      console.error(githubResp);
 
       if (githubResp.message) {
         // TODO: report errors for bulk operations
@@ -81,7 +84,7 @@ module.exports = async function statusUse(req, res) {
     user_oauths.push(user_oauth);
   }
 
-  const { status_emoji, status_text } = processPresetForm(req.formBody);
+  const { status_emoji, status_text } = normalizeStatus(req.formBody);
 
   await bulkUse(req, res, user_oauths, status_emoji, status_text);
 

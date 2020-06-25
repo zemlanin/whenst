@@ -4,6 +4,7 @@ const slackApi = require("../external/slack.js");
 const githubApi = require("../external/github.js");
 const { getProfile, getTeam } = require("../presets/slack/common.js");
 const { getEmojiHTML } = require("../presets/common.js");
+const { normalizeStatus } = require("../normalize-status.js");
 
 module.exports = {
   getAccount,
@@ -80,18 +81,21 @@ async function getAccount(db, redis, id) {
 
     let current_status = null;
     if (profile.status.emoji || profile.status.message) {
-      profile.status.emoji =
-        profile.status.emoji || githubApi.DEFAULT_STATUS_EMOJI;
+      current_status = normalizeStatus(
+        {
+          status_emoji: profile.status.emoji,
+          status_text: githubApi.decodeStatusText(profile.status.message),
+        },
+        { behavior: normalizeStatus.BEHAVIOR.github }
+      );
 
-      const status_emoji_html = getEmojiHTML(profile.status.emoji, true);
+      const status_emoji_html = getEmojiHTML(current_status.status_emoji, true);
 
-      current_status = {
-        status_emoji: profile.status.emoji,
-        status_text: githubApi.decodeStatusText(profile.status.message),
-        status_emoji_html: status_emoji_html.html,
-        status_text_html: getEmojiHTML(profile.status.message).html,
-        unknown_emoji: status_emoji_html.unknown_emoji,
-      };
+      current_status.status_emoji_html = status_emoji_html.html;
+      current_status.status_text_html = getEmojiHTML(
+        current_status.status_text
+      ).html;
+      current_status.unknown_emoji = status_emoji_html.unknown_emoji;
     }
 
     oauths.push({

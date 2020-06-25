@@ -232,6 +232,7 @@ a.status {
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  min-width: 1.3em;
 }
 
 .status .status_emoji .not-found {
@@ -240,6 +241,13 @@ a.status {
     "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono",
     "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
   color: gray;
+}
+
+.status .status_emoji.empty-emoji {
+  background: url(data:image/svg+xml;base64,PHN2ZyByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ5NiA1MTIiPjxwYXRoIGZpbGw9ImdyYXkiIGQ9Ik0yNDggOEMxMTEgOCAwIDExOSAwIDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM4NSA4IDI0OCA4em0wIDQ0OGMtMTEwLjMgMC0yMDAtODkuNy0yMDAtMjAwUzEzNy43IDU2IDI0OCA1NnMyMDAgODkuNyAyMDAgMjAwLTg5LjcgMjAwLTIwMCAyMDB6bS04MC0yMTZjMTcuNyAwIDMyLTE0LjMgMzItMzJzLTE0LjMtMzItMzItMzItMzIgMTQuMy0zMiAzMiAxNC4zIDMyIDMyIDMyem0xNjAgMGMxNy43IDAgMzItMTQuMyAzMi0zMnMtMTQuMy0zMi0zMi0zMi0zMiAxNC4zLTMyIDMyIDE0LjMgMzIgMzIgMzJ6bTQgNzIuNmMtMjAuOCAyNS01MS41IDM5LjQtODQgMzkuNHMtNjMuMi0xNC4zLTg0LTM5LjRjLTguNS0xMC4yLTIzLjctMTEuNS0zMy44LTMuMS0xMC4yIDguNS0xMS41IDIzLjYtMy4xIDMzLjggMzAgMzYgNzQuMSA1Ni42IDEyMC45IDU2LjZzOTAuOS0yMC42IDEyMC45LTU2LjZjOC41LTEwLjIgNy4xLTI1LjMtMy4xLTMzLjgtMTAuMS04LjQtMjUuMy03LjEtMzMuOCAzLjF6Ij48L3BhdGg+PC9zdmc+Cg==);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 1.3em 1.3em;
 }
 
 .status > hr {

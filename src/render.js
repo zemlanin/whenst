@@ -19,7 +19,7 @@ function routeHelper(name, helperOptions) {
 
     for (const k of Object.keys(helperOptions.hash)) {
       if (k.startsWith("?")) {
-        query.append(k.slice(1), helperOptions.hash[k]);
+        query.append(k.slice(1), helperOptions.hash[k] ?? "");
       }
     }
 

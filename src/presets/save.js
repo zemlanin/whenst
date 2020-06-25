@@ -2,12 +2,12 @@ const url = require("url");
 
 const sql = require("pg-template-tag").default;
 
-const { processPresetForm } = require("./slack/common.js");
+const { normalizeStatus } = require("../normalize-status.js");
 
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function presetSave(req, res) {
-  const { status_emoji, status_text } = processPresetForm(req.formBody);
+  const { status_emoji, status_text } = normalizeStatus(req.formBody);
 
   if (!status_emoji && !status_text) {
     res.statusCode = TODO_BAD_REQUEST;

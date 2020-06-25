@@ -5,6 +5,7 @@ const nodeEmoji = require("node-emoji");
 const Handlebars = require("handlebars");
 
 const slackApi = require("../external/slack.js");
+const githubApi = require("../external/github.js");
 
 const { getEmojiHTML } = require("./common.js");
 
@@ -36,15 +37,21 @@ module.exports = async function presetsIndex(req, res) {
     ORDER BY p.id DESC;
   `);
 
+  let defaultEmoji = null;
+  if (account.oauths.every((o) => o.service === "slack")) {
+    defaultEmoji = slackApi.DEFAULT_STATUS_EMOJI;
+  } else if (account.oauths.every((o) => o.service === "github")) {
+    defaultEmoji = githubApi.DEFAULT_STATUS_EMOJI;
+  }
+
   let presets = dbPresetsRes.rows.map((presetRow) => {
-    const status_emoji_html = getEmojiHTML(
-      presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI,
-      true
-    );
+    const status_emoji = presetRow.status_emoji || defaultEmoji;
+
+    const status_emoji_html = getEmojiHTML(status_emoji, true);
 
     return {
       id: presetRow.id,
-      status_emoji: presetRow.status_emoji || slackApi.DEFAULT_STATUS_EMOJI,
+      status_emoji,
       status_text: presetRow.status_text,
       status_emoji_html: status_emoji_html.html,
       status_text_html: getEmojiHTML(
@@ -57,6 +64,7 @@ module.exports = async function presetsIndex(req, res) {
   return res.render(tmpl, {
     account,
     presets,
+    default_emoji_html: getEmojiHTML(defaultEmoji, true).html,
     emoji_options: DEFAULT_EMOJI_LIST,
   });
 };
