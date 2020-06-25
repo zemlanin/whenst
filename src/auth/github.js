@@ -35,7 +35,7 @@ module.exports = async function authGithub(req, res) {
 
     const githubUser = await githubApi.getProfile(githubResp.access_token);
 
-    if (!githubUser.id) {
+    if (!githubUser.profile || !githubUser.profile.id) {
       throw new Error(`can't retrieve user`);
     }
 
@@ -95,7 +95,7 @@ module.exports = async function authGithub(req, res) {
             ${account_id},
             ${githubResp.access_token},
             ${githubResp.scope.split(",")},
-            ${githubUser.id}
+            ${githubUser.profile.id}
           )
           RETURNING id;
         `);
