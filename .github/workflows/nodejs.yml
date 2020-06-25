@@ -69,6 +69,7 @@ jobs:
       - run: npm test
         env:
           CI: true
+          DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
           SESSION_SECRET: "sikret"
           SLACK_CLIENT_ID: "fake_client_id"
           SLACK_CLIENT_SECRET: "fake_client_secret"
