@@ -35,10 +35,10 @@
     <div style="padding: 1em 0.5em 0 0.5em;">
       <div class="flex flex-row pb3 justify-between">
         <form method="GET">
-          <input type="hidden" name="select" value="all">
+          <input type="hidden" name="uncheck_all" value="1">
           <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
           <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit">select all</button>
+          <button type="submit">uncheck all</button>
         </form>
 
         <form
@@ -65,7 +65,7 @@
               {{/if}}
               form="bulk"
               value="{{oauth_id}}"
-              {{#if @root.select_all}}checked{{/if}}
+              {{#unless @root.uncheck_all}}checked{{/unless}}
             >
           </div>
 

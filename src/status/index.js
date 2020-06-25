@@ -109,6 +109,6 @@ module.exports = async function statusIndex(req, res) {
     status,
     already_saved,
     statusOnServices,
-    select_all: formBody.get("select") === "all",
+    uncheck_all: formBody.get("uncheck_all"),
   });
 };
