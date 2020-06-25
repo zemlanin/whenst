@@ -23,8 +23,14 @@ describe("smoke", () => {
     sinon.resetBehavior();
   });
 
-  it("should load", async () => {
+  it("should load landing", async () => {
     await supertest(server).get("/").expect(200);
+  });
+
+  it("should load status", async () => {
+    await supertest(server)
+      .get("/status?status_text=i+hate+emoji&status_emoji=speech_balloon")
+      .expect(200);
   });
 
   it("should fail: csrf", async () => {

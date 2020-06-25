@@ -37,8 +37,9 @@ module.exports = async function statusIndex(req, res) {
     unknown_emoji: status_emoji_html.unknown_emoji,
   };
 
-  const already_saved = (
-    await db.query(sql`
+  const already_saved = account
+    ? (
+        await db.query(sql`
       SELECT p.id, p.account_id, p.status_text, p.status_emoji FROM status_preset p
       WHERE p.account_id = ${account.id}
         AND p.status_text = ${status_text}
@@ -46,11 +47,14 @@ module.exports = async function statusIndex(req, res) {
       ORDER BY p.id DESC
       LIMIT 1;
     `)
-  ).rows[0];
+      ).rows[0]
+    : null;
 
   const statusOnServices = {};
 
-  const slacks = account.oauths.filter((o) => o.service === "slack");
+  const slacks = account
+    ? account.oauths.filter((o) => o.service === "slack")
+    : [];
   statusOnServices.slack = slacks.reduce((acc, { oauth_id, profile }) => {
     const normalizedProfileStatus = normalizeStatus(
       {
@@ -77,7 +81,9 @@ module.exports = async function statusIndex(req, res) {
     return acc;
   }, {});
 
-  const githubs = account.oauths.filter((o) => o.service === "github");
+  const githubs = account
+    ? account.oauths.filter((o) => o.service === "github")
+    : [];
   statusOnServices.github = githubs.reduce((acc, { oauth_id, profile }) => {
     const normalizedProfileStatus = normalizeStatus(
       {
