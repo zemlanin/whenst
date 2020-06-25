@@ -4,12 +4,9 @@ const Handlebars = require("handlebars");
 const sql = require("pg-template-tag").default;
 
 const slackApi = require("../external/slack.js");
+const githubApi = require("../external/github.js");
 
-const {
-  getProfile,
-  getTeam,
-  processPresetForm,
-} = require("../presets/slack/common.js");
+const { processPresetForm } = require("../presets/slack/common.js");
 
 const { getEmojiHTML } = require("../presets/common.js");
 
@@ -31,47 +28,6 @@ module.exports = async function statusIndex(req, res) {
   const account = await req.getAccount();
 
   const db = await req.db();
-  const redis = await req.redis();
-
-  const slackOauths = account
-    ? account.oauths.filter((o) => o.service === "slack")
-    : [];
-
-  const profiles = await Promise.all(
-    slackOauths.map((o) => getProfile(db, redis, o.access_token, o.user_id))
-  );
-
-  const teams = await Promise.all(
-    slackOauths.map((o) => getTeam(db, redis, o.access_token, o.team_id))
-  );
-
-  const slacks = slackOauths.map((o, index) => {
-    const { team } = teams[index];
-    const { profile } = profiles[index];
-
-    let status = null;
-    if (profile.status_text || profile.status_emoji) {
-      const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
-
-      status = {
-        status_emoji: profile.status_emoji,
-        status_text: profile.status_text,
-        status_emoji_html: status_emoji_html.html,
-        status_text_html: getEmojiHTML(
-          Handlebars.escapeExpression(profile.status_text)
-        ).html,
-        unknown_emoji: status_emoji_html.unknown_emoji,
-      };
-    }
-
-    return {
-      oauth_id: o.oauth_id,
-      user_id: o.user_id,
-      profile,
-      team,
-      status,
-    };
-  });
 
   const status_emoji_html = getEmojiHTML(status_emoji, true);
 
@@ -110,10 +66,11 @@ module.exports = async function statusIndex(req, res) {
     ).rows[0];
   }
 
-  const slackPresets = slacks.reduce((acc, slack) => {
-    const { profile } = slack;
+  const statusOnServices = {};
 
-    acc[slack.oauth_id] = {
+  const slacks = account.oauths.filter((o) => o.service === "slack");
+  statusOnServices.slack = slacks.reduce((acc, { oauth_id, profile }) => {
+    acc[oauth_id] = {
       is_current_status: Boolean(
         status.status_text === profile.status_text &&
           (status.status_emoji === profile.status_emoji ||
@@ -126,12 +83,26 @@ module.exports = async function statusIndex(req, res) {
     return acc;
   }, {});
 
+  const githubs = account.oauths.filter((o) => o.service === "github");
+  statusOnServices.github = githubs.reduce((acc, { oauth_id, profile }) => {
+    acc[oauth_id] = {
+      is_current_status: Boolean(
+        status.status_text === profile.status.message &&
+          (status.status_emoji === profile.status.emoji ||
+            (!status.status.emoji &&
+              profile.status.emoji === githubApi.DEFAULT_STATUS_EMOJI))
+      ),
+      unknown_emoji: getEmojiHTML(status.status_emoji, true).unknown_emoji,
+    };
+
+    return acc;
+  }, {});
+
   return res.render(tmpl, {
     account,
     status,
     already_saved,
-    slacks,
-    slackPresets,
+    statusOnServices,
     select_all: formBody.get("select") === "all",
   });
 };

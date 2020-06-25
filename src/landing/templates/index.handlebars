@@ -2,16 +2,27 @@
 <body>
   <div id="layout">
     {{> partials_topbar . }}
-    <div style="padding: 0.5em;">
-      <form method="GET" action="https://slack.com/oauth/authorize">
-        <input type="hidden" name="client_id" value="{{client_id}}">
-        <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
-        <input type="hidden" name="state" value="{{ state }}">
-        <input type="hidden" name="scope"
-          value="team:read users.profile:read users.profile:write dnd:write emoji:read"
-        >
-        <button type="submit">login</button>
-      </form>
-    </div>
+    {{#with slackAuth}}
+      <div style="padding: 0.5em;">
+        <form method="GET" action="https://slack.com/oauth/authorize">
+          <input type="hidden" name="client_id" value="{{client_id}}">
+          <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+          <input type="hidden" name="state" value="{{ state }}">
+          <input type="hidden" name="scope" value="{{ scope }}">
+          <button type="submit">login with slack</button>
+        </form>
+      </div>
+    {{/with}}
+    {{#with githubAuth}}
+      <div style="padding: 0.5em;">
+        <form method="GET" action="https://github.com/login/oauth/authorize">
+          <input type="hidden" name="client_id" value="{{client_id}}">
+          <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
+          <input type="hidden" name="state" value="{{ state }}">
+          <input type="hidden" name="scope" value="{{ scope }}">
+          <button type="submit">login with github</button>
+        </form>
+      </div>
+    {{/with}}
   </div>
 </body>

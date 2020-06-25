@@ -1,12 +1,11 @@
 const url = require("url");
 const sql = require("pg-template-tag").default;
 
-const config = require("../config.js");
-const slackApi = require("../external/slack.js");
+const githubApi = require("../external/github.js");
 
 const TODO_BAD_REQUEST = 400;
 
-module.exports = async function authSlack(req, res) {
+module.exports = async function authGithub(req, res) {
   const query = new url.URL(req.url, req.absolute).searchParams;
 
   const error = query.get("error");
@@ -17,26 +16,33 @@ module.exports = async function authSlack(req, res) {
   }
 
   const code = query.get("code");
-  const { client_id, client_secret } = config.slack;
   const redirect_uri = new url.URL(
-    req.app.routes.authSlack.stringify(),
+    req.app.routes.authGithub.stringify(),
     req.absolute
   );
+  const state = "";
 
-  const accessRequestBody = {
+  const githubResp = await githubApi.oauthAccessToken(
     code,
-    client_id,
-    client_secret,
-    redirect_uri: redirect_uri.toString(),
-  };
+    redirect_uri.toString(),
+    state
+  );
 
-  const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
+  if (githubResp.access_token && githubResp.token_type === "bearer") {
+    if (githubResp.token_type !== "bearer") {
+      throw new Error(`unknown token_type: "${githubResp.token_type}"`);
+    }
 
-  if (slackResp.ok) {
+    const githubUser = await githubApi.getProfile(githubResp.access_token);
+
+    if (!githubUser.id) {
+      throw new Error(`can't retrieve user`);
+    }
+
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id, account_id, scopes, revoked from slack_oauth
-        WHERE access_token = ${slackResp.access_token}
+        SELECT id, account_id, scopes, revoked from github_oauth
+        WHERE access_token = ${githubResp.access_token}
         LIMIT 1;
       `);
 
@@ -48,11 +54,11 @@ module.exports = async function authSlack(req, res) {
           return;
         }
 
-        if (existing_oauth.scopes.join(",") !== slackResp.scope) {
+        if (existing_oauth.scopes.join(",") !== githubResp.scope) {
           await db.query(sql`
-            UPDATE slack_oauth
-            SET scopes = ${slackResp.scope.split(",")}
-            WHERE access_token = ${slackResp.access_token};
+            UPDATE github_oauth
+            SET scopes = ${githubResp.scope.split(",")}
+            WHERE access_token = ${githubResp.access_token};
           `);
         }
 
@@ -60,7 +66,7 @@ module.exports = async function authSlack(req, res) {
           req.session.account_id = existing_oauth.account_id;
         } else if (req.session.account_id !== existing_oauth.account_id) {
           req.session.oauth_to_merge = {
-            service: "slack",
+            service: "github",
             oauth_id: existing_oauth.id,
           };
         }
@@ -79,28 +85,24 @@ module.exports = async function authSlack(req, res) {
 
         await db.query(sql`
           INSERT INTO
-          slack_oauth (
+          github_oauth (
             account_id,
             access_token,
             scopes,
-            user_id,
-            team_id,
-            enterprise_id
+            user_id
           )
           VALUES (
             ${account_id},
-            ${slackResp.access_token},
-            ${slackResp.scope.split(",")},
-            ${slackResp.user_id},
-            ${slackResp.team_id},
-            ${slackResp.enterprise_id}
+            ${githubResp.access_token},
+            ${githubResp.scope.split(",")},
+            ${githubUser.id}
           )
           RETURNING id;
         `);
       }
     });
   } else {
-    console.error(slackResp.error);
+    console.error(githubResp.error);
   }
 
   res.statusCode = 302;

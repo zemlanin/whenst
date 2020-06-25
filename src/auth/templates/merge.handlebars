@@ -17,12 +17,22 @@
           <ul>
             {{#each accountToMerge.oauths}}
               <li>
-                {{#if profile.display_name}}
-                  {{profile.display_name}}
-                {{else}}
-                  {{profile.real_name}}
+                {{#if (eq service "slack")}}
+                  {{#if profile.display_name}}
+                    {{profile.display_name}}
+                  {{else}}
+                    {{profile.real_name}}
+                  {{/if}}
+                  ({{team.name}} {{service}})
                 {{/if}}
-                ({{team.name}} {{service}})
+                {{#if (eq service "github")}}
+                  {{#if profile.name}}
+                    {{profile.name}}
+                  {{else}}
+                    {{profile.login}}
+                  {{/if}}
+                  ({{service}})
+                {{/if}}
               </li>
             {{/each}}
           </ul>

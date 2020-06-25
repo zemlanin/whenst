@@ -31,6 +31,10 @@ function routeHelper(name, helperOptions) {
 
 Handlebars.registerHelper("route", routeHelper);
 
+Handlebars.registerHelper("eq", function equalsHelper(a, b) {
+  return a === b;
+});
+
 const absoluteRoute = (base) =>
   function absoluteRoute(name, helperOptions) {
     return new url.URL(routeHelper(name, helperOptions), base);

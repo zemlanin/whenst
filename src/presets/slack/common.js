@@ -2,6 +2,9 @@ const nodeEmoji = require("node-emoji");
 
 const slackApi = require("../../external/slack.js");
 
+const EMOJI_REGEX = /^[a-z0-9+_'-]+$/;
+const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
+
 module.exports = {
   emojiHTMLGetter,
   getProfile,
@@ -117,9 +120,6 @@ async function getTeamEmojis(db, redis, token, teamId) {
 
   return freshResp;
 }
-
-const EMOJI_REGEX = /^[a-z0-9+_'-]+$/;
-const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
 function processPresetForm(body) {
   let status_emoji = "";

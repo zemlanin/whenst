@@ -1,6 +1,7 @@
 const sql = require("pg-template-tag").default;
 
 const slackApi = require("../external/slack.js");
+const githubApi = require("../external/github.js");
 const { getProfile, getTeam } = require("../presets/slack/common.js");
 const { getEmojiHTML } = require("../presets/common.js");
 
@@ -26,14 +27,19 @@ async function getAccount(db, redis, id) {
 
   const account_id = dbAccountRes.rows[0].id;
 
+  const oauths = [];
+
   const dbSlackOauthRes = await db.query(sql`
     SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
     WHERE s.account_id = ${account_id} AND s.revoked = false
   `);
 
-  const oauths = [];
+  const dbGithubOauthRes = await db.query(sql`
+    SELECT o.id, o.user_id, o.access_token FROM github_oauth o
+    WHERE o.account_id = ${account_id} AND o.revoked = false
+  `);
 
-  if (!dbSlackOauthRes.rows.length) {
+  if (!dbSlackOauthRes.rows.length && !dbGithubOauthRes.rows.length) {
     return null;
   }
 
@@ -60,6 +66,37 @@ async function getAccount(db, redis, id) {
       service: "slack",
       profile,
       team,
+      user_id,
+      oauth_id: row.id,
+      access_token,
+      current_status,
+    });
+  }
+
+  for (const row of dbGithubOauthRes.rows) {
+    const { access_token, user_id } = row;
+
+    const { profile } = await githubApi.getProfile(access_token);
+
+    let current_status = null;
+    if (profile.status.emoji || profile.status.message) {
+      profile.status.emoji =
+        profile.status.emoji || githubApi.DEFAULT_STATUS_EMOJI;
+
+      const status_emoji_html = getEmojiHTML(profile.status.emoji, true);
+
+      current_status = {
+        status_emoji: profile.status.emoji,
+        status_text: githubApi.decodeStatusText(profile.status.message),
+        status_emoji_html: status_emoji_html.html,
+        status_text_html: getEmojiHTML(profile.status.message).html,
+        unknown_emoji: status_emoji_html.unknown_emoji,
+      };
+    }
+
+    oauths.push({
+      service: "github",
+      profile,
       user_id,
       oauth_id: row.id,
       access_token,

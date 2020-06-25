@@ -7,7 +7,11 @@ const tmpl = require.resolve("./templates/merge.handlebars");
 
 async function performMerge(req, res) {
   const activeAccount = await req.getAccount();
-  if (!activeAccount || !req.session.slack_oauth_id_to_merge) {
+  if (
+    !activeAccount ||
+    !req.session.oauth_to_merge ||
+    !req.session.oauth_to_merge.oauth_id
+  ) {
     res.statusCode = 404;
     return;
   }
@@ -15,7 +19,7 @@ async function performMerge(req, res) {
   const shouldProceed = req.formBody.get("action") === "proceed";
 
   const cleanupMerge = () => {
-    delete req.session.slack_oauth_id_to_merge;
+    delete req.session.oauth_to_merge;
 
     res.statusCode = 303;
     res.setHeader(
@@ -30,16 +34,31 @@ async function performMerge(req, res) {
     return cleanupMerge();
   }
 
+  const oauth_to_merge = req.session.oauth_to_merge;
+
   const db = await req.db();
 
-  const dbOauthRes = (
-    await db.query(sql`
-      SELECT id, account_id
-      FROM slack_oauth
-      WHERE id = ${req.session.slack_oauth_id_to_merge}
-      LIMIT 1;
-    `)
-  ).rows[0];
+  let dbOauthRes = null;
+
+  if (oauth_to_merge.service === "slack") {
+    dbOauthRes = (
+      await db.query(sql`
+        SELECT id, account_id
+        FROM slack_oauth
+        WHERE id = ${oauth_to_merge.oauth_id}
+        LIMIT 1;
+      `)
+    ).rows[0];
+  } else if (oauth_to_merge.service === "github") {
+    dbOauthRes = (
+      await db.query(sql`
+        SELECT id, account_id
+        FROM github_oauth
+        WHERE id = ${oauth_to_merge.oauth_id}
+        LIMIT 1;
+      `)
+    ).rows[0];
+  }
 
   if (!dbOauthRes) {
     return cleanupMerge();
@@ -53,11 +72,19 @@ async function performMerge(req, res) {
   }
 
   await req.db.transaction(async (db) => {
-    await db.query(sql`
-      UPDATE slack_oauth
-      SET account_id = ${activeAccount.id}
-      WHERE account_id = ${accountToMerge.id}
-    `);
+    if (oauth_to_merge.service === "slack") {
+      await db.query(sql`
+        UPDATE slack_oauth
+        SET account_id = ${activeAccount.id}
+        WHERE account_id = ${accountToMerge.id}
+      `);
+    } else if (oauth_to_merge.service === "github") {
+      await db.query(sql`
+        UPDATE github_oauth
+        SET account_id = ${activeAccount.id}
+        WHERE account_id = ${accountToMerge.id}
+      `);
+    }
 
     await db.query(sql`
       INSERT INTO status_preset
@@ -82,7 +109,7 @@ module.exports = async function authMerge(req, res) {
   }
 
   const nothingToMerge = () => {
-    delete req.session.slack_oauth_id_to_merge;
+    delete req.session.oauth_to_merge;
 
     res.statusCode = 302;
     res.setHeader(
@@ -93,20 +120,35 @@ module.exports = async function authMerge(req, res) {
     return;
   };
 
-  if (!req.session.slack_oauth_id_to_merge) {
+  if (!req.session.oauth_to_merge || !req.session.oauth_to_merge.oauth_id) {
     return nothingToMerge();
   }
 
+  const oauth_to_merge = req.session.oauth_to_merge;
+
   const db = await req.db();
 
-  const dbOauthRes = (
-    await db.query(sql`
-      SELECT id, account_id
-      FROM slack_oauth
-      WHERE id = ${req.session.slack_oauth_id_to_merge}
-      LIMIT 1;
-    `)
-  ).rows[0];
+  let dbOauthRes = null;
+
+  if (oauth_to_merge.service === "slack") {
+    dbOauthRes = (
+      await db.query(sql`
+        SELECT id, account_id
+        FROM slack_oauth
+        WHERE id = ${oauth_to_merge.oauth_id}
+        LIMIT 1;
+      `)
+    ).rows[0];
+  } else if (oauth_to_merge.service === "github") {
+    dbOauthRes = (
+      await db.query(sql`
+        SELECT id, account_id
+        FROM github_oauth
+        WHERE id = ${oauth_to_merge.oauth_id}
+        LIMIT 1;
+      `)
+    ).rows[0];
+  }
 
   if (!dbOauthRes) {
     return nothingToMerge();
@@ -121,7 +163,7 @@ module.exports = async function authMerge(req, res) {
   }
 
   const targetOauth = accountToMerge.oauths.find(
-    (o) => o.service === "slack" && o.oauth_id === dbOauthRes.id
+    (o) => o.service === oauth_to_merge.service && o.oauth_id === dbOauthRes.id
   );
 
   return res.render(tmpl, {

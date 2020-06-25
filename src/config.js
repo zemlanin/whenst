@@ -43,6 +43,24 @@ function getSlackConfig() {
   };
 }
 
+function getGithubConfig() {
+  const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
+
+  if (!GITHUB_CLIENT_ID) {
+    throw new Error(`GITHUB_CLIENT_ID is required`);
+  }
+
+  if (!GITHUB_CLIENT_SECRET) {
+    throw new Error(`GITHUB_CLIENT_SECRET is required`);
+  }
+
+  return {
+    client_id: GITHUB_CLIENT_ID,
+    client_secret: GITHUB_CLIENT_SECRET,
+    scope: "user",
+  };
+}
+
 const TODO = null;
 
 module.exports = {
@@ -57,6 +75,7 @@ module.exports = {
     secret: getSessionSecret(),
   },
   slack: getSlackConfig(),
+  github: getGithubConfig(),
   production: process.env.NODE_ENV !== "development",
   assets: {
     base: process.env.ASSETS_BASE || null,

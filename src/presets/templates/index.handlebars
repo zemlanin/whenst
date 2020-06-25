@@ -14,23 +14,44 @@
           {{#each account.oauths}}
             <li>
               <label>
-                <input type="checkbox" name="oauth_id" value="{{oauth_id}}" checked>
+                {{#if (eq service "slack")}}
+                  <input type="checkbox" name="slack_oauth_id" value="{{oauth_id}}" checked>
+                {{/if}}
+                {{#if (eq service "github")}}
+                  <input type="checkbox" name="github_oauth_id" value="{{oauth_id}}" checked>
+                {{/if}}
                 <span class="icon-group">
-                  <img
-                    src="{{profile.image_72}}"
-                    {{#if profile.display_name}}
-                      alt="{{profile.display_name}} ({{team.name}})"
-                    {{else}}
-                      alt="{{profile.real_name}} ({{team.name}})"
-                    {{/if}}
-                  >
-                  {{#unless team.icon.image_default}}
+                  {{#if (eq service "slack")}}
                     <img
-                      src="{{team.icon.image_44}}"
-                      alt="{{team.name}}"
+                      src="{{profile.image_72}}"
+                      {{#if profile.display_name}}
+                        alt="{{profile.display_name}} ({{team.name}})"
+                      {{else}}
+                        alt="{{profile.real_name}} ({{team.name}})"
+                      {{/if}}
+                    >
+                    {{#unless team.icon.image_default}}
+                      <img
+                        src="{{team.icon.image_44}}"
+                        alt="{{team.name}}"
+                        class="team-icon"
+                      >
+                    {{/unless}}
+                  {{/if}}
+                  {{#if (eq service "github")}}
+                    <img
+                      src="{{profile.image_72}}"
+                      {{#if profile.name}}
+                        alt="{{profile.name}}"
+                      {{else}}
+                        alt="{{profile.login}}"
+                      {{/if}}
+                    >
+                    <img
+                      src="https://github.githubassets.com/apple-touch-icon.png"
                       class="team-icon"
                     >
-                  {{/unless}}
+                  {{/if}}
                 </span>
               </label>
             </li>
