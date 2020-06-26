@@ -67,7 +67,8 @@ module.exports = async function statusIndex(req, res) {
             statusNormalizedForGithub.status_emoji &&
             current_status.status_text === statusNormalizedForGithub.status_text
         ),
-        custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
+        custom_emoji: getEmojiHTML(statusNormalizedForGithub.status_emoji, true)
+          .custom_emoji,
       };
 
       return acc;
@@ -90,7 +91,8 @@ module.exports = async function statusIndex(req, res) {
             statusNormalizedForGithub.status_emoji &&
             current_status.status_text === statusNormalizedForGithub.status_text
         ),
-        custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
+        custom_emoji: getEmojiHTML(statusNormalizedForGithub.status_emoji, true)
+          .custom_emoji,
       };
 
       return acc;

@@ -63,7 +63,13 @@
                 {{/if}}
                 form="bulk"
                 value="{{oauth_id}}"
-                checked
+                {{#with (lookup (lookup @root.statusOnServices service) oauth_id)}}
+                  {{#if custom_emoji}}
+                    disabled
+                  {{else}}
+                    checked
+                  {{/if}}
+                {{/with}}
               >
             </div>
 
@@ -120,7 +126,7 @@
                       method="post"
                       action="{{ route "statusUse" }}"
                       class="pl2"
-                      {{#if @root.status.custom_emoji}}disabled{{/if}}
+                      {{#if custom_emoji}}disabled{{/if}}
                     >
                       <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                       {{#if (eq ../service "slack")}}
@@ -131,7 +137,7 @@
                       {{/if}}
                       <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
                       <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-                      {{#unless @root.status.custom_emoji}}
+                      {{#unless custom_emoji}}
                         <button type="submit">use</button>
                       {{/unless}}
                     </form>

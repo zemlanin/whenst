@@ -3,6 +3,7 @@ const url = require("url");
 const slackApi = require("../external/slack.js");
 const githubApi = require("../external/github.js");
 const { normalizeStatus } = require("../normalize-status.js");
+const { getEmojiHTML } = require("../presets/common.js");
 
 const TODO_BAD_REQUEST = 400;
 
@@ -51,7 +52,21 @@ module.exports = async function statusUse(req, res) {
 
   const user_oauths = [];
 
-  const slack_oauth_ids = req.formBody.getAll("slack_oauth_id");
+  let slack_oauth_ids = req.formBody.getAll("slack_oauth_id");
+  if (slack_oauth_ids.length) {
+    const slack_status_emoji = normalizeStatus(req.formBody, {
+      behavior: normalizeStatus.BEHAVIOR.slack,
+    }).status_emoji;
+
+    if (
+      slack_status_emoji &&
+      getEmojiHTML(slack_status_emoji, true).custom_emoji
+    ) {
+      // TODO: report errors for bulk operations
+      slack_oauth_ids = [];
+    }
+  }
+
   for (const oauth_id of slack_oauth_ids) {
     const user_oauth = account.oauths.find(
       (o) => o.service === "slack" && o.oauth_id === oauth_id
@@ -66,7 +81,21 @@ module.exports = async function statusUse(req, res) {
     user_oauths.push(user_oauth);
   }
 
-  const github_oauth_ids = req.formBody.getAll("github_oauth_id");
+  let github_oauth_ids = req.formBody.getAll("github_oauth_id");
+  if (github_oauth_ids.length) {
+    const github_status_emoji = normalizeStatus(req.formBody, {
+      behavior: normalizeStatus.BEHAVIOR.github,
+    }).status_emoji;
+
+    if (
+      github_status_emoji &&
+      getEmojiHTML(github_status_emoji, true).custom_emoji
+    ) {
+      // TODO: report errors for bulk operations
+      github_oauth_ids = [];
+    }
+  }
+
   for (const oauth_id of github_oauth_ids) {
     const user_oauth = account.oauths.find(
       (o) => o.service === "github" && o.oauth_id === oauth_id
