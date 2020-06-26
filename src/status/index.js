@@ -115,6 +115,5 @@ module.exports = async function statusIndex(req, res) {
     status,
     already_saved,
     statusOnServices,
-    uncheck_all: formBody.get("uncheck_all"),
   });
 };

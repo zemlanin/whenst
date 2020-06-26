@@ -33,14 +33,7 @@
     {{/if}}
 
     <div style="padding: 1em 0.5em 0 0.5em;">
-      <div class="flex flex-row pb3 justify-between">
-        <form method="GET">
-          <input type="hidden" name="uncheck_all" value="1">
-          <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-          <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit">uncheck all</button>
-        </form>
-
+      <div class="flex flex-row pb3">
         <form
           id="bulk"
           method="POST"
@@ -49,7 +42,7 @@
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
           <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit">use</button>
+          <button type="submit">use for selected</button>
         </form>
       </div>
       {{#if account}}
@@ -66,7 +59,7 @@
                 {{/if}}
                 form="bulk"
                 value="{{oauth_id}}"
-                {{#unless @root.uncheck_all}}checked{{/unless}}
+                checked
               >
             </div>
 
