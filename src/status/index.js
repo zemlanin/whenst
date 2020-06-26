@@ -55,60 +55,48 @@ module.exports = async function statusIndex(req, res) {
   const slacks = account
     ? account.oauths.filter((o) => o.service === "slack")
     : [];
-  statusOnServices.slack = slacks.reduce((acc, { oauth_id, profile }) => {
-    const normalizedProfileStatus = normalizeStatus(
-      {
-        status_emoji: profile.status_emoji,
-        status_text: profile.status_text,
-      },
-      { behavior: normalizeStatus.BEHAVIOR.slack }
-    );
+  statusOnServices.slack = slacks.reduce(
+    (acc, { oauth_id, current_status }) => {
+      const statusNormalizedForGithub = normalizeStatus(status, {
+        behavior: normalizeStatus.BEHAVIOR.slack,
+      });
 
-    const statusNormalizedForGithub = normalizeStatus(status, {
-      behavior: normalizeStatus.BEHAVIOR.slack,
-    });
+      acc[oauth_id] = {
+        is_current_status: Boolean(
+          current_status.status_emoji ===
+            statusNormalizedForGithub.status_emoji &&
+            current_status.status_text === statusNormalizedForGithub.status_text
+        ),
+        custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
+      };
 
-    acc[oauth_id] = {
-      is_current_status: Boolean(
-        normalizedProfileStatus.status_emoji ===
-          statusNormalizedForGithub.status_emoji &&
-          normalizedProfileStatus.status_text ===
-            statusNormalizedForGithub.status_text
-      ),
-      custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
-    };
-
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 
   const githubs = account
     ? account.oauths.filter((o) => o.service === "github")
     : [];
-  statusOnServices.github = githubs.reduce((acc, { oauth_id, profile }) => {
-    const normalizedProfileStatus = normalizeStatus(
-      {
-        status_emoji: profile.status?.emoji,
-        status_text: profile.status?.message,
-      },
-      { behavior: normalizeStatus.BEHAVIOR.github }
-    );
+  statusOnServices.github = githubs.reduce(
+    (acc, { oauth_id, current_status }) => {
+      const statusNormalizedForGithub = normalizeStatus(status, {
+        behavior: normalizeStatus.BEHAVIOR.github,
+      });
 
-    const statusNormalizedForGithub = normalizeStatus(status, {
-      behavior: normalizeStatus.BEHAVIOR.github,
-    });
+      acc[oauth_id] = {
+        is_current_status: Boolean(
+          current_status.status_emoji ===
+            statusNormalizedForGithub.status_emoji &&
+            current_status.status_text === statusNormalizedForGithub.status_text
+        ),
+        custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
+      };
 
-    acc[oauth_id] = {
-      is_current_status: Boolean(
-        normalizedProfileStatus.status_emoji ===
-          statusNormalizedForGithub.status_emoji &&
-          normalizedProfileStatus.status_text ===
-            statusNormalizedForGithub.status_text
-      ),
-      custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
-    };
-
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 
   return res.render(tmpl, {
     account,

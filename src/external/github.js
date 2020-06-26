@@ -67,6 +67,12 @@ module.exports = {
       data.profile.status.emoji = data.profile.status.emoji.slice(1, -1);
     }
 
+    if (data.profile.status?.message) {
+      data.profile.status.message = module.exports.escapeStatusText(
+        data.profile.status.message
+      );
+    }
+
     return data;
   },
 

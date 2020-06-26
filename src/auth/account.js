@@ -93,7 +93,7 @@ async function getAccount(db, redis, id) {
 
       current_status.status_emoji_html = status_emoji_html.html;
       current_status.status_text_html = getEmojiHTML(
-        current_status.status_text
+        profile.status.message
       ).html;
       current_status.custom_emoji = status_emoji_html.custom_emoji;
     }
