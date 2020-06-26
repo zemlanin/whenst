@@ -41,24 +41,29 @@ module.exports = async function authGithub(req, res) {
 
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id, account_id, scopes, revoked from github_oauth
-        WHERE access_token = ${githubResp.access_token}
+        SELECT id, account_id, scopes
+        FROM github_oauth
+        WHERE user_id = ${githubUser.profile.id} AND revoked = false
         LIMIT 1;
       `);
 
       let existing_oauth = existingOauthResp.rows[0];
 
       if (existing_oauth) {
-        if (existing_oauth.revoked) {
-          res.statusCode = TODO_BAD_REQUEST;
-          return;
-        }
-
         if (existing_oauth.scopes.join(",") !== githubResp.scope) {
           await db.query(sql`
             UPDATE github_oauth
-            SET scopes = ${githubResp.scope.split(",")}
-            WHERE access_token = ${githubResp.access_token};
+            SET
+              scopes = ${githubResp.scope.split(",")},
+              access_token = ${githubResp.access_token}
+            WHERE id = ${existing_oauth.id};
+          `);
+        } else {
+          await db.query(sql`
+            UPDATE github_oauth
+            SET
+              access_token = ${githubResp.access_token}
+            WHERE id = ${existing_oauth.id};
           `);
         }
 
