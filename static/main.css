@@ -237,7 +237,7 @@ a.status {
   min-width: 1.3em;
 }
 
-.status .status_emoji .not-found {
+.status .status_emoji.custom-emoji {
   font-family: "iA Writer Quattro S", ui-monospace, system-ui-monospaced,
     "SF Mono", "Menlo", Consolas, "Andale Mono WT", "Andale Mono",
     "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono",
@@ -323,12 +323,6 @@ a.status {
   max-width: 0;
   padding-left: 0;
   padding-right: 0;
-}
-
-.custom-emoji {
-  width: 1.35em;
-  height: 1.35em;
-  vertical-align: text-bottom;
 }
 
 .preset-row {

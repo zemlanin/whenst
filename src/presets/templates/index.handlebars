@@ -111,8 +111,8 @@
             </a>
 
             <div class="flex">
-              {{#if unknown_emoji}}
-                <button type="button" class="button" disabled>unknown&nbsp;emoji</button>
+              {{#if custom_emoji}}
+                {{! TODO }}
               {{else}}
                 <button
                   type="submit"
@@ -169,7 +169,7 @@
           form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
         } else {
           event.target.setCustomValidity("emoji not found");
-          form.querySelector('.current-emoji').innerHTML = "<div class='custom-emoji' style='color: red'>☹︎</div>";
+          form.querySelector('.current-emoji').innerHTML = "<div style='color: red'>☹︎</div>";
           form.querySelector('.current-emoji').title = event.target.validationMessage;
           event.target.reportValidity();
         }

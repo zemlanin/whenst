@@ -59,7 +59,7 @@ async function getAccount(db, redis, id) {
         status_text: slackApi.decodeStatusText(profile.status_text),
         status_emoji_html: status_emoji_html.html,
         status_text_html: getEmojiHTML(profile.status_text).html,
-        unknown_emoji: status_emoji_html.unknown_emoji,
+        custom_emoji: status_emoji_html.custom_emoji,
       };
     }
 
@@ -95,7 +95,7 @@ async function getAccount(db, redis, id) {
       current_status.status_text_html = getEmojiHTML(
         current_status.status_text
       ).html;
-      current_status.unknown_emoji = status_emoji_html.unknown_emoji;
+      current_status.custom_emoji = status_emoji_html.custom_emoji;
     }
 
     oauths.push({

@@ -1,13 +1,5 @@
 const nodeEmoji = require("node-emoji");
 
-function onMissing(name) {
-  // `unknown_emoji = result.startWith("<span")`
-  //
-  // this won't catch unknown emojis in status_text
-  // because `unknown :xxxx: emoji` is a valid status
-  return `<span class="not-found">:${name}:</span>`;
-}
-
 function getEmojiHTML(stringWithEmojis, wholeStringIsEmoji) {
   if (!stringWithEmojis) {
     return { html: "" };
@@ -17,11 +9,15 @@ function getEmojiHTML(stringWithEmojis, wholeStringIsEmoji) {
     stringWithEmojis = `:${stringWithEmojis}:`;
   }
 
-  const html = nodeEmoji.emojify(stringWithEmojis, onMissing);
-  const unknown_emoji = html.startsWith("<span");
+  let custom_emoji = false;
 
-  if (unknown_emoji) {
-    return { html, unknown_emoji };
+  const html = nodeEmoji.emojify(stringWithEmojis, function onMissing(name) {
+    custom_emoji = true;
+    return `:${name}:`;
+  });
+
+  if (custom_emoji) {
+    return { html, custom_emoji };
   }
 
   return { html };

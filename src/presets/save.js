@@ -2,6 +2,7 @@ const url = require("url");
 
 const sql = require("pg-template-tag").default;
 
+const { getEmojiHTML } = require("./common.js");
 const { normalizeStatus } = require("../normalize-status.js");
 
 const TODO_BAD_REQUEST = 400;
@@ -10,6 +11,12 @@ module.exports = async function presetSave(req, res) {
   const { status_emoji, status_text } = normalizeStatus(req.formBody);
 
   if (!status_emoji && !status_text) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
+  if (status_emoji && getEmojiHTML(status_emoji, true).custom_emoji) {
     res.statusCode = TODO_BAD_REQUEST;
 
     return;

@@ -34,7 +34,7 @@ module.exports = async function statusIndex(req, res) {
     status_emoji_html: status_emoji_html.html,
     status_text_html: getEmojiHTML(Handlebars.escapeExpression(status_text))
       .html,
-    unknown_emoji: status_emoji_html.unknown_emoji,
+    custom_emoji: status_emoji_html.custom_emoji,
   };
 
   const already_saved = account
@@ -75,7 +75,7 @@ module.exports = async function statusIndex(req, res) {
           normalizedProfileStatus.status_text ===
             statusNormalizedForGithub.status_text
       ),
-      unknown_emoji: getEmojiHTML(status.status_emoji, true).unknown_emoji,
+      custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
     };
 
     return acc;
@@ -104,7 +104,7 @@ module.exports = async function statusIndex(req, res) {
           normalizedProfileStatus.status_text ===
             statusNormalizedForGithub.status_text
       ),
-      unknown_emoji: getEmojiHTML(status.status_emoji, true).unknown_emoji,
+      custom_emoji: getEmojiHTML(status.status_emoji, true).custom_emoji,
     };
 
     return acc;

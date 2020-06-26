@@ -21,30 +21,34 @@
         <button type="submit" onclick="return confirm('are you sure?')">delete</button>
       </form>
     {{else}}
-      <form
-        method="POST"
-        action="{{ route "presetSave" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-        <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-        <button type="submit">save</button>
-      </form>
-    {{/if}}
-
-    <div style="padding: 1em 0.5em 0 0.5em;">
-      <div class="flex flex-row pb3">
+      {{#unless @root.status.custom_emoji}}
         <form
-          id="bulk"
           method="POST"
-          action="{{ route "statusUse" }}"
+          action="{{ route "presetSave" }}"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
           <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit">use for selected</button>
+          <button type="submit">save</button>
         </form>
-      </div>
+      {{/unless}}
+    {{/if}}
+
+    <div style="padding: 1em 0.5em 0 0.5em;">
+      {{#unless @root.status.custom_emoji}}
+        <div class="flex flex-row pb3">
+          <form
+            id="bulk"
+            method="POST"
+            action="{{ route "statusUse" }}"
+          >
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+            <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+            <button type="submit">use for selected</button>
+          </form>
+        </div>
+      {{/unless}}
       {{#if account}}
         {{#each account.oauths}}
           <div class="flex flex-row pb3 items-center">
@@ -116,7 +120,7 @@
                       method="post"
                       action="{{ route "statusUse" }}"
                       class="pl2"
-                      {{#if unknown_emoji}}disabled{{/if}}
+                      {{#if @root.status.custom_emoji}}disabled{{/if}}
                     >
                       <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                       {{#if (eq ../service "slack")}}
@@ -127,11 +131,9 @@
                       {{/if}}
                       <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
                       <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-                      {{#if unknown_emoji}}
-                        <button type="submit" disabled>unknown&nbsp;emoji</button>
-                      {{else}}
+                      {{#unless @root.status.custom_emoji}}
                         <button type="submit">use</button>
-                      {{/if}}
+                      {{/unless}}
                     </form>
                   {{/unless}}
               {{/with}}

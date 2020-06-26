@@ -47,7 +47,7 @@ module.exports = async function presetsIndex(req, res) {
       status_text_html: getEmojiHTML(
         Handlebars.escapeExpression(presetRow.status_text)
       ).html,
-      unknown_emoji: status_emoji_html.unknown_emoji,
+      custom_emoji: status_emoji_html.custom_emoji,
     };
   });
 
