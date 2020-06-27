@@ -13,7 +13,7 @@
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
         <ul class="flex flex-row flex-wrap list pa0 ma0">
           {{#each account.oauths}}
-            <li class="flex flex-row items-center pr3 pb3">
+            <li class="flex flex-row items-center pr3 pv1">
               {{#if (eq service "slack")}}
                 <label class="pa2 pl0">
                   <input type="checkbox" name="slack_oauth_id" value="{{oauth_id}}" checked>
