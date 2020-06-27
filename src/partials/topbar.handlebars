@@ -1,5 +1,9 @@
-<nav>
-  <a href="{{ route "presetsIndex" }}">presets</a>
-
-  <a href="{{ route "settingsIndex" }}">settings</a>
+<nav class="pa2 flex flex-row flex-wrap items-center">
+  <a href="{{ route "landing" }}" style="line-height: 0;">
+    <img src="{{ asset "logo-white-square.png" }}" width="36" height="36">
+  </a>
+  <div class="w1"></div>
+  <a href="{{ route "presetsIndex" }}" class="pa1">presets</a>
+  <div class="w1"></div>
+  <a href="{{ route "settingsIndex" }}" class="pa1">settings</a>
 </nav>

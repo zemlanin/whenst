@@ -6,15 +6,16 @@
     <div style="padding: 1em 0.5em 0 0.5em;">
       <form
         id="statusUseForm"
+        class="preset-row"
         method="POST"
         action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <ul class="flex flex-row list pa0">
+        <ul class="flex flex-row flex-wrap list pa0 ma0">
           {{#each account.oauths}}
-            <li>
+            <li class="flex flex-row items-center pr3 pb3">
               {{#if (eq service "slack")}}
-                <label class="pa2">
+                <label class="pa2 pl0">
                   <input type="checkbox" name="slack_oauth_id" value="{{oauth_id}}" checked>
                 </label>
                 <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
@@ -36,7 +37,7 @@
                 </a>
               {{/if}}
               {{#if (eq service "github")}}
-                <label class="pa2">
+                <label class="pa2 pl0">
                   <input type="checkbox" name="github_oauth_id" value="{{oauth_id}}" checked>
                 </label>
                 <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">

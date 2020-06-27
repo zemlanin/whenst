@@ -3,36 +3,38 @@
   <div id="layout">
     {{> partials_topbar }}
 
-    <div style="padding: 1em 0.5em 3em 0.5em;">
+    <div class="pt3 pb4 pl2 pr2 flex flex-column items-center">
       <div style="text-align: center;">
         <span class="status" style="font-size: 1.5em;">
           {{>partials_status status}}
         </span>
       </div>
-    </div>
 
-    {{#if already_saved}}
-      <form
-        method="POST"
-        action="{{ route "presetDelete" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <input type="hidden" name="id" value="{{already_saved.id}}">
-        <button type="submit" onclick="return confirm('are you sure?')">delete</button>
-      </form>
-    {{else}}
-      {{#unless @root.status.custom_emoji}}
+      {{#if already_saved}}
         <form
           method="POST"
-          action="{{ route "presetSave" }}"
+          action="{{ route "presetDelete" }}"
+          class="pt3"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-          <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-          <button type="submit">save</button>
+          <input type="hidden" name="id" value="{{already_saved.id}}">
+          <button type="submit" onclick="return confirm('are you sure?')">delete</button>
         </form>
-      {{/unless}}
-    {{/if}}
+      {{else}}
+        {{#unless @root.status.custom_emoji}}
+          <form
+            method="POST"
+            action="{{ route "presetSave" }}"
+            class="pt3"
+          >
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+            <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+            <button type="submit">save</button>
+          </form>
+        {{/unless}}
+      {{/if}}
+    </div>
 
     <div style="padding: 1em 0.5em 0 0.5em;">
       {{#unless @root.status.custom_emoji}}
