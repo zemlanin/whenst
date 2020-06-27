@@ -74,8 +74,8 @@
             </div>
 
             <span style="padding-right: 0.5em; line-height: 0">
-              <span class="icon-group">
-                {{#if (eq service "slack")}}
+              {{#if (eq service "slack")}}
+                <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
                   <img
                     src="{{profile.image_72}}"
                     {{#if profile.display_name}}
@@ -91,8 +91,10 @@
                       class="team-icon"
                     >
                   {{/unless}}
-                {{/if}}
-                {{#if (eq service "github")}}
+                </a>
+              {{/if}}
+              {{#if (eq service "github")}}
+                <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
                   <img
                     src="{{profile.image_72}}"
                     {{#if profile.name}}
@@ -105,14 +107,25 @@
                     src="https://github.githubassets.com/apple-touch-icon.png"
                     class="team-icon"
                   >
-                {{/if}}
-              </span>
+                </a>
+              {{/if}}
             </span>
 
             {{#if current_status}}
-              <div class="status">
-                {{>partials_status current_status }}
-              </div>
+              <a
+                class="flex flex-row"
+                href="{{ route "statusIndex"
+                  ?status_emoji=current_status.status_emoji
+                  ?status_text=current_status.status_text }}"
+              >
+                <span class="status">
+                  {{>partials_status current_status}}
+                </span>
+                <span
+                  class="deeper"
+                  role="presentation"
+                >❯</span>
+              </a>
             {{else}}
               <em style="color: gray">no status</em>
             {{/if}}

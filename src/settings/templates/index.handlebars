@@ -7,73 +7,85 @@
       <h2>Accounts</h2>
       <div>
         {{#each account.oauths}}
-            <div class="preset-row">
-              <span style="padding-right: 0.2em;">
+          <div class="preset-row">
+            {{#if (eq service "slack")}}
+              <a
+                href="{{ route "accountsSlack" user_id=user_id }}"
+                class="flex flex-row items-center"
+              >
                 <span class="icon-group">
-                  {{#if (eq service "slack")}}
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
                     <img
-                      src="{{profile.image_72}}"
-                      {{#if profile.display_name}}
-                        alt="{{profile.display_name}} ({{team.name}})"
-                      {{else}}
-                        alt="{{profile.real_name}} ({{team.name}})"
-                      {{/if}}
-                    >
-                    {{#unless team.icon.image_default}}
-                      <img
-                        src="{{team.icon.image_44}}"
-                        alt="{{team.name}}"
-                        class="team-icon"
-                      >
-                    {{/unless}}
-                  {{/if}}
-                  {{#if (eq service "github")}}
-                    <img
-                      src="{{profile.image_72}}"
-                      {{#if profile.name}}
-                        alt="{{profile.name}}"
-                      {{else}}
-                        alt="{{profile.login}}"
-                      {{/if}}
-                    >
-                    <img
-                      src="https://github.githubassets.com/apple-touch-icon.png"
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
                       class="team-icon"
                     >
-                  {{/if}}
+                  {{/unless}}
                 </span>
-              </span>
-              <strong>
-                {{#if (eq service "slack")}}
+                <div style="width: 0.5em"></div>
+                <span>
                   {{#if profile.display_name}}
                     {{profile.display_name}}
                   {{else}}
                     {{profile.real_name}}
                   {{/if}}
                   {{#if team}}({{team.name}}){{/if}}
-                {{/if}}
-                {{#if (eq service "github")}}
+                <span>
+              </a>
+            {{/if}}
+
+            {{#if (eq service "github")}}
+              <a
+                href="{{ route "accountsGithub" user_id=profile.id }}"
+                class="flex flex-row items-center"
+              >
+                <span class="icon-group">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.name}}
+                      alt="{{profile.name}}"
+                    {{else}}
+                      alt="{{profile.login}}"
+                    {{/if}}
+                  >
+                  <img
+                    src="https://github.githubassets.com/apple-touch-icon.png"
+                    class="team-icon"
+                  >
+                </span>
+                <div style="width: 0.5em"></div>
+                <span>
                   {{#if profile.name}}
                     {{profile.name}}
                   {{else}}
                     {{profile.login}}
                   {{/if}}
-                {{/if}}
-              </strong>
-              <div style="flex-grow: 1"></div>
-              <form method="POST" action="{{ route "authUnlink" }}">
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                <input type="hidden" name="service" value="{{service}}">
-                <input type="hidden" name="oauth_id" value="{{oauth_id}}">
-                <button type="submit">unlink</button>
-              </form>
-            </div>
+                </span>
+              </a>
+            {{/if}}
+
+            <div style="flex-grow: 1"></div>
+            <form method="POST" action="{{ route "authUnlink" }}">
+              <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+              <input type="hidden" name="service" value="{{service}}">
+              <input type="hidden" name="oauth_id" value="{{oauth_id}}">
+              <button type="submit">unlink</button>
+            </form>
+          </div>
         {{/each}}
         <div class="preset-row">
           <span style="padding-right: 0.2em;">
-            <strong>
+            <span>
               link another account
-            </strong>
+            </span>
           </span>
           <div style="flex-grow: 1"></div>
           {{#with slackAuth}}
@@ -85,6 +97,7 @@
               <button type="submit">slack</button>
             </form>
           {{/with}}
+          <div style="width: 0.5em"></div>
           {{#with githubAuth}}
             <form method="GET" action="https://github.com/login/oauth/authorize">
               <input type="hidden" name="client_id" value="{{ client_id }}">

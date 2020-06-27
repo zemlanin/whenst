@@ -6,7 +6,6 @@ input,
 select,
 textarea,
 optgroup {
-  color: black;
   /*
   font-family: -apple-system, system-ui, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -215,6 +214,7 @@ a:visited {
 }
 
 .status {
+  color: black;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -223,11 +223,6 @@ a:visited {
   text-align: initial;
   border: lightgray 1px solid;
   background: white;
-}
-
-.status a,
-a.status {
-  color: black;
 }
 
 .status .status_emoji {

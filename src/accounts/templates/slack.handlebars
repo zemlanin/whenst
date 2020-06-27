@@ -1,0 +1,84 @@
+{{>partials_head}}
+<body>
+  <div id="layout">
+    {{>partials_topbar}}
+
+    <div style="padding: 1em 0.5em 0 0.5em;">
+      <h1>Linked account</h1>
+      {{#with oauth}}
+        <div class="preset-row">
+          <div class="flex flex-row items-center">
+            <span class="icon-group">
+              <img
+                src="{{profile.image_72}}"
+                {{#if profile.display_name}}
+                  alt="{{profile.display_name}} ({{team.name}})"
+                {{else}}
+                  alt="{{profile.real_name}} ({{team.name}})"
+                {{/if}}
+              >
+              {{#unless team.icon.image_default}}
+                <img
+                  src="{{team.icon.image_44}}"
+                  alt="{{team.name}}"
+                  class="team-icon"
+                >
+              {{/unless}}
+            </span>
+            <div style="width: 0.5em"></div>
+            <span>
+              {{#if profile.display_name}}
+                {{profile.display_name}}
+              {{else}}
+                {{profile.real_name}}
+              {{/if}}
+              {{#if team}}({{team.name}}){{/if}}
+            <span>
+          </div>
+          <div style="flex-grow: 1"></div>
+          <form method="POST" action="{{ route "authUnlink" }}">
+            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+            <input type="hidden" name="service" value="{{service}}">
+            <input type="hidden" name="oauth_id" value="{{oauth_id}}">
+            <button type="submit">unlink</button>
+          </form>
+        </div>
+        {{#if current_status}}
+          <div class="preset-row">
+            <a
+              class="flex flex-row"
+              href="{{ route "statusIndex"
+                ?status_emoji=current_status.status_emoji
+                ?status_text=current_status.status_text }}"
+            >
+              <span class="status">
+                {{>partials_status current_status }}
+              </span>
+              <span
+                class="deeper"
+                role="presentation"
+              >❯</span>
+            </a>
+
+            <div class="flex">
+              <form
+                id="statusUseForm"
+                method="POST"
+                action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
+              >
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
+                <button
+                  type="submit"
+                  formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
+                >clear</button>
+              </form>
+            </div>
+          </div>
+        {{/if}}
+      {{/with}}
+    </div>
+
+    {{> partials_footer . }}
+  </div>
+</body>

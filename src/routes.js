@@ -25,10 +25,10 @@ const routes = [
   ["POST /status/use", require("./status/use.js")],
 
   ["GET /settings", require("./settings/index.js")],
-  // ["GET /account", require("./accounts/index.js")],
-  // ["GET /account/slack(/:user_id)", require("./account/slack.js")],
-  // ["POST /account/merge", require("./account/merge.js")],
-  // ["GET /a/:oauth_id", require("./settings/slack.js")],
+
+  ["GET /accounts", require("./accounts/index.js")],
+  ["GET /accounts/slack(/:user_id)", require("./accounts/slack.js")],
+  ["GET /accounts/github(/:user_id)", require("./accounts/github.js")],
 ];
 
 const handlers = routes.reduce((acc, [route, handler]) => {

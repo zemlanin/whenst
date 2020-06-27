@@ -63,8 +63,9 @@ module.exports = async function statusIndex(req, res) {
 
       acc[oauth_id] = {
         is_current_status: Boolean(
-          current_status.status_emoji ===
-            statusNormalizedForGithub.status_emoji &&
+          current_status &&
+            current_status.status_emoji ===
+              statusNormalizedForGithub.status_emoji &&
             current_status.status_text === statusNormalizedForGithub.status_text
         ),
         custom_emoji: getEmojiHTML(statusNormalizedForGithub.status_emoji, true)
@@ -87,8 +88,9 @@ module.exports = async function statusIndex(req, res) {
 
       acc[oauth_id] = {
         is_current_status: Boolean(
-          current_status.status_emoji ===
-            statusNormalizedForGithub.status_emoji &&
+          current_status &&
+            current_status.status_emoji ===
+              statusNormalizedForGithub.status_emoji &&
             current_status.status_text === statusNormalizedForGithub.status_text
         ),
         custom_emoji: getEmojiHTML(statusNormalizedForGithub.status_emoji, true)
