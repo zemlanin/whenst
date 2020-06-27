@@ -1,8 +1,8 @@
 const sql = require("pg-template-tag").default;
 
 const slackApi = require("../external/slack.js");
+const { getProfile, getTeam } = slackApi;
 const githubApi = require("../external/github.js");
-const { getProfile, getTeam } = require("../presets/slack/common.js");
 const { getEmojiHTML } = require("../presets/common.js");
 const { normalizeStatus } = require("../normalize-status.js");
 

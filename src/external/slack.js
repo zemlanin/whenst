@@ -8,18 +8,92 @@ const slackPost = bent("https://slack.com/api/", "json", "POST");
 const APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
 const APPLICATION_JSON = "application/json";
 
+const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
+
+async function apiGet(apiMethod, body) {
+  const encodedBody = body ? "?" + querystring.stringify(body) : "";
+
+  return slackGet(`${apiMethod}${encodedBody}`);
+}
+
+async function getProfile(db, redis, token, userId) {
+  const apiMethod = "users.profile.get";
+  const cacheKey = `slack:${apiMethod}:${userId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    if (
+      freshResp.profile.status_emoji &&
+      freshResp.profile.status_emoji.match(INSIDE_COLONS_REGEX)
+    ) {
+      freshResp.profile.status_emoji = freshResp.profile.status_emoji.slice(
+        1,
+        -1
+      );
+    }
+
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
+async function getTeam(db, redis, token, teamId) {
+  const apiMethod = "team.info";
+  const cacheKey = `slack:${apiMethod}:${teamId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
+async function getTeamEmojis(db, redis, token, teamId) {
+  const apiMethod = "emoji.list";
+  const cacheKey = `slack:${apiMethod}:${teamId}`;
+
+  const cachedResp = await redis.get(cacheKey);
+
+  if (cachedResp) {
+    return JSON.parse(cachedResp);
+  }
+
+  const freshResp = await apiGet(apiMethod, { token });
+
+  if (freshResp.ok) {
+    await redis.set(cacheKey, JSON.stringify(freshResp), "EX", 60 * 60);
+  }
+
+  return freshResp;
+}
+
 module.exports = {
+  DEFAULT_STATUS_EMOJI: "speech_balloon",
   // https://api.slack.com/reference/surfaces/formatting#escaping
   escapeStatusText: (str) =>
     str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
   decodeStatusText: (str) =>
     str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"),
-  apiGet: async function apiGet(apiMethod, body) {
-    const encodedBody = body ? "?" + querystring.stringify(body) : "";
-
-    return slackGet(`${apiMethod}${encodedBody}`);
-  },
-  DEFAULT_STATUS_EMOJI: "speech_balloon",
+  getProfile,
+  getTeam,
+  getTeamEmojis,
+  apiGet,
   apiPost: async function apiPost(
     apiMethod,
     body,
