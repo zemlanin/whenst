@@ -116,23 +116,16 @@ module.exports = async function statusUse(req, res) {
 
   res.statusCode = 303;
 
-  if (!status_text && !status_emoji) {
-    res.setHeader(
-      "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
-    );
-  } else {
-    const query = new url.URLSearchParams({
-      status_text: status_text || "",
-      status_emoji: status_emoji || "",
-    });
+  const query = new url.URLSearchParams({
+    status_text: status_text || "",
+    status_emoji: status_emoji || "",
+  });
 
-    res.setHeader(
-      "Location",
-      new url.URL(
-        req.app.routes.statusIndex.stringify() + "?" + query.toString(),
-        req.absolute
-      )
-    );
-  }
+  res.setHeader(
+    "Location",
+    new url.URL(
+      req.app.routes.statusIndex.stringify() + "?" + query.toString(),
+      req.absolute
+    )
+  );
 };

@@ -23,6 +23,10 @@ function normalizeStatus(body, { behavior } = {}) {
   const body_status_emoji = body.status_emoji ?? body.get?.("status_emoji");
   const body_status_text = body.status_text ?? body.get?.("status_text");
 
+  if (!body_status_emoji && !body_status_text) {
+    return { empty: true, status_emoji: "", status_text: "" };
+  }
+
   if (body_status_emoji) {
     const emoji_name = nodeEmoji.which(body_status_emoji, false);
 

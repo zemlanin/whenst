@@ -22,16 +22,18 @@
         </form>
       {{else}}
         {{#unless @root.status.custom_emoji}}
-          <form
-            method="POST"
-            action="{{ route "presetSave" }}"
-            class="pt3"
-          >
-            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-            <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-            <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-            <button type="submit">save</button>
-          </form>
+          {{#unless @root.status.empty}}
+            <form
+              method="POST"
+              action="{{ route "presetSave" }}"
+              class="pt3"
+            >
+              <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+              <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+              <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+              <button type="submit">save</button>
+            </form>
+          {{/unless}}
         {{/unless}}
       {{/if}}
     </div>
@@ -113,24 +115,20 @@
               {{/if}}
             </span>
 
-            {{#if current_status}}
-              <a
-                class="flex flex-row"
-                href="{{ route "statusIndex"
-                  ?status_emoji=current_status.status_emoji
-                  ?status_text=current_status.status_text }}"
-              >
-                <span class="status">
-                  {{>partials_status current_status}}
-                </span>
-                <span
-                  class="deeper"
-                  role="presentation"
-                >❯</span>
-              </a>
-            {{else}}
-              <em style="color: gray">no status</em>
-            {{/if}}
+            <a
+              class="flex flex-row"
+              href="{{ route "statusIndex"
+                ?status_emoji=current_status.status_emoji
+                ?status_text=current_status.status_text }}"
+            >
+              <span class="status">
+                {{>partials_status current_status}}
+              </span>
+              <span
+                class="deeper"
+                role="presentation"
+              >❯</span>
+            </a>
 
             <div style="flex-grow: 1"></div>
 

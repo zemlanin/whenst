@@ -265,8 +265,11 @@ a:visited {
   flex-basis: 0;
 }
 
-#topbar .status {
-  flex-grow: 1;
+.status .empty-status {
+  color: gray;
+  font-style: italic;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
 .status-form {

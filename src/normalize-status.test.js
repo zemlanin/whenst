@@ -55,6 +55,15 @@ describe("normalize-status", () => {
             status_text: ":banana: :phone:",
           },
         ],
+        [{}, { empty: true, status_emoji: "", status_text: "" }],
+        [
+          { status_text: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
+        [
+          { status_text: "", status_emoji: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
       ];
 
       for (const [body, result] of cases) {
@@ -72,9 +81,6 @@ describe("normalize-status", () => {
 
     it("should fail", async () => {
       const cases = [
-        {},
-        { status_text: "" },
-        { status_text: "", status_emoji: "" },
         { status_text: "", status_emoji: ":banana: :phone:" },
         { status_text: "", status_emoji: "::" },
       ];
@@ -146,6 +152,15 @@ describe("normalize-status", () => {
             default_status_emoji: true,
           },
         ],
+        [{}, { empty: true, status_emoji: "", status_text: "" }],
+        [
+          { status_text: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
+        [
+          { status_text: "", status_emoji: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
       ];
 
       for (const [body, result] of cases) {
@@ -160,9 +175,6 @@ describe("normalize-status", () => {
 
     it("should fail", async () => {
       const cases = [
-        {},
-        { status_text: "" },
-        { status_text: "", status_emoji: "" },
         { status_text: "", status_emoji: ":banana: :phone:" },
         { status_text: "", status_emoji: "::" },
       ];
@@ -238,6 +250,15 @@ describe("normalize-status", () => {
             default_status_emoji: true,
           },
         ],
+        [{}, { empty: true, status_emoji: "", status_text: "" }],
+        [
+          { status_text: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
+        [
+          { status_text: "", status_emoji: "" },
+          { empty: true, status_emoji: "", status_text: "" },
+        ],
       ];
 
       for (const [body, result] of cases) {
@@ -252,9 +273,6 @@ describe("normalize-status", () => {
 
     it("should fail", async () => {
       const cases = [
-        {},
-        { status_text: "" },
-        { status_text: "", status_emoji: "" },
         { status_text: "", status_emoji: ":banana: :phone:" },
         { status_text: "", status_emoji: "::" },
       ];

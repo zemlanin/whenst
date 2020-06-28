@@ -56,20 +56,22 @@
               >❯</span>
             </a>
 
-            <div class="flex">
-              <form
-                id="statusUseForm"
-                method="POST"
-                action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-              >
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                <input type="hidden" name="github_oauth_id" value="{{oauth_id}}">
-                <button
-                  type="submit"
-                  formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-                >clear</button>
-              </form>
-            </div>
+            {{#unless current_status.empty }}
+              <div class="flex">
+                <form
+                  id="statusUseForm"
+                  method="POST"
+                  action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
+                >
+                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                  <input type="hidden" name="github_oauth_id" value="{{oauth_id}}">
+                  <button
+                    type="submit"
+                    formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
+                  >clear</button>
+                </form>
+              </div>
+            {{/unless}}
           </div>
         {{/if}}
       {{/with}}

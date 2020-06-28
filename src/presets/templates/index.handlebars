@@ -4,6 +4,38 @@
     {{> partials_topbar }}
 
     <div style="padding: 1em 0.5em 0 0.5em;">
+
+      <form
+        class="preset-row status-form"
+        method="post"
+        action="{{ route "presetSave" }}"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        {{! chrome doesn't support flexbox in `<fieldset>` }}
+        <div role="group" class="status">
+          <label for="status-form-status_emoji" class="status_emoji empty-emoji">
+            <span class="current-emoji">&nbsp;</span>
+          </label>
+          <input
+            id="status-form-status_emoji"
+            type="text"
+            name="status_emoji"
+            list="emoji_datalist"
+            aria-label="emoji"
+            placeholder="emoji"
+          >
+          <hr>
+          <input
+            type="text"
+            name="status_text"
+            placeholder="text"
+            class="status_text"
+          >
+        </div>
+        <div style="width: 0.5em;"></div>
+        <button type="submit" class="primary">save</button>
+      </form>
+
       <form
         id="statusUseForm"
         class="preset-row"
@@ -58,39 +90,34 @@
             </li>
           {{/each}}
         </ul>
-        <button type="submit">clear</button>
       </form>
 
-      <form
-        class="preset-row status-form"
-        method="post"
-        action="{{ route "presetSave" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        {{! chrome doesn't support flexbox in `<fieldset>` }}
-        <div role="group" class="status">
-          <label for="status-form-status_emoji" class="status_emoji empty-emoji">
-            <span class="current-emoji">&nbsp;</span>
-          </label>
-          <input
-            id="status-form-status_emoji"
-            type="text"
-            name="status_emoji"
-            list="emoji_datalist"
-            aria-label="emoji"
-            placeholder="emoji"
+      <div class="flex flex-column pb3">
+        <div class="flex flex-row justify-between items-center">
+          <a
+            class="flex flex-row"
+            href="{{ route "statusIndex"
+              ?status_emoji=""
+              ?status_text="" }}"
           >
-          <hr>
-          <input
-            type="text"
-            name="status_text"
-            placeholder="text"
-            class="status_text"
-          >
+            <span class="status">
+              {{>partials_status empty=true}}
+            </span>
+            <span
+              class="deeper"
+              role="presentation"
+            >❯</span>
+          </a>
+
+          <div class="flex">
+            <button
+              type="submit"
+              form="statusUseForm"
+              formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
+            >use</button>
+          </div>
         </div>
-        <div style="width: 0.5em;"></div>
-        <button type="submit" class="primary">save</button>
-      </form>
+      </div>
 
       {{#each presets}}
         <div class="flex flex-column pb3">

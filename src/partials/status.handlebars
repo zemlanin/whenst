@@ -1,16 +1,19 @@
-{{~#if status_emoji_html~}}
-  {{~#if custom_emoji~}}
-    <span class="status_emoji custom-emoji">
+{{#if empty~}}
+  <span class="empty-status">empty status</span>
+{{~else~}}
+  {{~#if status_emoji_html~}}
+    {{~#if custom_emoji~}}
+      <span class="status_emoji custom-emoji">
+        {{{status_emoji_html}}}
+      </span>
+    {{~else~}}
+    <span class="status_emoji">
       {{{status_emoji_html}}}
     </span>
+    {{~/if ~}}
   {{~else~}}
-  <span class="status_emoji">
-    {{{status_emoji_html}}}
-  </span>
+    <span class="status_emoji empty-emoji">&nbsp;</span>
   {{~/if ~}}
-{{~else~}}
-  <span class="status_emoji empty-emoji">&nbsp;</span>
+
+  {{~#if status_text_html}}<hr><span class="status_text">{{{status_text_html}}}</span>{{/if ~}}
 {{~/if ~}}
-
-
-{{~#if status_text_html}}<hr><span class="status_text">{{{status_text_html}}}</span>{{/if ~}}

@@ -61,6 +61,12 @@ async function getAccount(db, redis, id) {
         status_text_html: getEmojiHTML(profile.status_text).html,
         custom_emoji: status_emoji_html.custom_emoji,
       };
+    } else {
+      current_status = {
+        empty: true,
+        status_emoji: "",
+        status_text: "",
+      };
     }
 
     oauths.push({
@@ -96,6 +102,12 @@ async function getAccount(db, redis, id) {
         profile.status.message
       ).html;
       current_status.custom_emoji = status_emoji_html.custom_emoji;
+    } else {
+      current_status = {
+        empty: true,
+        status_emoji: "",
+        status_text: "",
+      };
     }
 
     oauths.push({
