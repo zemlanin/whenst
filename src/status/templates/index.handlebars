@@ -4,11 +4,36 @@
     {{> partials_topbar }}
 
     <div class="pt3 pb4 pl2 pr2 flex flex-column items-center">
-      <div style="text-align: center;">
-        <span class="status" style="font-size: 1.5em;">
-          {{>partials_status status}}
-        </span>
+      <div class="status" style="font-size: 1.5em;">
+        {{>partials_status status}}
       </div>
+
+      {{#if warnings}}
+        <details class="pv2 w-100">
+          <summary style="text-align: center; cursor: pointer">
+            ⚠️ <span style="display: inline-block; font-style: italic">
+              Status may differ when used
+            </span>
+          </summary>
+          <ul>
+            {{#if warnings.slack.default_emoji}}
+              <li>When status has no emoji, Slack uses 💬 instead</li>
+            {{/if}}
+            {{#if warnings.github.default_emoji}}
+              <li>When status has no emoji, Github uses 💭 instead</li>
+            {{/if}}
+            {{#if warnings.slack.text_as_emoji}}
+              <li>When status has emoji-only text, Slack uses it as a status emoji instead</li>
+            {{/if}}
+            {{#if warnings.slack.too_long_text}}
+              <li>Text may be too long for Slack</li>
+            {{/if}}
+            {{#if warnings.github.too_long_text}}
+              <li>Text may be too long for Github</li>
+            {{/if}}
+          </ul>
+        </details>
+      {{/if}}
 
       {{#if already_saved}}
         <form

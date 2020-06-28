@@ -52,9 +52,16 @@ module.exports = async function statusIndex(req, res) {
   const slacks = account
     ? account.oauths.filter((o) => o.service === "slack")
     : [];
+
+  const statusNormalizedForSlack = slacks.length
+    ? normalizeStatus(status, {
+        behavior: normalizeStatus.BEHAVIOR.slack,
+      })
+    : null;
+
   statusOnServices.slack = slacks.reduce(
     (acc, { oauth_id, current_status }) => {
-      const statusNormalizedForGithub = normalizeStatus(status, {
+      const statusNormalizedForSlack = normalizeStatus(status, {
         behavior: normalizeStatus.BEHAVIOR.slack,
       });
 
@@ -62,10 +69,10 @@ module.exports = async function statusIndex(req, res) {
         is_current_status: Boolean(
           current_status &&
             current_status.status_emoji ===
-              statusNormalizedForGithub.status_emoji &&
-            current_status.status_text === statusNormalizedForGithub.status_text
+              statusNormalizedForSlack.status_emoji &&
+            current_status.status_text === statusNormalizedForSlack.status_text
         ),
-        custom_emoji: getEmojiHTML(statusNormalizedForGithub.status_emoji, true)
+        custom_emoji: getEmojiHTML(statusNormalizedForSlack.status_emoji, true)
           .custom_emoji,
       };
 
@@ -77,12 +84,15 @@ module.exports = async function statusIndex(req, res) {
   const githubs = account
     ? account.oauths.filter((o) => o.service === "github")
     : [];
+
+  const statusNormalizedForGithub = githubs.length
+    ? normalizeStatus(status, {
+        behavior: normalizeStatus.BEHAVIOR.github,
+      })
+    : null;
+
   statusOnServices.github = githubs.reduce(
     (acc, { oauth_id, current_status }) => {
-      const statusNormalizedForGithub = normalizeStatus(status, {
-        behavior: normalizeStatus.BEHAVIOR.github,
-      });
-
       acc[oauth_id] = {
         is_current_status: Boolean(
           current_status &&
@@ -102,6 +112,13 @@ module.exports = async function statusIndex(req, res) {
   return res.render(tmpl, {
     account,
     status,
+    warnings:
+      statusNormalizedForSlack?.warnings || statusNormalizedForGithub?.warnings
+        ? {
+            slack: statusNormalizedForSlack?.warnings || {},
+            github: statusNormalizedForGithub?.warnings || {},
+          }
+        : null,
     already_saved,
     statusOnServices,
   });

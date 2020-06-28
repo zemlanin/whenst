@@ -109,7 +109,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "speech_balloon",
             status_text: ">",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -126,7 +126,11 @@ describe("normalize-status", () => {
         ],
         [
           { status_text: "😊", status_emoji: "" },
-          { status_emoji: "blush", status_text: "" },
+          {
+            status_emoji: "blush",
+            status_text: "",
+            warnings: { text_as_emoji: true },
+          },
         ],
         [
           { status_text: "", status_emoji: "slack" },
@@ -134,14 +138,18 @@ describe("normalize-status", () => {
         ],
         [
           { status_text: ":slack:", status_emoji: "" },
-          { status_emoji: "slack", status_text: "" },
+          {
+            status_emoji: "slack",
+            status_text: "",
+            warnings: { text_as_emoji: true },
+          },
         ],
         [
           { status_text: "hello world", status_emoji: "" },
           {
             status_emoji: "speech_balloon",
             status_text: "hello world",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -149,7 +157,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "speech_balloon",
             status_text: ":banana: :phone:",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [{}, { empty: true, status_emoji: "", status_text: "" }],
@@ -199,7 +207,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "thought_balloon",
             status_text: ">",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -219,7 +227,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "thought_balloon",
             status_text: ":blush:",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -231,7 +239,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "thought_balloon",
             status_text: ":octocat:",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -239,7 +247,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "thought_balloon",
             status_text: "hello world",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [
@@ -247,7 +255,7 @@ describe("normalize-status", () => {
           {
             status_emoji: "thought_balloon",
             status_text: ":banana: :phone:",
-            default_status_emoji: true,
+            warnings: { default_emoji: true },
           },
         ],
         [{}, { empty: true, status_emoji: "", status_text: "" }],

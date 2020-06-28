@@ -44,6 +44,7 @@
     "pg": "^8.2.1",
     "pg-template-tag": "^0.1.2",
     "redis": "^3.0.2",
+    "string-length": "^4.0.1",
     "url-pattern": "^1.0.3"
   }
 }

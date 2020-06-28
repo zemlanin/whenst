@@ -1,4 +1,5 @@
 const nodeEmoji = require("node-emoji");
+const stringLength = require("string-length");
 
 const slackApi = require("./external/slack.js");
 const githubApi = require("./external/github.js");
@@ -51,7 +52,11 @@ function normalizeStatus(body, { behavior } = {}) {
     ? nodeEmoji.replace(body_status_text.trim(), (emoji) => `:${emoji.key}:`)
     : "";
 
-  let default_status_emoji = false;
+  let warnings = {
+    default_emoji: false,
+    text_as_emoji: false,
+    too_long_text: false,
+  };
 
   if (!status_emoji) {
     if (behavior === SLACK_BEHAVIOR) {
@@ -63,14 +68,25 @@ function normalizeStatus(body, { behavior } = {}) {
       ) {
         status_emoji = status_text.slice(1, -1);
         status_text = "";
-      } else if (status_text) {
+        warnings.text_as_emoji = true;
+      }
+
+      if (status_text) {
         status_emoji = slackApi.DEFAULT_STATUS_EMOJI;
-        default_status_emoji = true;
+        warnings.default_emoji = true;
+      }
+
+      if (status_text && stringLength(status_text) > 100) {
+        warnings.too_long_text = true;
       }
     } else if (behavior === GITHUB_BEHAVIOR) {
       if (status_text) {
         status_emoji = githubApi.DEFAULT_STATUS_EMOJI;
-        default_status_emoji = true;
+        warnings.default_emoji = true;
+      }
+
+      if (status_text && stringLength(status_text) > 80) {
+        warnings.too_long_text = true;
       }
     }
   }
@@ -79,8 +95,17 @@ function normalizeStatus(body, { behavior } = {}) {
     return {};
   }
 
-  if (default_status_emoji) {
-    return { status_emoji, status_text, default_status_emoji };
+  warnings = Object.keys(warnings).reduce((acc, key) => {
+    if (warnings[key]) {
+      acc = acc || {};
+      acc[key] = warnings[key];
+    }
+
+    return acc;
+  }, null);
+
+  if (warnings) {
+    return { status_emoji, status_text, warnings: warnings };
   }
 
   return { status_emoji, status_text };

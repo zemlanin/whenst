@@ -263,6 +263,7 @@ a:visited {
   flex-shrink: 1;
   padding-left: 0.5em;
   flex-basis: 0;
+  word-break: break-word;
 }
 
 .status .empty-status {
