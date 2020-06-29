@@ -4,6 +4,8 @@ const sql = require("pg-template-tag").default;
 const config = require("../config.js");
 const slackApi = require("../external/slack.js");
 
+const { encryptAccessToken } = require("./access-token-crypto.js");
+
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function authSlack(req, res) {
@@ -33,10 +35,15 @@ module.exports = async function authSlack(req, res) {
   const slackResp = await slackApi.apiPost("oauth.access", accessRequestBody);
 
   if (slackResp.ok) {
+    const encrypted_access_token = encryptAccessToken(slackResp.access_token);
+
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
-        SELECT id, account_id, scopes, revoked from slack_oauth
-        WHERE access_token = ${slackResp.access_token}
+        SELECT id, account_id, scopes, revoked
+        FROM slack_oauth
+        WHERE user_id = ${slackResp.user_id}
+          AND team_id = ${slackResp.team_id}
+          AND revoked = false
         LIMIT 1;
       `);
 
@@ -51,8 +58,21 @@ module.exports = async function authSlack(req, res) {
         if (existing_oauth.scopes.join(",") !== slackResp.scope) {
           await db.query(sql`
             UPDATE slack_oauth
-            SET scopes = ${slackResp.scope.split(",")}
-            WHERE access_token = ${slackResp.access_token};
+            SET
+              scopes = ${slackResp.scope.split(",")},
+              access_token = '',
+              access_token_encrypted = ${encrypted_access_token.cipher},
+              access_token_salt = ${encrypted_access_token.salt}
+            WHERE id = ${existing_oauth.id};
+          `);
+        } else {
+          await db.query(sql`
+            UPDATE slack_oauth
+            SET
+              access_token = '',
+              access_token_encrypted = ${encrypted_access_token.cipher},
+              access_token_salt = ${encrypted_access_token.salt}
+            WHERE id = ${existing_oauth.id};
           `);
         }
 
@@ -81,7 +101,8 @@ module.exports = async function authSlack(req, res) {
           INSERT INTO
           slack_oauth (
             account_id,
-            access_token,
+            access_token_encrypted,
+            access_token_salt,
             scopes,
             user_id,
             team_id,
@@ -89,7 +110,8 @@ module.exports = async function authSlack(req, res) {
           )
           VALUES (
             ${account_id},
-            ${slackResp.access_token},
+            ${encrypted_access_token.cipher},
+            ${encrypted_access_token.salt}
             ${slackResp.scope.split(",")},
             ${slackResp.user_id},
             ${slackResp.team_id},

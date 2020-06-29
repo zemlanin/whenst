@@ -3,6 +3,8 @@ const sql = require("pg-template-tag").default;
 
 const githubApi = require("../external/github.js");
 
+const { encryptAccessToken } = require("./access-token-crypto.js");
+
 const TODO_BAD_REQUEST = 400;
 
 module.exports = async function authGithub(req, res) {
@@ -39,6 +41,8 @@ module.exports = async function authGithub(req, res) {
       throw new Error(`can't retrieve user`);
     }
 
+    const encrypted_access_token = encryptAccessToken(githubResp.access_token);
+
     await req.db.transaction(async (db) => {
       const existingOauthResp = await db.query(sql`
         SELECT id, account_id, scopes
@@ -55,14 +59,18 @@ module.exports = async function authGithub(req, res) {
             UPDATE github_oauth
             SET
               scopes = ${githubResp.scope.split(",")},
-              access_token = ${githubResp.access_token}
+              access_token = '',
+              access_token_encrypted = ${encrypted_access_token.cipher},
+              access_token_salt = ${encrypted_access_token.salt}
             WHERE id = ${existing_oauth.id};
           `);
         } else {
           await db.query(sql`
             UPDATE github_oauth
             SET
-              access_token = ${githubResp.access_token}
+              access_token = '',
+              access_token_encrypted = ${encrypted_access_token.cipher},
+              access_token_salt = ${encrypted_access_token.salt}
             WHERE id = ${existing_oauth.id};
           `);
         }
@@ -92,13 +100,15 @@ module.exports = async function authGithub(req, res) {
           INSERT INTO
           github_oauth (
             account_id,
-            access_token,
+            access_token_encrypted,
+            access_token_salt,
             scopes,
             user_id
           )
           VALUES (
             ${account_id},
-            ${githubResp.access_token},
+            ${encrypted_access_token.cipher},
+            ${encrypted_access_token.salt},
             ${githubResp.scope.split(",")},
             ${githubUser.profile.id}
           )

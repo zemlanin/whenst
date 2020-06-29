@@ -71,6 +71,7 @@ jobs:
           CI: true
           DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
           SESSION_SECRET: "sikret"
+          ACCESS_TOKEN_SECRET: "axes_tokin_sikret"
           SLACK_CLIENT_ID: "fake_client_id"
           SLACK_CLIENT_SECRET: "fake_client_secret"
           SLACK_SIGNING_SECRET: "fake_signing_secret"

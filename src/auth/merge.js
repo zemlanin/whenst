@@ -91,6 +91,7 @@ async function performMerge(req, res) {
         (account_id, status_emoji, status_text)
       SELECT ${activeAccount.id}, status_emoji, status_text FROM status_preset
       WHERE account_id = ${accountToMerge.id}
+      ON CONFLICT ON CONSTRAINT status_preset_unique_text_emoji DO NOTHING;
     `);
   });
 

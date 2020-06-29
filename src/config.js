@@ -15,6 +15,16 @@ function getSessionSecret() {
   return secret || "6563eae1e1c146d1a377a7779a03bbf3";
 }
 
+function getAccessTokenSecret() {
+  const secret = process.env.ACCESS_TOKEN_SECRET;
+
+  if (!secret && process.env.NODE_ENV !== "development") {
+    throw new Error(`ACCESS_TOKEN_SECRET is required in production env`);
+  }
+
+  return secret || "f6b8d6921ec724dcd4a98cc81ffb31a1";
+}
+
 function getSlackConfig() {
   const {
     SLACK_CLIENT_ID,
@@ -73,6 +83,9 @@ module.exports = {
   },
   session: {
     secret: getSessionSecret(),
+  },
+  oauth: {
+    accessTokenSecret: getAccessTokenSecret(),
   },
   slack: getSlackConfig(),
   github: getGithubConfig(),

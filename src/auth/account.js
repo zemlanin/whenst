@@ -6,6 +6,8 @@ const githubApi = require("../external/github.js");
 const { getEmojiHTML } = require("../presets/common.js");
 const { normalizeStatus } = require("../normalize-status.js");
 
+const { decryptAccessToken } = require("./access-token-crypto.js");
+
 module.exports = {
   getAccount,
 };
@@ -31,13 +33,15 @@ async function getAccount(db, redis, id) {
   const oauths = [];
 
   const dbSlackOauthRes = await db.query(sql`
-    SELECT s.id, s.user_id, s.team_id, s.access_token FROM slack_oauth s
+    SELECT s.id, s.user_id, s.team_id, s.access_token, s.access_token_salt, s.access_token_encrypted
+    FROM slack_oauth s
     WHERE s.account_id = ${account_id} AND s.revoked = false
   `);
 
   const dbGithubOauthRes = await db.query(sql`
-    SELECT o.id, o.user_id, o.access_token FROM github_oauth o
-    WHERE o.account_id = ${account_id} AND o.revoked = false
+    SELECT g.id, g.user_id, g.access_token, g.access_token_salt, g.access_token_encrypted
+    FROM github_oauth g
+    WHERE g.account_id = ${account_id} AND g.revoked = false
   `);
 
   if (!dbSlackOauthRes.rows.length && !dbGithubOauthRes.rows.length) {
@@ -45,9 +49,22 @@ async function getAccount(db, redis, id) {
   }
 
   for (const row of dbSlackOauthRes.rows) {
-    const { access_token, user_id, team_id } = row;
+    const { access_token_salt, access_token_encrypted, user_id, team_id } = row;
 
-    const { profile } = await getProfile(db, redis, access_token, user_id);
+    const access_token = access_token_encrypted
+      ? decryptAccessToken(access_token_encrypted, access_token_salt)
+      : row.access_token;
+
+    let profile;
+
+    try {
+      profile = (await getProfile(db, redis, access_token, user_id)).profile;
+    } catch (e) {
+      // TODO: notify about external API problems
+      console.error(e);
+      continue;
+    }
+
     const { team } = await getTeam(db, redis, access_token, team_id);
 
     let current_status = null;
@@ -81,9 +98,21 @@ async function getAccount(db, redis, id) {
   }
 
   for (const row of dbGithubOauthRes.rows) {
-    const { access_token, user_id } = row;
+    const { access_token_salt, access_token_encrypted, user_id } = row;
 
-    const { profile } = await githubApi.getProfile(access_token);
+    const access_token = access_token_encrypted
+      ? decryptAccessToken(access_token_encrypted, access_token_salt)
+      : row.access_token;
+
+    let profile;
+
+    try {
+      profile = (await githubApi.getProfile(access_token)).profile;
+    } catch (e) {
+      // TODO: notify about external API problems
+      console.error(e);
+      continue;
+    }
 
     let current_status = null;
     if (profile.status?.emoji || profile.status?.message) {
