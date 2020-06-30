@@ -6,21 +6,14 @@ describe("smoke", () => {
   const slackApi = require("../src/external/slack.js");
   const config = require("../src/config.js");
 
-  before(() => {
-    sinon.stub(slackApi);
-  });
-
-  after(() => {
-    sinon.restore();
-  });
-
   beforeEach(() => {
     server = require("../index.js").server;
   });
 
   afterEach(() => {
-    server.close();
     sinon.resetBehavior();
+    sinon.restore();
+    server.close();
   });
 
   it("should load landing", async () => {
@@ -43,6 +36,9 @@ describe("smoke", () => {
   });
 
   it("should call slack", async () => {
+    sinon.stub(slackApi);
+    sinon.replace(config, "disableCSRFCheck", true);
+
     slackApi.apiPost.returns({
       ok: false,
     });

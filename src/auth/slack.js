@@ -24,7 +24,7 @@ module.exports = async function authSlack(req, res) {
 
   const state = query.get("state");
 
-  if (state != getOauthState(req.session)) {
+  if (!config.disableCSRFCheck && state != getOauthState(req.session)) {
     res.statusCode = 302;
 
     res.setHeader(

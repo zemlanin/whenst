@@ -2,6 +2,7 @@ const url = require("url");
 const crypto = require("crypto");
 const sql = require("pg-template-tag").default;
 
+const config = require("../config.js");
 const githubApi = require("../external/github.js");
 
 const { encryptAccessToken } = require("./access-token-crypto.js");
@@ -23,7 +24,7 @@ module.exports = async function authGithub(req, res) {
 
   const state = query.get("state");
 
-  if (state != getOauthState(req.session)) {
+  if (!config.disableCSRFCheck && state != getOauthState(req.session)) {
     res.statusCode = 302;
 
     res.setHeader(
