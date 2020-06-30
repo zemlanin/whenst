@@ -6,7 +6,7 @@
     <h1 class="ph2">Status</h1>
 
     <div class="pb4 pl2 pr2 flex flex-column items-center">
-      <div class="status" style="font-size: 1.5em;">
+      <div id="target-status" class="status" style="font-size: 1.5em;">
         {{>partials_status status}}
       </div>
 
@@ -192,4 +192,50 @@
     {{> partials_footer . }}
 
   </div>
+
+  <script type="text/javascript">
+    (function (statusEmojiElement) {
+      if (
+        !statusEmojiElement ||
+        !statusEmojiElement.textContent.trim() ||
+        statusEmojiElement.classList.contains("custom-emoji") ||
+        statusEmojiElement.classList.contains("empty-emoji")
+      ) {
+        return;
+      }
+
+      const emoji = statusEmojiElement.textContent.trim();
+      document.title = `${emoji} | ${document.title}`;
+
+      const backgroundColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
+        Math.random() * 256
+      )}, ${Math.floor(Math.random() * 256)})`;
+
+      for (const link of document.head.querySelectorAll(
+        `link[rel="apple-touch-icon"]`
+      )) {
+        const size = parseInt(
+          (link.sizes.value || "180x180").match(/(\d+)x\1/)[1],
+          10
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, size, size);
+
+        ctx.font = `${Math.floor(size * 0.75)}px serif`;
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(emoji, Math.floor(size * 0.5), Math.floor(size * 0.55));
+
+        link.href = canvas.toDataURL();
+      }
+    })(document.querySelector("#target-status .status_emoji"));
+  </script>
 </body>
