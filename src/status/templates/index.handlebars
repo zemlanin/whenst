@@ -205,11 +205,8 @@
       }
 
       const emoji = statusEmojiElement.textContent.trim();
-      document.title = `${emoji} | ${document.title}`;
 
-      const backgroundColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
-        Math.random() * 256
-      )}, ${Math.floor(Math.random() * 256)})`;
+      const backgroundColor = `rgb(255, 255, 255)`;
 
       for (const link of document.head.querySelectorAll(
         `link[rel="apple-touch-icon"]`
@@ -232,7 +229,7 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ctx.fillText(emoji, Math.floor(size * 0.5), Math.floor(size * 0.55));
+        ctx.fillText(emoji, Math.floor(size * 0.5), Math.floor(size * 0.5));
 
         link.href = canvas.toDataURL();
       }
