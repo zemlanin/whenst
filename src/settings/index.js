@@ -1,8 +1,12 @@
 const url = require("url");
+const crypto = require("crypto");
 
 const config = require("../config.js");
 
 const tmpl = require.resolve("./templates/index.handlebars");
+
+const getOauthState = (session) =>
+  crypto.createHash("sha256").update(session.id).digest("hex");
 
 module.exports = async function settingsIndex(req, res) {
   const account = await req.getAccount();
@@ -16,17 +20,19 @@ module.exports = async function settingsIndex(req, res) {
     return;
   }
 
+  const state = getOauthState(req.session);
+
   return res.render(tmpl, {
     account,
     slackAuth: {
       client_id: config.slack.client_id,
       scope: config.slack.scope,
-      state: "", // TODO
+      state,
     },
     githubAuth: {
       client_id: config.github.client_id,
       scope: config.github.scope,
-      state: "", // TODO
+      state,
     },
   });
 };

@@ -1,4 +1,5 @@
 const url = require("url");
+const crypto = require("crypto");
 const sql = require("pg-template-tag").default;
 
 const githubApi = require("../external/github.js");
@@ -6,6 +7,9 @@ const githubApi = require("../external/github.js");
 const { encryptAccessToken } = require("./access-token-crypto.js");
 
 const TODO_BAD_REQUEST = 400;
+
+const getOauthState = (session) =>
+  crypto.createHash("sha256").update(session.id).digest("hex");
 
 module.exports = async function authGithub(req, res) {
   const query = new url.URL(req.url, req.absolute).searchParams;
@@ -17,12 +21,23 @@ module.exports = async function authGithub(req, res) {
     return error;
   }
 
+  const state = query.get("state");
+
+  if (state != getOauthState(req.session)) {
+    res.statusCode = 302;
+
+    res.setHeader(
+      "Location",
+      new url.URL(req.app.routes.landing.stringify(), req.absolute)
+    );
+    return;
+  }
+
   const code = query.get("code");
   const redirect_uri = new url.URL(
     req.app.routes.authGithub.stringify(),
     req.absolute
   );
-  const state = "";
 
   const githubResp = await githubApi.oauthAccessToken(
     code,
@@ -100,6 +115,7 @@ module.exports = async function authGithub(req, res) {
           INSERT INTO
           github_oauth (
             account_id,
+            access_token,
             access_token_encrypted,
             access_token_salt,
             scopes,
@@ -107,6 +123,7 @@ module.exports = async function authGithub(req, res) {
           )
           VALUES (
             ${account_id},
+            '',
             ${encrypted_access_token.cipher},
             ${encrypted_access_token.salt},
             ${githubResp.scope.split(",")},
