@@ -34,6 +34,19 @@ module.exports = async function authSlack(req, res) {
     return;
   }
 
+  const account = await req.getAccount();
+  const can_link_accounts = !account || account.oauths.length < 20;
+
+  if (!can_link_accounts) {
+    res.statusCode = 302;
+
+    res.setHeader(
+      "Location",
+      new url.URL(req.app.routes.landing.stringify(), req.absolute)
+    );
+    return;
+  }
+
   const code = query.get("code");
   const { client_id, client_secret } = config.slack;
   const redirect_uri = new url.URL(
@@ -92,16 +105,16 @@ module.exports = async function authSlack(req, res) {
           `);
         }
 
-        if (!req.session.account_id) {
+        if (!account) {
           req.session.account_id = existing_oauth.account_id;
-        } else if (req.session.account_id !== existing_oauth.account_id) {
+        } else if (account.id !== existing_oauth.account_id) {
           req.session.oauth_to_merge = {
             service: "slack",
             oauth_id: existing_oauth.id,
           };
         }
       } else {
-        let account_id = req.session.account_id;
+        let account_id = account.id;
 
         if (!account_id) {
           const dbAccountResp = await db.query(sql`

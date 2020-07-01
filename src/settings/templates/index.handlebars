@@ -81,31 +81,33 @@
         </div>
       {{/each}}
 
-      <div class="preset-row">
-        <span>
-          link another account
-        </span>
-        <div style="flex-grow: 1"></div>
-        {{#with slackAuth}}
-          <form method="GET" action="https://slack.com/oauth/authorize">
-            <input type="hidden" name="client_id" value="{{ client_id }}">
-            <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
-            <input type="hidden" name="state" value="{{ state }}">
-            <input type="hidden" name="scope" value="{{ scope }}">
-            <button type="submit">slack</button>
-          </form>
-        {{/with}}
-        <div style="width: 0.5em"></div>
-        {{#with githubAuth}}
-          <form method="GET" action="https://github.com/login/oauth/authorize">
-            <input type="hidden" name="client_id" value="{{ client_id }}">
-            <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
-            <input type="hidden" name="state" value="{{ state }}">
-            <input type="hidden" name="scope" value="{{ scope }}">
-            <button type="submit">github</button>
-          </form>
-        {{/with}}
-      </div>
+      {{#if can_link_accounts}}
+        <div class="preset-row">
+          <span>
+            link another account
+          </span>
+          <div style="flex-grow: 1"></div>
+          {{#with slackAuth}}
+            <form method="GET" action="https://slack.com/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">slack</button>
+            </form>
+          {{/with}}
+          <div style="width: 0.5em"></div>
+          {{#with githubAuth}}
+            <form method="GET" action="https://github.com/login/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">github</button>
+            </form>
+          {{/with}}
+        </div>
+      {{/if}}
 
       <div class="h2"></div>
 

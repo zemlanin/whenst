@@ -22,8 +22,11 @@ module.exports = async function settingsIndex(req, res) {
 
   const state = getOauthState(req.session);
 
+  const can_link_accounts = account.oauths.length < 20;
+
   return res.render(tmpl, {
     account,
+    can_link_accounts,
     slackAuth: {
       client_id: config.slack.client_id,
       scope: config.slack.scope,
