@@ -45,6 +45,21 @@ module.exports = async function presetSave(req, res) {
 
   const db = await req.db();
 
+  const can_save_presets =
+    (
+      await db.query(sql`
+        SELECT count(p.id)
+        FROM status_preset p
+        WHERE p.account_id = ${account.id};
+      `)
+    ).rows[0].count < 100;
+
+  if (!can_save_presets) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
   await db.query(sql`
     INSERT INTO status_preset (
       account_id,

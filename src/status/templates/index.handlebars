@@ -48,20 +48,22 @@
           <button type="submit" onclick="return confirm('are you sure?')">delete</button>
         </form>
       {{else}}
-        {{#unless @root.status.custom_emoji}}
-          {{#unless @root.status.empty}}
-            <form
-              method="POST"
-              action="{{ route "presetSave" }}"
-              class="pt3"
-            >
-              <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-              <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-              <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-              <button type="submit">save</button>
-            </form>
+        {{#if can_save_presets}}
+          {{#unless @root.status.custom_emoji}}
+            {{#unless @root.status.empty}}
+              <form
+                method="POST"
+                action="{{ route "presetSave" }}"
+                class="pt3"
+              >
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+                <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+                <button type="submit">save</button>
+              </form>
+            {{/unless}}
           {{/unless}}
-        {{/unless}}
+        {{/if}}
       {{/if}}
     </div>
 

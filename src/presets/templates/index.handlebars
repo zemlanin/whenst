@@ -6,38 +6,40 @@
     <h1 class="ph2">Presets</h1>
 
     <div style="padding: 0 0.5em 0 0.5em;">
-      <form
-        class="preset-row status-form"
-        method="post"
-        action="{{ route "presetSave" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        {{! chrome doesn't support flexbox in `<fieldset>` }}
-        <div role="group" class="status">
-          <label for="status-form-status_emoji" class="status_emoji empty-emoji">
-            <span class="current-emoji">&nbsp;</span>
-          </label>
-          <input
-            id="status-form-status_emoji"
-            type="text"
-            name="status_emoji"
-            list="emoji_datalist"
-            aria-label="emoji"
-            placeholder="emoji"
-            maxlength="120"
-          >
-          <hr>
-          <input
-            type="text"
-            name="status_text"
-            placeholder="text"
-            class="status_text"
-            maxlength="120"
-          >
-        </div>
-        <div style="width: 0.5em;"></div>
-        <button type="submit" class="primary">save</button>
-      </form>
+      {{#if can_save_presets}}
+        <form
+          class="preset-row status-form"
+          method="post"
+          action="{{ route "presetSave" }}"
+        >
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          {{! chrome doesn't support flexbox in `<fieldset>` }}
+          <div role="group" class="status">
+            <label for="status-form-status_emoji" class="status_emoji empty-emoji">
+              <span class="current-emoji">&nbsp;</span>
+            </label>
+            <input
+              id="status-form-status_emoji"
+              type="text"
+              name="status_emoji"
+              list="emoji_datalist"
+              aria-label="emoji"
+              placeholder="emoji"
+              maxlength="120"
+            >
+            <hr>
+            <input
+              type="text"
+              name="status_text"
+              placeholder="text"
+              class="status_text"
+              maxlength="120"
+            >
+          </div>
+          <div style="width: 0.5em;"></div>
+          <button type="submit" class="primary">save</button>
+        </form>
+      {{/if}}
 
       <form
         id="statusUseForm"

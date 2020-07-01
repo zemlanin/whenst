@@ -34,7 +34,7 @@ module.exports = async function presetsIndex(req, res) {
     ORDER BY p.id DESC;
   `);
 
-  let presets = dbPresetsRes.rows.map((presetRow) => {
+  const presets = dbPresetsRes.rows.map((presetRow) => {
     const status_emoji = presetRow.status_emoji;
 
     const status_emoji_html = getEmojiHTML(status_emoji, true);
@@ -54,6 +54,7 @@ module.exports = async function presetsIndex(req, res) {
   return res.render(tmpl, {
     account,
     presets,
+    can_save_presets: presets.length < 100,
     emoji_options: DEFAULT_EMOJI_LIST,
   });
 };

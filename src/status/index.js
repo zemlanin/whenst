@@ -109,6 +109,16 @@ module.exports = async function statusIndex(req, res) {
     {}
   );
 
+  const can_save_presets =
+    account &&
+    (
+      await db.query(sql`
+        SELECT count(p.id)
+        FROM status_preset p
+        WHERE p.account_id = ${account.id};
+      `)
+    ).rows[0].count < 100;
+
   return res.render(tmpl, {
     account,
     status,
@@ -121,5 +131,6 @@ module.exports = async function statusIndex(req, res) {
         : null,
     already_saved,
     statusOnServices,
+    can_save_presets,
   });
 };
