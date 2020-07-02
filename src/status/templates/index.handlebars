@@ -1,4 +1,21 @@
-{{>partials_head}}
+{{#> partials_head . }}
+  {{#with status}}
+    {{#if empty~}}
+      empty status
+    {{~else~}}
+      {{~#if status_emoji~}}
+        {{~#if custom_emoji~}}
+          :{{status_emoji}}:
+        {{~else~}}
+          {{{status_emoji_html}}}
+        {{~/if ~}}
+        {{~#if status_text}} | {{/if ~}}
+      {{~/if ~}}
+
+      {{~#if status_text}}{{status_text}}{{/if ~}}
+    {{/if}} |
+  {{/with}}
+{{/partials_head}}
 <body>
   <div id="layout">
     {{> partials_topbar }}
