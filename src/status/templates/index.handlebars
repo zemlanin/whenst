@@ -228,7 +228,7 @@
       const backgroundColor = `rgb(255, 255, 255)`;
 
       for (const link of document.head.querySelectorAll(
-        `link[rel="apple-touch-icon"]`
+        `link[rel="apple-touch-icon"], link[sizes]`
       )) {
         const size = parseInt(
           (link.sizes.value || "180x180").match(/(\d+)x\1/)[1],
@@ -243,7 +243,12 @@
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, size, size);
 
-        ctx.font = `${Math.floor(size * 0.75)}px serif`;
+        const appleTouchIcon = link.rel === "apple-touch-icon";
+        const fontSize = appleTouchIcon
+          ? Math.floor(size * 0.75)
+          : Math.floor(size * 0.65);
+
+        ctx.font = `${fontSize}px serif`;
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
