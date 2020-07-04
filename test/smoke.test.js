@@ -7,6 +7,7 @@ describe("smoke", () => {
   const config = require("../src/config.js");
 
   beforeEach(() => {
+    sinon.replace(config, "disableHTTPSEnforce", true);
     server = require("../index.js").server;
   });
 

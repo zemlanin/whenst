@@ -1,6 +1,7 @@
 const assert = require("assert");
 const crypto = require("crypto");
 
+const sinon = require("sinon");
 const supertest = require("supertest");
 
 const FAKE_SIGNING_SECRET = "8f742231b10e8888abcd99yyyzzz85a5";
@@ -26,14 +27,16 @@ describe("slack", () => {
   const ogSlackConfig = config.slack;
 
   before(() => {
-    config.slack = {
+    sinon.replace(config, "disableHTTPSEnforce", true);
+    sinon.replace(config, "slack", {
       ...ogSlackConfig,
       signing_secret: FAKE_SIGNING_SECRET,
-    };
+    });
   });
 
   after(() => {
-    config.slack = ogSlackConfig;
+    sinon.resetBehavior();
+    sinon.restore();
   });
 
   beforeEach(() => {
@@ -42,7 +45,6 @@ describe("slack", () => {
 
   afterEach(() => {
     server.close();
-    // sinon.resetBehavior();
   });
 
   it("should 400 on empty headers", async () => {

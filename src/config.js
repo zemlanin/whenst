@@ -99,5 +99,6 @@ module.exports = {
       : null,
     cacheBuster: TODO || parseInt(Math.random() * 36 * 36 * 36).toString(36),
   },
+  disableHTTPSEnforce: false, // overriden in tests
   disableCSRFCheck: false, // overriden in tests
 };

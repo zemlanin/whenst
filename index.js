@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   const port =
     (host && host.match(/:(\d+)$/) && host.match(/:(\d+)$/)[1]) || null;
 
-  if (config.production && protocol === "http") {
+  if (config.production && protocol === "http" && !config.disableHTTPSEnforce) {
     res.statusCode = 302;
 
     res.setHeader(
