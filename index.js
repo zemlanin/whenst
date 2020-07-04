@@ -23,9 +23,28 @@ const app = connect();
 
 app.use((req, res, next) => {
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+
   const host = req.headers["x-forwarded-host"] || req.headers["host"];
   const port =
     (host && host.match(/:(\d+)$/) && host.match(/:(\d+)$/)[1]) || null;
+
+  if (config.production && protocol === "http") {
+    res.statusCode = 302;
+
+    res.setHeader(
+      "Location",
+      new url.URL(
+        req.url,
+        url.format({
+          protocol: "https",
+          host,
+          port,
+        })
+      )
+    );
+
+    return res.end();
+  }
 
   req.absolute = url.format({
     protocol,
