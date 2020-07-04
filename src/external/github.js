@@ -12,14 +12,71 @@ const APPLICATION_JSON = "application/json";
 
 const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
+function importEmoji(str) {
+  if (!str) {
+    return str;
+  }
+
+  if (str === "woman_dancing") {
+    return "dancer";
+  }
+
+  if (str === "man_dancing") {
+    return str;
+  }
+
+  if (
+    str.startsWith(":man_") ||
+    str.startsWith("man_") ||
+    str.startsWith(":woman_") ||
+    str.startsWith("woman_")
+  ) {
+    // convert `man_factory_worker`, but keep `arrow_down`
+    return str
+      .replace(/^(:?)man/, "$1male")
+      .replace(/^(:?)woman/, "$1female")
+      .replace(/_/g, "-");
+  }
+  return str;
+}
+
+function exportEmoji(str) {
+  if (!str) {
+    return str;
+  }
+
+  if (str === "dancer") {
+    return "woman_dancing";
+  }
+
+  if (
+    str.startsWith(":male-") ||
+    str.startsWith("male-") ||
+    str.startsWith(":female-") ||
+    str.startsWith("female-")
+  ) {
+    // convert `male-factory-worker`, but keep `-1`
+    return str
+      .replace(/^(:?)male/, "$1man")
+      .replace(/^(:?)female/, "$1woman")
+      .replace(/-/g, "_");
+  }
+
+  return str;
+}
+
 module.exports = {
   DEFAULT_STATUS_EMOJI: "thought_balloon",
   // based on slack's escaping
   // https://api.slack.com/reference/surfaces/formatting#escaping
   escapeStatusText: (str) =>
+    str &&
     str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
   decodeStatusText: (str) =>
+    str &&
     str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"),
+  importEmoji,
+  exportEmoji,
   oauthAccessToken: async function (code, redirect_uri, state) {
     const headers = {
       "Content-Type": APPLICATION_FORM_URLENCODED,
@@ -67,6 +124,10 @@ module.exports = {
       data.profile.status.emoji = data.profile.status.emoji.slice(1, -1);
     }
 
+    if (data.profile.status?.emoji) {
+      data.profile.status.emoji = importEmoji(data.profile.status.emoji);
+    }
+
     if (data.profile.status?.message) {
       data.profile.status.message = module.exports.escapeStatusText(
         data.profile.status.message
@@ -96,7 +157,7 @@ module.exports = {
         }
       `,
       variables: {
-        emoji,
+        emoji: exportEmoji(emoji),
         message,
       },
     });

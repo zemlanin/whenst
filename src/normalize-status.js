@@ -21,12 +21,14 @@ module.exports = {
 
 function normalizeStatus(body, { behavior } = {}) {
   let status_emoji = "";
-  const body_status_emoji = body.status_emoji ?? body.get?.("status_emoji");
+  let body_status_emoji = body.status_emoji ?? body.get?.("status_emoji");
   const body_status_text = body.status_text ?? body.get?.("status_text");
 
   if (!body_status_emoji && !body_status_text) {
     return { empty: true, status_emoji: "", status_text: "" };
   }
+
+  let ZWJmodifiers = [];
 
   if (body_status_emoji) {
     const emoji_name = nodeEmoji.which(body_status_emoji, false);
@@ -34,6 +36,15 @@ function normalizeStatus(body, { behavior } = {}) {
     if (emoji_name) {
       status_emoji = emoji_name;
     } else {
+      if (body_status_emoji.indexOf("::") > -1) {
+        let mainEmoji;
+        [mainEmoji, ...ZWJmodifiers] = body_status_emoji
+          .replace(/^:|:$/g, "")
+          .split("::");
+        body_status_emoji = `:${mainEmoji}:`;
+        ZWJmodifiers = ZWJmodifiers.filter(nodeEmoji.hasEmoji);
+      }
+
       const status_emoji_without_colons = body_status_emoji.match(
         INSIDE_COLONS_REGEX
       )
@@ -56,6 +67,7 @@ function normalizeStatus(body, { behavior } = {}) {
     default_emoji: false,
     text_as_emoji: false,
     too_long_text: false,
+    ignored_zwj: false,
   };
 
   if (!status_emoji) {
@@ -93,6 +105,14 @@ function normalizeStatus(body, { behavior } = {}) {
 
   if (!status_emoji && !status_text) {
     return {};
+  }
+
+  if (status_emoji && ZWJmodifiers.length) {
+    if (!behavior || behavior === SLACK_BEHAVIOR) {
+      status_emoji = status_emoji + "::" + ZWJmodifiers.join("::");
+    } else if (behavior === GITHUB_BEHAVIOR) {
+      warnings.ignored_zwj = true;
+    }
   }
 
   warnings = Object.keys(warnings).reduce((acc, key) => {

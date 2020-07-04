@@ -87,8 +87,10 @@ module.exports = {
   DEFAULT_STATUS_EMOJI: "speech_balloon",
   // https://api.slack.com/reference/surfaces/formatting#escaping
   escapeStatusText: (str) =>
+    str &&
     str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
   decodeStatusText: (str) =>
+    str &&
     str.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"),
   getProfile,
   getTeam,

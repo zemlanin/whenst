@@ -69,15 +69,19 @@ async function getAccount(db, redis, id) {
 
     let current_status = null;
     if (profile.status_text || profile.status_emoji) {
-      const status_emoji_html = getEmojiHTML(profile.status_emoji, true);
+      current_status = normalizeStatus(
+        {
+          status_emoji: profile.status_emoji,
+          status_text: slackApi.decodeStatusText(profile.status_text),
+        },
+        { behavior: normalizeStatus.BEHAVIOR.slack }
+      );
 
-      current_status = {
-        status_emoji: profile.status_emoji,
-        status_text: slackApi.decodeStatusText(profile.status_text),
-        status_emoji_html: status_emoji_html.html,
-        status_text_html: getEmojiHTML(profile.status_text).html,
-        custom_emoji: status_emoji_html.custom_emoji,
-      };
+      const status_emoji_html = getEmojiHTML(current_status.status_emoji, true);
+
+      current_status.status_emoji_html = status_emoji_html.html;
+      current_status.status_text_html = getEmojiHTML(profile.status_text).html;
+      current_status.custom_emoji = status_emoji_html.custom_emoji;
     } else {
       current_status = {
         empty: true,

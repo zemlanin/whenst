@@ -22,6 +22,12 @@ module.exports = async function statusIndex(req, res) {
 
   const status_emoji_html = getEmojiHTML(status_emoji, true);
 
+  if (!isEmptyStatus && !status_text && !status_emoji) {
+    res.statusCode = 404;
+
+    return;
+  }
+
   const status = isEmptyStatus
     ? { empty: true, status_text, status_emoji }
     : {

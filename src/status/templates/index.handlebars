@@ -12,7 +12,7 @@
         {{~#if status_text}} | {{/if ~}}
       {{~/if ~}}
 
-      {{~#if status_text}}{{status_text}}{{/if ~}}
+      {{~#if status_text}}{{{status_text_html}}}{{/if ~}}
     {{/if}} |
   {{/with}}
 {{/partials_head}}
@@ -49,6 +49,9 @@
             {{/if}}
             {{#if warnings.github.too_long_text}}
               <li>Text may be too long for Github</li>
+            {{/if}}
+            {{#if warnings.github.ignored_zwj}}
+              <li>Github doesn't support skin tone modifiers</li>
             {{/if}}
           </ul>
         </details>
