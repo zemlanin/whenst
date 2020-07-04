@@ -1,8 +1,10 @@
 const querystring = require("querystring");
 
 const bent = require("bent");
+const nodeEmoji = require("node-emoji");
 
 const config = require("../config.js");
+let githubEmoji = require("./github-emoji.js");
 
 const githubPost = bent("https://api.github.com/", "json", "POST");
 const githubOauthPost = bent("https://github.com/login/oauth/", "json", "POST");
@@ -12,32 +14,59 @@ const APPLICATION_JSON = "application/json";
 
 const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 
+const githubEmojiImportMapping = {};
+const githubEmojiExportMapping = {};
+
+for (const nameFromGithub of Object.keys(githubEmoji)) {
+  if (nodeEmoji.hasEmoji(nameFromGithub)) {
+    continue;
+  }
+
+  const imgUrl = githubEmoji[nameFromGithub];
+
+  const codepointMatch = imgUrl.match(
+    /\/icons\/emoji\/unicode\/([0-9a-f-]+)\.png/
+  );
+
+  if (!codepointMatch) {
+    continue;
+  }
+
+  const emojiParts = codepointMatch[1]
+    .split("-")
+    .map((codepoint) => String.fromCodePoint(parseInt(codepoint, 16)));
+
+  const nameFromNodeEmoji =
+    nodeEmoji.which(emojiParts.join("")) ||
+    nodeEmoji.which(emojiParts.join("\u{200D}")) ||
+    nodeEmoji.which(emojiParts[0]) ||
+    null;
+
+  if (nameFromNodeEmoji) {
+    githubEmojiImportMapping[nameFromGithub] = nameFromNodeEmoji;
+    githubEmojiExportMapping[nameFromNodeEmoji] = nameFromGithub;
+  }
+}
+
+githubEmoji = null;
+delete require.cache[require.resolve("./github-emoji.js")];
+
 function importEmoji(str) {
   if (!str) {
     return str;
   }
 
-  if (str === "woman_dancing") {
-    return "dancer";
+  const wrapInColons = !!str.match(INSIDE_COLONS_REGEX);
+
+  if (wrapInColons) {
+    str = str.slice(1, -1);
   }
 
-  if (str === "man_dancing") {
-    return str;
+  if (githubEmojiImportMapping[str]) {
+    str = githubEmojiImportMapping[str];
   }
 
-  if (
-    str.startsWith(":man_") ||
-    str.startsWith("man_") ||
-    str.startsWith(":woman_") ||
-    str.startsWith("woman_")
-  ) {
-    // convert `man_factory_worker`, but keep `arrow_down`
-    return str
-      .replace(/^(:?)man/, "$1male")
-      .replace(/^(:?)woman/, "$1female")
-      .replace(/_/g, "-");
-  }
-  return str;
+  return wrapInColons ? `:${str}:` : str;
 }
 
 function exportEmoji(str) {
@@ -45,24 +74,17 @@ function exportEmoji(str) {
     return str;
   }
 
-  if (str === "dancer") {
-    return "woman_dancing";
+  const wrapInColons = !!str.match(INSIDE_COLONS_REGEX);
+
+  if (wrapInColons) {
+    str = str.slice(1, -1);
   }
 
-  if (
-    str.startsWith(":male-") ||
-    str.startsWith("male-") ||
-    str.startsWith(":female-") ||
-    str.startsWith("female-")
-  ) {
-    // convert `male-factory-worker`, but keep `-1`
-    return str
-      .replace(/^(:?)male/, "$1man")
-      .replace(/^(:?)female/, "$1woman")
-      .replace(/-/g, "_");
+  if (githubEmojiExportMapping[str]) {
+    str = githubEmojiExportMapping[str];
   }
 
-  return str;
+  return wrapInColons ? `:${str}:` : str;
 }
 
 module.exports = {
