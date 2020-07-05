@@ -38,6 +38,8 @@ for (const nameFromGithub of Object.keys(githubEmoji)) {
 
   const nameFromNodeEmoji =
     nodeEmoji.which(emojiParts.join("")) ||
+    // _person -> _woman
+    nodeEmoji.which(emojiParts.join("") + "\u{200D}\u{2640}\u{FE0F}") ||
     nodeEmoji.which(emojiParts.join("\u{200D}")) ||
     nodeEmoji.which(emojiParts[0]) ||
     null;
