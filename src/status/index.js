@@ -3,10 +3,10 @@ const url = require("url");
 const Handlebars = require("handlebars");
 const sql = require("pg-template-tag").default;
 
+const config = require("../config.js");
+const { getOauthState } = require("../auth/oauth-state.js");
 const { normalizeStatus } = require("../normalize-status.js");
-
 const { getEmojiHTML } = require("../presets/common.js");
-
 const tmpl = require.resolve("./templates/index.handlebars");
 
 module.exports = async function statusIndex(req, res) {
@@ -125,6 +125,8 @@ module.exports = async function statusIndex(req, res) {
       `)
     ).rows[0].count < 100;
 
+  const state = getOauthState(req.session.id, req.url);
+
   return res.render(tmpl, {
     account,
     status,
@@ -138,5 +140,15 @@ module.exports = async function statusIndex(req, res) {
     already_saved,
     statusOnServices,
     can_save_presets,
+    slackAuth: {
+      client_id: config.slack.client_id,
+      scope: config.slack.scope,
+      state,
+    },
+    githubAuth: {
+      client_id: config.github.client_id,
+      scope: config.github.scope,
+      state,
+    },
   });
 };

@@ -88,21 +88,21 @@
     </div>
 
     <div style="padding: 1em 0.5em 0 0.5em;">
-      {{#unless @root.status.custom_emoji}}
-        <div class="flex flex-row pb3">
-          <form
-            id="bulk"
-            method="POST"
-            action="{{ route "statusUse" }}"
-          >
-            <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-            <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-            <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-            <button type="submit">use for selected</button>
-          </form>
-        </div>
-      {{/unless}}
       {{#if account}}
+        {{#unless @root.status.custom_emoji}}
+          <div class="flex flex-row pb3">
+            <form
+              id="bulk"
+              method="POST"
+              action="{{ route "statusUse" }}"
+            >
+              <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+              <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
+              <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
+              <button type="submit">use for selected</button>
+            </form>
+          </div>
+        {{/unless}}
         {{#each account.oauths}}
           <div class="flex flex-row pb3 items-center">
             <div class="pa2">
@@ -208,6 +208,32 @@
             </div>
           </div>
         {{/each}}
+      {{else}}
+        <div class="preset-row">
+          <span>
+            login to use this status
+          </span>
+          <div style="flex-grow: 1"></div>
+          {{#with slackAuth}}
+            <form method="GET" action="https://slack.com/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">slack</button>
+            </form>
+          {{/with}}
+          <div style="width: 0.5em"></div>
+          {{#with githubAuth}}
+            <form method="GET" action="https://github.com/login/oauth/authorize">
+              <input type="hidden" name="client_id" value="{{ client_id }}">
+              <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
+              <input type="hidden" name="state" value="{{ state }}">
+              <input type="hidden" name="scope" value="{{ scope }}">
+              <button type="submit">github</button>
+            </form>
+          {{/with}}
+        </div>
       {{/if}}
     </div>
 
