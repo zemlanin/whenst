@@ -102,5 +102,16 @@ describe("oauth-state", () => {
         parseOauthState(sessionId, getOauthState(sessionId, "/") + "1")
       );
     });
+
+    it("should throw on invalid session", () => {
+      const sessionId = "42689347-6933-4e84-afa4-2bc92021b238";
+      const state = getOauthState(sessionId, "/");
+
+      assert.strictEqual("/", parseOauthState(sessionId, state));
+      assert.throws(() => parseOauthState(sessionId + "1", state));
+      assert.throws(() =>
+        parseOauthState("f34d115e-6990-44bd-9981-85d272902c53", state)
+      );
+    });
   });
 });
