@@ -1,16 +1,13 @@
 const url = require("url");
-const crypto = require("crypto");
 const sql = require("pg-template-tag").default;
 
 const config = require("../config.js");
 const githubApi = require("../external/github.js");
 
+const { parseOauthState } = require("./oauth-state.js");
 const { encryptAccessToken } = require("./access-token-crypto.js");
 
 const TODO_BAD_REQUEST = 400;
-
-const getOauthState = (session) =>
-  crypto.createHash("sha256").update(session.id).digest("hex");
 
 module.exports = async function authGithub(req, res) {
   const query = new url.URL(req.url, req.absolute).searchParams;
@@ -23,15 +20,20 @@ module.exports = async function authGithub(req, res) {
   }
 
   const state = query.get("state");
+  let nextURL = req.app.routes.landing.stringify();
 
-  if (!config.disableCSRFCheck && state != getOauthState(req.session)) {
-    res.statusCode = 302;
+  try {
+    nextURL = parseOauthState(req.session.id, state);
+  } catch (e) {
+    if (!config.disableCSRFCheck) {
+      res.statusCode = 302;
 
-    res.setHeader(
-      "Location",
-      new url.URL(req.app.routes.landing.stringify(), req.absolute)
-    );
-    return;
+      res.setHeader(
+        "Location",
+        new url.URL(req.app.routes.landing.stringify(), req.absolute)
+      );
+      return;
+    }
   }
 
   const account = await req.getAccount();
@@ -40,10 +42,7 @@ module.exports = async function authGithub(req, res) {
   if (!can_link_accounts) {
     res.statusCode = 302;
 
-    res.setHeader(
-      "Location",
-      new url.URL(req.app.routes.landing.stringify(), req.absolute)
-    );
+    res.setHeader("Location", new url.URL(nextURL, req.absolute));
     return;
   }
 
@@ -156,9 +155,6 @@ module.exports = async function authGithub(req, res) {
   if (req.session.oauth_to_merge) {
     res.setHeader("Location", req.app.routes.authMerge.stringify());
   } else {
-    res.setHeader(
-      "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
-    );
+    res.setHeader("Location", new url.URL(nextURL, req.absolute));
   }
 };

@@ -1,12 +1,9 @@
 const url = require("url");
-const crypto = require("crypto");
 
+const { getOauthState } = require("../auth/oauth-state.js");
 const config = require("../config.js");
 
 const tmpl = require.resolve("./templates/index.handlebars");
-
-const getOauthState = (session) =>
-  crypto.createHash("sha256").update(session.id).digest("hex");
 
 module.exports = async function settingsIndex(req, res) {
   const account = await req.getAccount();
@@ -20,7 +17,7 @@ module.exports = async function settingsIndex(req, res) {
     return;
   }
 
-  const state = getOauthState(req.session);
+  const state = getOauthState(req.session.id, req.url);
 
   const can_link_accounts = account.oauths.length < 20;
 
