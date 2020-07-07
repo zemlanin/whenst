@@ -41,30 +41,21 @@ const absoluteRoute = (base) =>
   };
 
 if (config.assets.manifest) {
-  const { base, manifest } = config.assets;
-
-  if (manifest && !base) {
-    throw new Error(`config.assets.manifest requires config.assets.base`);
-  }
+  const { cacheBuster, manifest } = config.assets;
 
   Handlebars.registerHelper("asset", function assetManifest(file) {
-    if (!manifest[file]) {
-      throw new Error(`assets not found in manifest: "${file}"`);
-    }
+    const shortHash = manifest[file]?.sha1?.slice(0, 6);
 
-    return new url.URL(manifest[file], base);
-  });
-} else if (config.assets.base) {
-  const { base, cacheBuster } = config.assets;
-
-  Handlebars.registerHelper("asset", function assetBase(file) {
-    return new url.URL(file + "?v=" + cacheBuster, base);
+    return (
+      routes.reverse["cdn"].stringify({ _: file }) +
+      (shortHash ? `?v=${shortHash}` : `?_=${cacheBuster}`)
+    );
   });
 } else {
   const { cacheBuster } = config.assets;
 
   Handlebars.registerHelper("asset", function assetLocal(file) {
-    return routes.reverse["cdn"].stringify({ _: file }) + "?v=" + cacheBuster;
+    return routes.reverse["cdn"].stringify({ _: file }) + `?_=${cacheBuster}`;
   });
 }
 

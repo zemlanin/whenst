@@ -5,14 +5,16 @@
   "main": "index.js",
   "bin": [
     "index.js",
-    "migrate.js"
+    "migrate.js",
+    "scripts/build.js"
   ],
   "scripts": {
+    "build": "scripts/build.js",
     "test": "mocha \"./{src,test}/**/*.test.js\"",
     "lint": "npm run eslint && npm run prettier -- -c",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{js,css,yml,yaml}\" \"./{.github,src,static,test}/**/*.{js,css,yml,yaml}\" --ignore-path=\".lintignore\"",
-    "eslint": "eslint \"./*.js\" \"./{src,static,test}/**/*.js\" --ignore-path=\".lintignore\""
+    "prettier": "prettier \"./*.{js,css,yml,yaml}\" \"./{.github,src,scripts,static,test}/**/*.{js,css,yml,yaml}\" --ignore-path=\".lintignore\"",
+    "eslint": "eslint \"./*.js\" \"./{src,scripts,static,test}/**/*.js\" --ignore-path=\".lintignore\""
   },
   "author": "Anton Verinov <anton@verinov.com>",
   "license": "ISC",
