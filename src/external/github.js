@@ -1,13 +1,10 @@
 const querystring = require("querystring");
 
-const bent = require("bent");
+const fetch = require("node-fetch");
 const nodeEmoji = require("node-emoji");
 
 const config = require("../config.js");
 let githubEmoji = require("./github-emoji.js");
-
-const githubPost = bent("https://api.github.com/", "json", "POST");
-const githubOauthPost = bent("https://github.com/login/oauth/", "json", "POST");
 
 const APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
 const APPLICATION_JSON = "application/json";
@@ -102,12 +99,6 @@ module.exports = {
   importEmoji,
   exportEmoji,
   oauthAccessToken: async function (code, redirect_uri, state) {
-    const headers = {
-      "Content-Type": APPLICATION_FORM_URLENCODED,
-      "User-Agent": "whenst",
-      Accept: APPLICATION_JSON,
-    };
-
     const encodedBody = querystring.stringify({
       client_id: config.github.client_id,
       client_secret: config.github.client_secret,
@@ -116,16 +107,22 @@ module.exports = {
       state,
     });
 
-    return await githubOauthPost("access_token", encodedBody, headers);
+    const response = await fetch(
+      "https://github.com/login/oauth/access_token",
+      {
+        method: "POST",
+        body: encodedBody,
+        headers: {
+          "Content-Type": APPLICATION_FORM_URLENCODED,
+          Accept: APPLICATION_JSON,
+        },
+      }
+    );
+
+    return await response.json();
   },
 
   getProfile: async function (token) {
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "User-Agent": "whenst",
-      "Content-Type": APPLICATION_JSON,
-    };
-
     const encodedBody = JSON.stringify({
       query: `
         {
@@ -143,7 +140,16 @@ module.exports = {
       `,
     });
 
-    const { data } = await githubPost("graphql", encodedBody, headers);
+    const response = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      body: encodedBody,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": APPLICATION_JSON,
+      },
+    });
+
+    const { data } = await response.json();
     if (data.profile.status?.emoji?.match(INSIDE_COLONS_REGEX)) {
       data.profile.status.emoji = data.profile.status.emoji.slice(1, -1);
     }
@@ -162,12 +168,6 @@ module.exports = {
   },
 
   setStatus: async function (token, { emoji, message }) {
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "User-Agent": "whenst",
-      "Content-Type": APPLICATION_JSON,
-    };
-
     const encodedBody = JSON.stringify({
       query: `
         mutation ($message: String, $emoji: String) {
@@ -186,6 +186,17 @@ module.exports = {
       },
     });
 
-    return (await githubPost("graphql", encodedBody, headers)).data;
+    const response = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      body: encodedBody,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": APPLICATION_JSON,
+      },
+    });
+
+    const { data } = await response.json();
+
+    return data;
   },
 };

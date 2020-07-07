@@ -1,9 +1,7 @@
+const url = require("url");
 const querystring = require("querystring");
 
-const bent = require("bent");
-
-const slackGet = bent("https://slack.com/api/", "json", "GET");
-const slackPost = bent("https://slack.com/api/", "json", "POST");
+const fetch = require("node-fetch");
 
 const APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
 const APPLICATION_JSON = "application/json";
@@ -13,7 +11,17 @@ const INSIDE_COLONS_REGEX = /^:[^:]+:$/;
 async function apiGet(apiMethod, body) {
   const encodedBody = body ? "?" + querystring.stringify(body) : "";
 
-  return slackGet(`${apiMethod}${encodedBody}`);
+  const response = await fetch(
+    new url.URL(`${apiMethod}${encodedBody}`, "https://slack.com/api/"),
+    {
+      method: "GET",
+      headers: {
+        Accept: APPLICATION_JSON,
+      },
+    }
+  );
+
+  return await response.json();
 }
 
 async function getProfile(db, redis, token, userId) {
@@ -133,6 +141,15 @@ module.exports = {
       );
     }
 
-    return slackPost(apiMethod, encodedBody, headers);
+    const response = await fetch(
+      new url.URL(apiMethod, "https://slack.com/api/"),
+      {
+        method: "POST",
+        body: encodedBody,
+        headers,
+      }
+    );
+
+    return await response.json();
   },
 };
