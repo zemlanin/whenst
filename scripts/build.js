@@ -57,7 +57,10 @@ if (require.main === module) {
 
   createManifest(path.resolve(__dirname, "../static")).then((manifest) =>
     writeFile(
-      path.resolve(process.cwd(), process.env.ASSETS_MANIFEST_FILE),
+      path.resolve(
+        process.cwd(),
+        process.env.ASSETS_MANIFEST_FILE || "./static/.manifest.json"
+      ),
       JSON.stringify(manifest)
     )
   );

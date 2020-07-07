@@ -74,7 +74,7 @@ function getManifest() {
   try {
     return require(path.resolve(
       process.cwd(),
-      process.env.ASSETS_MANIFEST_FILE
+      process.env.ASSETS_MANIFEST_FILE || "./static/.manifest.json"
     ));
   } catch (e) {
     if (process.env.NODE_ENV !== "development") {
