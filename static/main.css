@@ -116,11 +116,9 @@ a:visited {
 }
 
 .deeper {
-  opacity: 0.5;
   flex-grow: 1;
   align-self: center;
   padding: 0 0.5em;
-  color: blue;
 }
 
 #layout {
