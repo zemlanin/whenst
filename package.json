@@ -22,7 +22,7 @@
     "node": "^14.0.0"
   },
   "devDependencies": {
-    "eslint": "^7.4.0",
+    "eslint": "^7.5.0",
     "eslint-plugin-node": "^11.1.0",
     "mocha": "^8.0.1",
     "prettier": "^2.0.5",
@@ -43,7 +43,7 @@
     "mime": "^2.4.6",
     "node-emoji": "^1.10.0",
     "node-fetch": "^2.6.0",
-    "pg": "^8.2.1",
+    "pg": "^8.3.0",
     "pg-template-tag": "^0.1.2",
     "redis": "^3.0.2",
     "string-length": "^4.0.1",
