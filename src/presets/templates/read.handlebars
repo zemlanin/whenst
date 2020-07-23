@@ -69,75 +69,56 @@
     </div>
 
     <div style="padding: 1em 0.5em 0 0.5em;">
-      {{#each account.oauths}}
+      {{#each preset.statuses}}
         <div class="flex flex-row pb3 items-center">
-          <div class="pa2">
-            <input
-              type="checkbox"
+          {{#with oauth}}
+            <span class="pr2" style="line-height: 0">
               {{#if (eq service "slack")}}
-                name="slack_oauth_id"
+                <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
+                    <img
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
+                      class="team-icon"
+                    >
+                  {{/unless}}
+                </a>
               {{/if}}
               {{#if (eq service "github")}}
-                name="github_oauth_id"
-              {{/if}}
-              form="bulk"
-              value="{{oauth_id}}"
-              {{#with (lookup (lookup @root.statusOnServices service) oauth_id)}}
-                {{#if custom_emoji}}
-                  disabled
-                {{else}}
-                  checked
-                {{/if}}
-              {{/with}}
-            >
-          </div>
-
-          <span style="padding-right: 0.5em; line-height: 0">
-            {{#if (eq service "slack")}}
-              <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
-                <img
-                  src="{{profile.image_72}}"
-                  {{#if profile.display_name}}
-                    alt="{{profile.display_name}} ({{team.name}})"
-                  {{else}}
-                    alt="{{profile.real_name}} ({{team.name}})"
-                  {{/if}}
-                >
-                {{#unless team.icon.image_default}}
+                <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
                   <img
-                    src="{{team.icon.image_44}}"
-                    alt="{{team.name}}"
+                    src="{{profile.image_72}}"
+                    {{#if profile.name}}
+                      alt="{{profile.name}}"
+                    {{else}}
+                      alt="{{profile.login}}"
+                    {{/if}}
+                  >
+                  <img
+                    src="https://github.githubassets.com/apple-touch-icon.png"
                     class="team-icon"
                   >
-                {{/unless}}
-              </a>
-            {{/if}}
-            {{#if (eq service "github")}}
-              <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
-                <img
-                  src="{{profile.image_72}}"
-                  {{#if profile.name}}
-                    alt="{{profile.name}}"
-                  {{else}}
-                    alt="{{profile.login}}"
-                  {{/if}}
-                >
-                <img
-                  src="https://github.githubassets.com/apple-touch-icon.png"
-                  class="team-icon"
-                >
-              </a>
-            {{/if}}
-          </span>
+                </a>
+              {{/if}}
+            </span>
+          {{/with}}
 
           <a
             class="flex flex-row"
             href="{{ route "statusIndex"
-              ?status_emoji=current_status.status_emoji
-              ?status_text=current_status.status_text }}"
+              ?status_emoji=status_emoji
+              ?status_text=status_text }}"
           >
             <span class="status">
-              {{>partials_status current_status}}
+              {{>partials_status .}}
             </span>
             <span
               class="deeper"
@@ -148,29 +129,15 @@
           <div style="flex-grow: 1"></div>
 
           <div class="flex flex-row">
-            {{#with (lookup (lookup @root.statusOnServices service) oauth_id)}}
-                {{#unless is_current_status}}
-                  <form
-                    method="post"
-                    action="{{ route "statusUse" }}"
-                    class="pl2"
-                    {{#if custom_emoji}}disabled{{/if}}
-                  >
-                    <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                    {{#if (eq ../service "slack")}}
-                      <input type="hidden" name="slack_oauth_id" value="{{../oauth_id}}">
-                    {{/if}}
-                    {{#if (eq ../service "github")}}
-                      <input type="hidden" name="github_oauth_id" value="{{../oauth_id}}">
-                    {{/if}}
-                    <input type="hidden" name="status_emoji" value="{{@root.status.status_emoji}}">
-                    <input type="hidden" name="status_text" value="{{@root.status.status_text}}">
-                    {{#unless custom_emoji}}
-                      <button type="submit">use</button>
-                    {{/unless}}
-                  </form>
-                {{/unless}}
-            {{/with}}
+              <form
+                method="post"
+                action="#"
+                class="pl2"
+                disabled
+              >
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <button type="submit" disabled>delete</button>
+              </form>
           </div>
         </div>
       {{/each}}
