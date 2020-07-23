@@ -20,6 +20,7 @@ const routes = [
   ["POST /auth/unlink", require("./auth/unlink.js")],
 
   ["GET /presets", require("./presets/index.js")],
+  ["GET /preset(s)/:preset_id", require("./presets/read.js")],
   ["POST /presets/save", require("./presets/save.js")],
   ["POST /presets/delete", require("./presets/delete.js")],
 

@@ -128,16 +128,13 @@
 
       {{#each presets}}
         <div class="flex flex-column pb3">
-          <span>{{!-- current status --}}</span>
           <div class="flex flex-row justify-between items-center">
             <a
               class="flex flex-row"
-              href="{{ route "statusIndex"
-                ?status_emoji=status_emoji
-                ?status_text=status_text }}"
+              href="{{ route "presetRead" preset_id=id}}"
             >
               <span class="status">
-                {{>partials_status .}}
+                {{>partials_status main_status}}
               </span>
               <span
                 class="deeper"
@@ -146,13 +143,13 @@
             </a>
 
             <div class="flex">
-              {{#if custom_emoji}}
+              {{#if main_status.custom_emoji}}
                 {{! TODO }}
               {{else}}
                 <button
                   type="submit"
                   form="statusUseForm"
-                  formaction="{{ route "statusUse" ?status_emoji=status_emoji ?status_text=status_text }}"
+                  formaction="{{ route "statusUse" ?status_emoji=main_status.status_emoji ?status_text=main_status.status_text }}"
                 >use</button>
               {{/if}}
             </div>
