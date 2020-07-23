@@ -24,7 +24,7 @@ async function performMerge(req, res) {
     res.statusCode = 303;
     res.setHeader(
       "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+      new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
     );
 
     return;
@@ -115,7 +115,7 @@ module.exports = async function authMerge(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+      new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
     );
 
     return;

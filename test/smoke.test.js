@@ -28,12 +28,12 @@ describe("smoke", () => {
   });
 
   it("should fail: csrf", async () => {
-    await supertest(server).post("/presets/save").expect(403);
+    await supertest(server).post("/presets/add").expect(403);
   });
 
   it("should fail: body", async () => {
     sinon.replace(config, "disableCSRFCheck", true);
-    await supertest(server).post("/presets/save").expect(400);
+    await supertest(server).post("/presets/add").expect(400);
   });
 
   it("should call slack", async () => {

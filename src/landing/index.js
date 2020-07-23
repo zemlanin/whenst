@@ -11,14 +11,14 @@ module.exports = async function landing(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+      new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
     );
     return;
   }
 
   const state = getOauthState(
     req.session.id,
-    req.app.routes.presetsIndex.stringify()
+    req.app.routes.presetsBrowse.stringify()
   );
 
   return res.render(tmpl, {

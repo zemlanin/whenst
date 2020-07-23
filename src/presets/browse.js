@@ -6,14 +6,14 @@ const Handlebars = require("handlebars");
 
 const { getEmojiHTML } = require("./common.js");
 
-const tmpl = require.resolve("./templates/index.handlebars");
+const tmpl = require.resolve("./templates/browse.handlebars");
 
 const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji).map((name) => ({
   name,
   html: nodeEmoji.emoji[name],
 }));
 
-module.exports = async function presetsIndex(req, res) {
+module.exports = async function presetsBrowse(req, res) {
   const account = await req.getAccount();
 
   if (!account) {

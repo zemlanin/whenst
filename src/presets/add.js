@@ -8,7 +8,7 @@ const { normalizeStatus } = require("../normalize-status.js");
 
 const TODO_BAD_REQUEST = 400;
 
-module.exports = async function presetSave(req, res) {
+module.exports = async function presetAdd(req, res) {
   const { status_emoji, status_text, empty } = normalizeStatus(req.formBody);
 
   if (empty) {
@@ -78,6 +78,6 @@ module.exports = async function presetSave(req, res) {
   res.statusCode = 303;
   res.setHeader(
     "Location",
-    new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+    new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
   );
 };

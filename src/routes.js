@@ -19,9 +19,9 @@ const routes = [
   ["POST /auth/logout", require("./auth/logout.js")],
   ["POST /auth/unlink", require("./auth/unlink.js")],
 
-  ["GET /presets", require("./presets/index.js")],
+  ["GET /presets", require("./presets/browse.js")],
   ["GET /preset(s)/:preset_id", require("./presets/read.js")],
-  ["POST /presets/save", require("./presets/save.js")],
+  ["POST /presets/add", require("./presets/add.js")],
   ["POST /presets/delete", require("./presets/delete.js")],
 
   ["GET /status", require("./status/index.js")],

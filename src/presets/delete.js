@@ -32,6 +32,6 @@ module.exports = async function presetDelete(req, res) {
   res.statusCode = 303;
   res.setHeader(
     "Location",
-    new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+    new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
   );
 };

@@ -12,7 +12,7 @@
         <form
           class="preset-row status-form"
           method="post"
-          action="{{ route "presetSave" }}"
+          action="{{ route "presetAdd" }}"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
           {{! chrome doesn't support flexbox in `<fieldset>` }}

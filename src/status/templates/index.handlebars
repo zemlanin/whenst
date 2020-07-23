@@ -73,7 +73,7 @@
             {{#unless @root.status.empty}}
               <form
                 method="POST"
-                action="{{ route "presetSave" }}"
+                action="{{ route "presetAdd" }}"
                 class="pt3"
               >
                 <input type="hidden" name="_csrf" value="{{@csrfToken}}">
