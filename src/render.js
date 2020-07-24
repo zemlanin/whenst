@@ -84,15 +84,17 @@ module.exports = function renderMiddleware(req, res, next) {
   res.render = function render(tmplPath, data) {
     let tmpl;
 
+    res.timing.start("handlebars");
+
     if (tmplPath in tmplMap) {
       tmpl = tmplMap[tmplPath];
     } else {
       tmpl = tmplMap[tmplPath] = fs.readFileSync(tmplPath).toString();
     }
 
-    res.setHeader("content-type", "text/html");
+    res.setHeader("content-type", "text/html; charset=utf-8");
 
-    return Handlebars.compile(tmpl, {
+    const rendered = Handlebars.compile(tmpl, {
       strict: true,
       explicitPartialContext: true,
     })(data, {
@@ -103,6 +105,10 @@ module.exports = function renderMiddleware(req, res, next) {
         absolute: absoluteRoute(req.absolute),
       },
     });
+
+    res.timing.stop("handlebars");
+
+    return rendered;
   };
 
   next();

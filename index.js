@@ -3,6 +3,7 @@
 const url = require("url");
 const http = require("http");
 const util = require("util");
+const { performance } = require("perf_hooks");
 
 const pg = require("pg");
 const sql = require("pg-template-tag").default;
@@ -20,6 +21,39 @@ const renderMiddleware = require("./src/render.js");
 const { getAccount } = require("./src/auth/account.js");
 
 const app = connect();
+
+app.use(function serverTimingMiddleware(req, res, next) {
+  const starts = {};
+  const totals = {};
+
+  res.timing = {
+    start(key) {
+      if (!starts[key]) {
+        starts[key] = performance.now();
+      }
+    },
+    stop(key) {
+      if (starts[key]) {
+        totals[key] = (totals[key] || 0) + (performance.now() - starts[key]);
+        starts[key] = null;
+      }
+    },
+    stringify() {
+      for (const key in starts) {
+        res.timing.stop(key);
+      }
+
+      return Object.keys(totals)
+        .map((key) => `${key};dur=${totals[key].toFixed(2)}`)
+        .join(", ");
+    },
+  };
+
+  res.timing.start("total");
+  res.timing.start("middlewares");
+
+  next();
+});
 
 app.use((req, res, next) => {
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
@@ -195,7 +229,12 @@ app.use(function accountAuthMiddleware(req, res, next) {
     const db = await req.db();
     const redis = await req.redis();
 
-    return await getAccount(db, redis, req.session.account_id);
+    res.timing.start("account");
+
+    const account = await getAccount(db, redis, req.session.account_id);
+
+    res.timing.stop("account");
+    return account;
   };
 
   next();
@@ -251,6 +290,8 @@ app.use((req, res, next) => {
   let result;
   let resultPromise;
 
+  res.timing.stop("middlewares");
+
   try {
     result = handler(req, res);
     resultPromise =
@@ -292,27 +333,32 @@ app.use((req, res, next) => {
       ) {
         res.writeHead(res.statusCode, {
           "Content-Type": (resType || "text/html") + `; charset=${charset}`,
+          "Server-Timing": res.timing.stringify(),
         });
         res.end(body);
       } else if (resType && resType.startsWith("image/")) {
         res.writeHead(res.statusCode, {
           "Content-Type": resType,
+          "Server-Timing": res.timing.stringify(),
         });
         res.end(body);
       } else if (body || resType === "application/json") {
         res.writeHead(res.statusCode, {
           "Content-Type": `application/json; charset=${charset}`,
+          "Server-Timing": res.timing.stringify(),
         });
         res.end(JSON.stringify(body));
       } else if (!body && res.statusCode === 404) {
         // TODO
         res.writeHead(res.statusCode, {
           "Content-Type": `text/plain; charset=${charset}`,
+          "Server-Timing": res.timing.stringify(),
         });
         res.end(`404 Not Found`);
       } else {
         res.writeHead(res.statusCode, {
           "Content-Type": `text/plain; charset=${charset}`,
+          "Server-Timing": res.timing.stringify(),
         });
         res.end(`${res.statusCode}`);
       }
