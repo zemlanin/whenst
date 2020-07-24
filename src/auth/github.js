@@ -63,7 +63,12 @@ module.exports = async function authGithub(req, res) {
       throw new Error(`unknown token_type: "${githubResp.token_type}"`);
     }
 
-    const githubUser = await githubApi.getProfile(githubResp.access_token);
+    const redis = await req.redis();
+
+    const githubUser = await githubApi.getProfile(
+      githubResp.access_token,
+      redis
+    );
 
     if (!githubUser.profile || !githubUser.profile.id) {
       throw new Error(`can't retrieve user`);

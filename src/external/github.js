@@ -122,7 +122,18 @@ module.exports = {
     return await response.json();
   },
 
-  getProfile: async function (token) {
+  getProfile: async function (token, redis, userId) {
+    let cacheKey;
+
+    if (redis) {
+      cacheKey = `github:profile.viewer:${userId}`;
+      const cachedResp = await redis.get(cacheKey);
+
+      if (cachedResp) {
+        return JSON.parse(cachedResp);
+      }
+    }
+
     const encodedBody = JSON.stringify({
       query: `
         {
@@ -162,6 +173,11 @@ module.exports = {
       data.profile.status.message = module.exports.escapeStatusText(
         data.profile.status.message
       );
+    }
+
+    if (redis) {
+      cacheKey = `github:profile.viewer:${data.profile.id}`;
+      await redis.set(cacheKey, JSON.stringify(data), "EX", 60 * 60);
     }
 
     return data;

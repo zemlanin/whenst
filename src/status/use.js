@@ -47,6 +47,9 @@ async function bulkUse(req, res, user_oauths, normalized_statuses) {
         // TODO: report errors for bulk operations
         // throw new Error(githubResp.message);
       }
+
+      const userId = user_oauth.user_id;
+      await redis.del(`github:profile.viewer:${userId}`);
     }
   }
 }

@@ -111,7 +111,8 @@ async function getAccount(db, redis, id) {
     let profile;
 
     try {
-      profile = (await githubApi.getProfile(access_token)).profile;
+      profile = (await githubApi.getProfile(access_token, redis, user_id))
+        .profile;
     } catch (e) {
       // TODO: notify about external API problems
       console.error(e);
