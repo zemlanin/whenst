@@ -21,13 +21,31 @@ module.exports = async function presetDelete(req, res) {
     return;
   }
 
-  const db = await req.db();
+  await req.db.transaction(async (db) => {
+    await db.query(sql`
+      DELETE FROM slack_status
+      WHERE preset_id IN (
+        SELECT id FROM preset
+        WHERE id = ${presetId}
+          AND account_id = ${account.id}
+      );
+    `);
 
-  await db.query(sql`
-    DELETE FROM status_preset
-    WHERE id = ${presetId}
-      AND account_id = ${account.id}
-  `);
+    await db.query(sql`
+      DELETE FROM github_status
+      WHERE preset_id IN (
+        SELECT id FROM preset
+        WHERE id = ${presetId}
+          AND account_id = ${account.id}
+      );
+    `);
+
+    await db.query(sql`
+      DELETE FROM preset
+      WHERE id = ${presetId}
+        AND account_id = ${account.id};
+    `);
+  });
 
   res.statusCode = 303;
   res.setHeader(
