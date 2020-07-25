@@ -115,6 +115,8 @@ module.exports = async function presetsBrowse(req, res) {
     preset.statuses.push(status);
   }
 
+  presets.sort((a, b) => b.id - a.id); // DESC
+
   return res.render(tmpl, {
     account,
     presets,
