@@ -129,15 +129,26 @@
           <div style="flex-grow: 1"></div>
 
           <div class="flex flex-row">
+            {{#if (eq @root.preset.statuses.length 1)}}
               <form
-                method="post"
+                method="get"
                 action="#"
                 class="pl2"
                 disabled
               >
-                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
                 <button type="submit" disabled>delete</button>
               </form>
+            {{else}}
+              <form
+                method="get"
+                action="statusDelete"
+                class="pl2"
+              >
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="id" value="{{id}}">
+                <button type="submit">delete</button>
+              </form>
+            {{/if}}
           </div>
         </div>
       {{/each}}
