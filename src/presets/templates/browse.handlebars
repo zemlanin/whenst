@@ -154,6 +154,49 @@
               {{/if}}
             </div>
           </div>
+          <div class="flex flex-row items-center">
+            {{#each statuses}}
+              {{#with oauth}}
+                <span class="pr3 pv1">
+                  {{#if (eq service "slack")}}
+                    <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.display_name}}
+                          alt="{{profile.display_name}} ({{team.name}})"
+                        {{else}}
+                          alt="{{profile.real_name}} ({{team.name}})"
+                        {{/if}}
+                      >
+                      {{#unless team.icon.image_default}}
+                        <img
+                          src="{{team.icon.image_44}}"
+                          alt="{{team.name}}"
+                          class="team-icon"
+                        >
+                      {{/unless}}
+                    </a>
+                  {{/if}}
+                  {{#if (eq service "github")}}
+                    <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.name}}
+                          alt="{{profile.name}}"
+                        {{else}}
+                          alt="{{profile.login}}"
+                        {{/if}}
+                      >
+                      <img
+                        src="https://github.githubassets.com/apple-touch-icon.png"
+                        class="team-icon"
+                      >
+                    </a>
+                  {{/if}}
+                </span>
+              {{/with}}
+            {{/each}}
+          </div>
         </div>
       {{/each}}
     </div>
