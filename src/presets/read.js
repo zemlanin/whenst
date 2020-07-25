@@ -28,28 +28,16 @@ module.exports = async function presetRead(req, res) {
 
   const db = await req.db();
 
-  const dbPresetRes = await db.query(sql`
-    SELECT p.id, p.account_id
-    FROM preset p
-    WHERE p.id = ${req.params.preset_id}
-      AND p.account_id = ${account.id}
-    LIMIT 1;
-  `);
-
-  if (!dbPresetRes.rows.length) {
-    res.statusCode = 404;
-
-    return;
-  }
-
-  const preset_id = dbPresetRes.rows[0].id;
+  const preset_id = req.params.preset_id;
 
   const statuses = [];
 
   const dbSlackStatusesRes = await db.query(sql`
     SELECT s.id, s.preset_id, s.slack_oauth_id, s.status_text, s.status_emoji
     FROM slack_status s
-    WHERE s.preset_id = ${preset_id}
+    LEFT JOIN preset p ON p.id = s.preset_id
+    WHERE p.account_id = ${account.id}
+      AND p.id = ${preset_id}
     ORDER BY s.id DESC;
   `);
 
@@ -59,6 +47,8 @@ module.exports = async function presetRead(req, res) {
     );
 
     if (!oauth) {
+      console.error(`something wrong with preset ${row.preset_id}: no oauth`);
+
       continue;
     }
 
@@ -82,7 +72,9 @@ module.exports = async function presetRead(req, res) {
   const dbGithubStatusesRes = await db.query(sql`
     SELECT s.id, s.preset_id, s.github_oauth_id, s.status_text, s.status_emoji
     FROM github_status s
-    WHERE s.preset_id = ${preset_id}
+    LEFT JOIN preset p ON p.id = s.preset_id
+    WHERE p.account_id = ${account.id}
+      AND p.id = ${preset_id}
     ORDER BY s.id DESC;
   `);
 
@@ -92,6 +84,8 @@ module.exports = async function presetRead(req, res) {
     );
 
     if (!oauth) {
+      console.error(`something wrong with preset ${row.preset_id}: no oauth`);
+
       continue;
     }
 
@@ -119,7 +113,6 @@ module.exports = async function presetRead(req, res) {
 
   const preset = {
     id: preset_id,
-    account_id: dbPresetRes.rows[0].account_id,
     main_status: statuses[0],
     statuses,
   };
