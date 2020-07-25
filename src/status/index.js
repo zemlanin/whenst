@@ -119,9 +119,14 @@ module.exports = async function statusIndex(req, res) {
     account &&
     (
       await db.query(sql`
-        SELECT count(p.id)
-        FROM status_preset p
-        WHERE p.account_id = ${account.id};
+        SELECT count(DISTINCT preset.id)
+        FROM preset
+        INNER JOIN (
+          SELECT preset_id FROM slack_status
+          UNION
+          SELECT preset_id FROM github_status
+        ) s ON s.preset_id = preset.id
+        WHERE preset.account_id = ${account.id};
       `)
     ).rows[0].count < 100;
 
