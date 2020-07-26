@@ -65,20 +65,89 @@ module.exports = async function presetAdd(req, res) {
     return;
   }
 
-  await db.query(sql`
-    INSERT INTO status_preset (
-      account_id,
-      status_text,
-      status_emoji
+  const slack_oauth_ids = req.formBody.getAll("slack_oauth_id");
+
+  if (
+    !slack_oauth_ids.every((oauth_id) =>
+      account.oauths.find(
+        (o) => o.service === "slack" && o.oauth_id === oauth_id
+      )
     )
-    VALUES (
-      ${account.id},
-      ${status_text},
-      ${status_emoji}
+  ) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
+  const github_oauth_ids = req.formBody.getAll("github_oauth_id");
+
+  if (
+    !github_oauth_ids.every((oauth_id) =>
+      account.oauths.find(
+        (o) => o.service === "github" && o.oauth_id === oauth_id
+      )
     )
-    ON CONFLICT DO NOTHING
-    RETURNING id;
-  `);
+  ) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
+  if (!slack_oauth_ids.length && !github_oauth_ids.length) {
+    res.statusCode = TODO_BAD_REQUEST;
+
+    return;
+  }
+
+  await req.db.transaction(async (db) => {
+    const dbPresetResp = await db.query(sql`
+      INSERT INTO preset (
+        account_id
+      )
+      VALUES (
+        ${account.id}
+      )
+      RETURNING id;
+    `);
+
+    const presetId = dbPresetResp.rows[0].id;
+
+    for (const slack_oauth_id of slack_oauth_ids) {
+      await db.query(sql`
+        INSERT INTO slack_status (
+          preset_id,
+          slack_oauth_id,
+          status_text,
+          status_emoji
+        )
+        VALUES (
+          ${presetId},
+          ${slack_oauth_id},
+          ${status_text},
+          ${status_emoji}
+        )
+        RETURNING id;
+      `);
+    }
+
+    for (const github_oauth_id of github_oauth_ids) {
+      await db.query(sql`
+        INSERT INTO github_status (
+          preset_id,
+          github_oauth_id,
+          status_text,
+          status_emoji
+        )
+        VALUES (
+          ${presetId},
+          ${github_oauth_id},
+          ${status_text},
+          ${status_emoji}
+        )
+        RETURNING id;
+      `);
+    }
+  });
 
   res.statusCode = 303;
   res.setHeader(

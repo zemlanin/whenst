@@ -10,36 +10,124 @@
     <div style="padding: 0 0.5em 0 0.5em;">
       {{#if can_save_presets}}
         <form
-          class="preset-row status-form"
+          id="presetAddForm"
+          class="status-form"
           method="post"
           action="{{ route "presetAdd" }}"
         >
           <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-          {{! chrome doesn't support flexbox in `<fieldset>` }}
-          <div role="group" class="status">
-            <label for="status-form-status_emoji" class="status_emoji empty-emoji">
-              <span class="current-emoji">&nbsp;</span>
-            </label>
-            <input
-              id="status-form-status_emoji"
-              type="text"
-              name="status_emoji"
-              list="emoji_datalist"
-              aria-label="emoji"
-              placeholder="emoji"
-              maxlength="120"
-            >
-            <hr>
-            <input
-              type="text"
-              name="status_text"
-              placeholder="text"
-              class="status_text"
-              maxlength="120"
-            >
+          <div class="flex flex-row items-center justify-between">
+            {{! chrome doesn't support flexbox in `<fieldset>` }}
+            <div role="group" class="status">
+              <label for="status-form-status_emoji" class="status_emoji empty-emoji">
+                <span class="current-emoji">&nbsp;</span>
+              </label>
+              <input
+                id="status-form-status_emoji"
+                type="text"
+                name="status_emoji"
+                list="emoji_datalist"
+                aria-label="emoji"
+                placeholder="emoji"
+                maxlength="120"
+              >
+              <hr>
+              <input
+                type="text"
+                name="status_text"
+                placeholder="text"
+                class="status_text"
+                maxlength="120"
+              >
+            </div>
+            <div style="width: 0.5em;"></div>
+            <button type="submit" class="primary">save</button>
           </div>
-          <div style="width: 0.5em;"></div>
-          <button type="submit" class="primary">save</button>
+
+          {{#unless (eq account.oauths.length 1)}}
+            <details>
+              <summary class="pointer">
+                Accounts
+              </summary>
+
+              <ul class="flex flex-column flex-wrap list pa0 ma0">
+                {{#each account.oauths}}
+                  <li class="pv2">
+                    {{#if (eq service "slack")}}
+                      <label class="flex flex-row items-center">
+                        <input
+                          type="checkbox"
+                          name="slack_oauth_id"
+                          value="{{oauth_id}}"
+                          checked
+                        >
+                        <div style="width: 0.5em"></div>
+                        <span class="icon-group">
+                          <img
+                            src="{{profile.image_72}}"
+                            {{#if profile.display_name}}
+                              alt="{{profile.display_name}} ({{team.name}})"
+                            {{else}}
+                              alt="{{profile.real_name}} ({{team.name}})"
+                            {{/if}}
+                          >
+                          {{#unless team.icon.image_default}}
+                            <img
+                              src="{{team.icon.image_44}}"
+                              alt="{{team.name}}"
+                              class="team-icon"
+                            >
+                          {{/unless}}
+                        </span>
+                        <div style="width: 0.5em"></div>
+                        <span>
+                          {{#if profile.display_name}}
+                            {{profile.display_name}}
+                          {{else}}
+                            {{profile.real_name}}
+                          {{/if}}
+                          {{#if team}}({{team.name}}){{/if}}
+                        <span>
+                      </label>
+                    {{/if}}
+                    {{#if (eq service "github")}}
+                      <label class="flex flex-row items-center">
+                        <input
+                          type="checkbox"
+                          name="github_oauth_id"
+                          value="{{oauth_id}}"
+                          checked
+                        >
+                        <div style="width: 0.5em"></div>
+                        <span class="icon-group">
+                          <img
+                            src="{{profile.image_72}}"
+                            {{#if profile.name}}
+                              alt="{{profile.name}}"
+                            {{else}}
+                              alt="{{profile.login}}"
+                            {{/if}}
+                          >
+                          <img
+                            src="https://github.githubassets.com/apple-touch-icon.png"
+                            class="team-icon"
+                          >
+                        </span>
+                        <div style="width: 0.5em"></div>
+                        <span>
+                          {{#if profile.name}}
+                            {{profile.name}}
+                          {{else}}
+                            {{profile.login}}
+                          {{/if}}
+                        <span>
+                      </label>
+                    {{/if}}
+                  </li>
+                {{/each}}
+              </ul>
+            </details>
+          {{/unless}}
         </form>
       {{/if}}
 
@@ -50,81 +138,7 @@
         action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
       >
         <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <ul class="flex flex-row flex-wrap list pa0 ma0">
-          {{#each account.oauths}}
-            <li class="flex flex-row items-center pr3 pv1">
-              {{#if (eq service "slack")}}
-                <label class="pa2 pl0">
-                  <input type="checkbox" name="slack_oauth_id" value="{{oauth_id}}" checked>
-                </label>
-                <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
-                  <img
-                    src="{{profile.image_72}}"
-                    {{#if profile.display_name}}
-                      alt="{{profile.display_name}} ({{team.name}})"
-                    {{else}}
-                      alt="{{profile.real_name}} ({{team.name}})"
-                    {{/if}}
-                  >
-                  {{#unless team.icon.image_default}}
-                    <img
-                      src="{{team.icon.image_44}}"
-                      alt="{{team.name}}"
-                      class="team-icon"
-                    >
-                  {{/unless}}
-                </a>
-              {{/if}}
-              {{#if (eq service "github")}}
-                <label class="pa2 pl0">
-                  <input type="checkbox" name="github_oauth_id" value="{{oauth_id}}" checked>
-                </label>
-                <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
-                  <img
-                    src="{{profile.image_72}}"
-                    {{#if profile.name}}
-                      alt="{{profile.name}}"
-                    {{else}}
-                      alt="{{profile.login}}"
-                    {{/if}}
-                  >
-                  <img
-                    src="https://github.githubassets.com/apple-touch-icon.png"
-                    class="team-icon"
-                  >
-                </a>
-              {{/if}}
-            </li>
-          {{/each}}
-        </ul>
       </form>
-
-      <div class="flex flex-column pb3">
-        <div class="flex flex-row justify-between items-center">
-          <a
-            class="flex flex-row"
-            href="{{ route "statusIndex"
-              ?status_emoji=""
-              ?status_text="" }}"
-          >
-            <span class="status">
-              {{>partials_status empty=true}}
-            </span>
-            <span
-              class="deeper"
-              role="presentation"
-            >❯</span>
-          </a>
-
-          <div class="flex">
-            <button
-              type="submit"
-              form="statusUseForm"
-              formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-            >use</button>
-          </div>
-        </div>
-      </div>
 
       {{#each presets}}
         <div class="flex flex-column pb3">
