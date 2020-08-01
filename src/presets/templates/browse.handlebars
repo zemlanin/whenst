@@ -43,92 +43,122 @@
             <div style="width: 0.5em;"></div>
             <button type="submit" class="primary">save</button>
           </div>
-
-          {{#unless (eq account.oauths.length 1)}}
-            <details>
-              <summary class="pointer">
-                Accounts
-              </summary>
-
-              <ul class="flex flex-column flex-wrap list pa0 ma0">
-                {{#each account.oauths}}
-                  <li class="pv2">
-                    {{#if (eq service "slack")}}
-                      <label class="flex flex-row items-center">
-                        <input
-                          type="checkbox"
-                          name="slack_oauth_id"
-                          value="{{oauth_id}}"
-                          checked
-                        >
-                        <div style="width: 0.5em"></div>
-                        <span class="icon-group">
-                          <img
-                            src="{{profile.image_72}}"
-                            {{#if profile.display_name}}
-                              alt="{{profile.display_name}} ({{team.name}})"
-                            {{else}}
-                              alt="{{profile.real_name}} ({{team.name}})"
-                            {{/if}}
-                          >
-                          {{#unless team.icon.image_default}}
-                            <img
-                              src="{{team.icon.image_44}}"
-                              alt="{{team.name}}"
-                              class="team-icon"
-                            >
-                          {{/unless}}
-                        </span>
-                        <div style="width: 0.5em"></div>
-                        <span>
-                          {{#if profile.display_name}}
-                            {{profile.display_name}}
-                          {{else}}
-                            {{profile.real_name}}
-                          {{/if}}
-                          {{#if team}}({{team.name}}){{/if}}
-                        <span>
-                      </label>
-                    {{/if}}
-                    {{#if (eq service "github")}}
-                      <label class="flex flex-row items-center">
-                        <input
-                          type="checkbox"
-                          name="github_oauth_id"
-                          value="{{oauth_id}}"
-                          checked
-                        >
-                        <div style="width: 0.5em"></div>
-                        <span class="icon-group">
-                          <img
-                            src="{{profile.image_72}}"
-                            {{#if profile.name}}
-                              alt="{{profile.name}}"
-                            {{else}}
-                              alt="{{profile.login}}"
-                            {{/if}}
-                          >
-                          <img
-                            src="https://github.githubassets.com/apple-touch-icon.png"
-                            class="team-icon"
-                          >
-                        </span>
-                        <div style="width: 0.5em"></div>
-                        <span>
-                          {{#if profile.name}}
-                            {{profile.name}}
-                          {{else}}
-                            {{profile.login}}
-                          {{/if}}
-                        <span>
-                      </label>
-                    {{/if}}
-                  </li>
-                {{/each}}
-              </ul>
-            </details>
-          {{/unless}}
         </form>
+
+        <details>
+          <summary class="pointer">
+            Accounts
+          </summary>
+
+          <ul class="flex flex-column flex-wrap list pa0 ma0">
+            {{#each account.oauths}}
+              <li class="pv2">
+                {{#if (eq service "slack")}}
+                  <label class="flex flex-row items-center">
+                    <input
+                      type="checkbox"
+                      name="slack_oauth_id"
+                      value="{{oauth_id}}"
+                      form="presetAddForm"
+                      checked
+                    >
+                    <div style="width: 0.5em"></div>
+                    <span class="icon-group">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.display_name}}
+                          alt="{{profile.display_name}} ({{team.name}})"
+                        {{else}}
+                          alt="{{profile.real_name}} ({{team.name}})"
+                        {{/if}}
+                      >
+                      {{#unless team.icon.image_default}}
+                        <img
+                          src="{{team.icon.image_44}}"
+                          alt="{{team.name}}"
+                          class="team-icon"
+                        >
+                      {{/unless}}
+                    </span>
+                    <div style="width: 0.5em"></div>
+                    <span>
+                      {{#if profile.display_name}}
+                        {{profile.display_name}}
+                      {{else}}
+                        {{profile.real_name}}
+                      {{/if}}
+                      {{#if team}}({{team.name}}){{/if}}
+                    <span>
+                  </label>
+                {{/if}}
+                {{#if (eq service "github")}}
+                  <label class="flex flex-row items-center">
+                    <input
+                      type="checkbox"
+                      name="github_oauth_id"
+                      value="{{oauth_id}}"
+                      form="presetAddForm"
+                      checked
+                    >
+                    <div style="width: 0.5em"></div>
+                    <span class="icon-group">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.name}}
+                          alt="{{profile.name}}"
+                        {{else}}
+                          alt="{{profile.login}}"
+                        {{/if}}
+                      >
+                      <img
+                        src="https://github.githubassets.com/apple-touch-icon.png"
+                        class="team-icon"
+                      >
+                    </span>
+                    <div style="width: 0.5em"></div>
+                    <span>
+                      {{#if profile.name}}
+                        {{profile.name}}
+                      {{else}}
+                        {{profile.login}}
+                      {{/if}}
+                    <span>
+                  </label>
+                {{/if}}
+              </li>
+            {{/each}}
+
+            {{#if can_link_accounts}}
+              <li class="pv2">
+                <div class="flex flex-row items-center">
+                  <span>
+                    link another account
+                  </span>
+                  <div style="flex-grow: 1"></div>
+                  {{#with slackAuth}}
+                    <form method="GET" action="https://slack.com/oauth/authorize">
+                      <input type="hidden" name="client_id" value="{{ client_id }}">
+                      <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+                      <input type="hidden" name="state" value="{{ state }}">
+                      <input type="hidden" name="scope" value="{{ scope }}">
+                      <button type="submit">slack</button>
+                    </form>
+                  {{/with}}
+                  <div style="width: 0.5em"></div>
+                  {{#with githubAuth}}
+                    <form method="GET" action="https://github.com/login/oauth/authorize">
+                      <input type="hidden" name="client_id" value="{{ client_id }}">
+                      <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
+                      <input type="hidden" name="state" value="{{ state }}">
+                      <input type="hidden" name="scope" value="{{ scope }}">
+                      <button type="submit">github</button>
+                    </form>
+                  {{/with}}
+                </div>
+              </li>
+            {{/if}}
+          </ul>
+        </details>
       {{/if}}
 
       <form
@@ -168,51 +198,6 @@
               {{/if}}
             </div>
           </div>
-          {{#unless (eq @root.account.oauths.length 1)}}
-            <div class="flex flex-row items-center">
-              {{#each statuses}}
-                {{#with oauth}}
-                  <span class="pr3 pv1">
-                    {{#if (eq service "slack")}}
-                      <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
-                        <img
-                          src="{{profile.image_72}}"
-                          {{#if profile.display_name}}
-                            alt="{{profile.display_name}} ({{team.name}})"
-                          {{else}}
-                            alt="{{profile.real_name}} ({{team.name}})"
-                          {{/if}}
-                        >
-                        {{#unless team.icon.image_default}}
-                          <img
-                            src="{{team.icon.image_44}}"
-                            alt="{{team.name}}"
-                            class="team-icon"
-                          >
-                        {{/unless}}
-                      </a>
-                    {{/if}}
-                    {{#if (eq service "github")}}
-                      <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
-                        <img
-                          src="{{profile.image_72}}"
-                          {{#if profile.name}}
-                            alt="{{profile.name}}"
-                          {{else}}
-                            alt="{{profile.login}}"
-                          {{/if}}
-                        >
-                        <img
-                          src="https://github.githubassets.com/apple-touch-icon.png"
-                          class="team-icon"
-                        >
-                      </a>
-                    {{/if}}
-                  </span>
-                {{/with}}
-              {{/each}}
-            </div>
-          {{/unless}}
         </div>
       {{/each}}
     </div>
@@ -287,16 +272,52 @@
         } else {
           form.status_text.setAttribute("required", "required");
         }
+
+        let haveOauthId = false;
+
+        for (const el of form.elements) {
+          if (el.name === "slack_oauth_id" || el.name === "github_oauth_id") {
+            if (el.checked) {
+              haveOauthId = true;
+              break;
+            }
+          }
+        }
+
+        for (const el of form.elements) {
+          if (el.name === "slack_oauth_id" || el.name === "github_oauth_id") {
+            if (haveOauthId) {
+              el.removeAttribute("required");
+            } else {
+              el.setAttribute("required", "required");
+            }
+          }
+        }
       }
 
-      Array.prototype.forEach.call(
-        document.querySelectorAll('form.status-form'),
-        function (form) {
-          updateRequiredFields({ target: { form: form }});
-          form.status_text.addEventListener("input", updateRequiredFields);
-          form.status_emoji.addEventListener("input", updateRequiredFields);
+      for (const form of document.querySelectorAll('form.status-form')) {
+        updateRequiredFields({ target: { form: form }});
+        for (const el of form.elements) {
+          if (el.type !== "hidden" && el.type !== "submit") {
+            el.addEventListener("input", updateRequiredFields);
+          }
         }
-      )
+      }
+
+      function keepInvalidDetailsOpen(event) {
+        if (!event.target.open) {
+          const invalidInput = event.target.querySelector("input:invalid")
+
+          if (invalidInput) {
+            event.target.open = true;
+            invalidInput.reportValidity();
+          }
+        }
+      }
+
+      for (const details of document.getElementsByTagName('details')) {
+        details.addEventListener("toggle", keepInvalidDetailsOpen)
+      }
     });
   </script>
 </body>

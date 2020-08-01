@@ -4,6 +4,8 @@ const sql = require("pg-template-tag").default;
 const nodeEmoji = require("node-emoji");
 const Handlebars = require("handlebars");
 
+const config = require("../config.js");
+const { getOauthState } = require("../auth/oauth-state.js");
 const { getEmojiHTML } = require("./common.js");
 
 const tmpl = require.resolve("./templates/browse.handlebars");
@@ -117,10 +119,23 @@ module.exports = async function presetsBrowse(req, res) {
 
   presets.sort((a, b) => b.id - a.id); // DESC
 
+  const state = getOauthState(req.session.id, req.url);
+
   return res.render(tmpl, {
     account,
     presets,
     can_save_presets: presets.length < 100,
+    can_link_accounts: account.oauths.length < 20,
+    slackAuth: {
+      client_id: config.slack.client_id,
+      scope: config.slack.scope,
+      state,
+    },
+    githubAuth: {
+      client_id: config.github.client_id,
+      scope: config.github.scope,
+      state,
+    },
     emoji_options: DEFAULT_EMOJI_LIST,
   });
 };
