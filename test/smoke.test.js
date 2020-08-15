@@ -21,12 +21,6 @@ describe("smoke", () => {
     await supertest(server).get("/").expect(200);
   });
 
-  it("should load status", async () => {
-    await supertest(server)
-      .get("/status?status_text=i+hate+emoji&status_emoji=speech_balloon")
-      .expect(200);
-  });
-
   it("should fail: csrf", async () => {
     await supertest(server).post("/presets/add").expect(403);
   });
