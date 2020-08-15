@@ -117,7 +117,7 @@ module.exports = async function authGithub(req, res) {
           };
         }
       } else {
-        let account_id = account.id;
+        let account_id = account && account.id;
 
         if (!account_id) {
           const dbAccountResp = await db.query(sql`
