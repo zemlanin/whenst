@@ -21,6 +21,7 @@ const routes = [
 
   ["GET /presets", require("./presets/browse.js")],
   ["GET /preset(s)/:preset_id", require("./presets/read.js")],
+  ["POST /preset(s)/:preset_id/use", require("./presets/use.js")],
   ["POST /presets/add", require("./presets/add.js")],
   ["POST /presets/delete", require("./presets/delete.js")],
 

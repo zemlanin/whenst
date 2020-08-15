@@ -45,7 +45,7 @@
           </div>
         </form>
 
-        <details>
+        <details class="pb3">
           <summary class="pointer">
             Accounts
           </summary>
@@ -161,15 +161,6 @@
         </details>
       {{/if}}
 
-      <form
-        id="statusUseForm"
-        class="preset-row"
-        method="POST"
-        action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-      </form>
-
       {{#each presets}}
         <div class="flex flex-column pb3">
           <div class="flex flex-row justify-between items-center">
@@ -190,11 +181,10 @@
               {{#if main_status.custom_emoji}}
                 {{! TODO }}
               {{else}}
-                <button
-                  type="submit"
-                  form="statusUseForm"
-                  formaction="{{ route "statusUse" ?status_emoji=main_status.status_emoji ?status_text=main_status.status_text }}"
-                >use</button>
+                <form method="POST" action="{{ route "presetUse" preset_id=id }}">
+                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                  <button type="submit">use</button>
+                </form>
               {{/if}}
             </div>
           </div>
