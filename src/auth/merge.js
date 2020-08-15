@@ -16,8 +16,6 @@ async function performMerge(req, res) {
     return;
   }
 
-  const shouldProceed = req.formBody.get("action") === "proceed";
-
   const cleanupMerge = () => {
     delete req.session.oauth_to_merge;
 
@@ -30,6 +28,7 @@ async function performMerge(req, res) {
     return;
   };
 
+  const shouldProceed = req.formBody.get("action") === "proceed";
   if (!shouldProceed) {
     return cleanupMerge();
   }
@@ -87,11 +86,9 @@ async function performMerge(req, res) {
     }
 
     await db.query(sql`
-      INSERT INTO status_preset
-        (account_id, status_emoji, status_text)
-      SELECT ${activeAccount.id}, status_emoji, status_text FROM status_preset
+      UPDATE preset
+      SET account_id = ${activeAccount.id}
       WHERE account_id = ${accountToMerge.id}
-      ON CONFLICT ON CONSTRAINT status_preset_unique_text_emoji DO NOTHING;
     `);
   });
 
