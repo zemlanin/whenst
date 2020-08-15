@@ -90,20 +90,9 @@
             </span>
           {{/with}}
 
-          <a
-            class="flex flex-row"
-            href="{{ route "statusIndex"
-              ?status_emoji=status_emoji
-              ?status_text=status_text }}"
-          >
-            <span class="status">
-              {{>partials_status .}}
-            </span>
-            <span
-              class="deeper"
-              role="presentation"
-            >❯</span>
-          </a>
+          <span class="status">
+            {{>partials_status .}}
+          </span>
 
           <div style="flex-grow: 1"></div>
 

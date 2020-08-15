@@ -47,37 +47,9 @@
         </div>
         {{#if current_status}}
           <div class="preset-row">
-            <a
-              class="flex flex-row"
-              href="{{ route "statusIndex"
-                ?status_emoji=current_status.status_emoji
-                ?status_text=current_status.status_text }}"
-            >
-              <span class="status">
-                {{>partials_status current_status }}
-              </span>
-              <span
-                class="deeper"
-                role="presentation"
-              >❯</span>
-            </a>
-
-            {{#unless current_status.empty }}
-              <div class="flex">
-                <form
-                  id="statusUseForm"
-                  method="POST"
-                  action="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-                >
-                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-                  <input type="hidden" name="slack_oauth_id" value="{{oauth_id}}">
-                  <button
-                    type="submit"
-                    formaction="{{ route "statusUse" ?status_emoji="" ?status_text="" }}"
-                  >clear</button>
-                </form>
-              </div>
-            {{/unless}}
+            <span class="status">
+              {{>partials_status current_status }}
+            </span>
           </div>
         {{/if}}
       {{/with}}
