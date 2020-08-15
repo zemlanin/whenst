@@ -2,7 +2,8 @@ BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS "preset" (
   id bigserial PRIMARY KEY NOT NULL,
-  account_id bigint NOT NULL
+  account_id bigint NOT NULL,
+  title text
 );
 
 CREATE TABLE IF NOT EXISTS "slack_status" (
