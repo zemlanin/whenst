@@ -98,7 +98,7 @@ async function getAccount(db, redis, id) {
       oauth_id: row.id,
       access_token,
       current_status,
-      display_name: profile.display_name || profile.real_name
+      display_name: profile.display_name || profile.real_name,
     });
   }
 
@@ -152,7 +152,7 @@ async function getAccount(db, redis, id) {
       oauth_id: row.id,
       access_token,
       current_status,
-      display_name: profile.name || "@" + profile.login
+      display_name: profile.name || "@" + profile.login,
     });
   }
 
