@@ -43,8 +43,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     );
 
     if (!oauth) {
-      console.error(`something wrong with preset ${row.preset_id}: no oauth`);
-
+      // oauth was unlinked, but status preset is still in db
       continue;
     }
 
@@ -80,8 +79,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     );
 
     if (!oauth) {
-      console.error(`something wrong with preset ${row.preset_id}: no oauth`);
-
+      // oauth was unlinked, but status preset is still in db
       continue;
     }
 
