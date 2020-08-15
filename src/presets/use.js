@@ -36,7 +36,6 @@ module.exports = async function presetUse(req, res) {
   const redis = await req.redis();
 
   for (const { oauth, status_emoji, status_text } of preset.statuses) {
-    console.log({ oauth, status_emoji, status_text });
     if (oauth.service === "slack") {
       const slackResp = await slackApi.apiPost(
         "users.profile.set",
