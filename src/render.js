@@ -41,30 +41,21 @@ const absoluteRoute = (base) =>
   };
 
 if (config.assets.manifest) {
-  const { base, manifest } = config.assets;
-
-  if (manifest && !base) {
-    throw new Error(`config.assets.manifest requires config.assets.base`);
-  }
+  const { cacheBuster, manifest } = config.assets;
 
   Handlebars.registerHelper("asset", function assetManifest(file) {
-    if (!manifest[file]) {
-      throw new Error(`assets not found in manifest: "${file}"`);
-    }
+    const shortHash = manifest[file]?.sha1?.slice(0, 6);
 
-    return new url.URL(manifest[file], base);
-  });
-} else if (config.assets.base) {
-  const { base, cacheBuster } = config.assets;
-
-  Handlebars.registerHelper("asset", function assetBase(file) {
-    return new url.URL(file + "?v=" + cacheBuster, base);
+    return (
+      routes.reverse["cdn"].stringify({ _: file }) +
+      (shortHash ? `?v=${shortHash}` : `?_=${cacheBuster}`)
+    );
   });
 } else {
   const { cacheBuster } = config.assets;
 
   Handlebars.registerHelper("asset", function assetLocal(file) {
-    return routes.reverse["cdn"].stringify({ _: file }) + "?v=" + cacheBuster;
+    return routes.reverse["cdn"].stringify({ _: file }) + `?_=${cacheBuster}`;
   });
 }
 
@@ -93,15 +84,17 @@ module.exports = function renderMiddleware(req, res, next) {
   res.render = function render(tmplPath, data) {
     let tmpl;
 
+    res.timing.start("handlebars");
+
     if (tmplPath in tmplMap) {
       tmpl = tmplMap[tmplPath];
     } else {
       tmpl = tmplMap[tmplPath] = fs.readFileSync(tmplPath).toString();
     }
 
-    res.setHeader("content-type", "text/html");
+    res.setHeader("content-type", "text/html; charset=utf-8");
 
-    return Handlebars.compile(tmpl, {
+    const rendered = Handlebars.compile(tmpl, {
       strict: true,
       explicitPartialContext: true,
     })(data, {
@@ -112,6 +105,10 @@ module.exports = function renderMiddleware(req, res, next) {
         absolute: absoluteRoute(req.absolute),
       },
     });
+
+    res.timing.stop("handlebars");
+
+    return rendered;
   };
 
   next();

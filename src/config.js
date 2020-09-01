@@ -2,7 +2,6 @@ require("dotenv").config({
   path: process.env.DOTENV_CONFIG_PATH || null,
 });
 
-const fs = require("fs");
 const path = require("path");
 
 function getSessionSecret() {
@@ -71,7 +70,20 @@ function getGithubConfig() {
   };
 }
 
-const TODO = null;
+function getManifest() {
+  try {
+    return require(path.resolve(
+      process.cwd(),
+      process.env.ASSETS_MANIFEST_FILE || "./static/.manifest.json"
+    ));
+  } catch (e) {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error(`ASSETS_MANIFEST_FILE is required in production env`);
+    }
+
+    return null;
+  }
+}
 
 module.exports = {
   port: process.env.PORT || 8000,
@@ -91,13 +103,9 @@ module.exports = {
   github: getGithubConfig(),
   production: process.env.NODE_ENV !== "development",
   assets: {
-    base: process.env.ASSETS_BASE || null,
-    manifest: process.env.ASSETS_MANIFEST_FILE
-      ? fs.readFileSync(
-          path.resolve(process.cwd(), process.env.ASSETS_MANIFEST_FILE)
-        )
-      : null,
-    cacheBuster: TODO || parseInt(Math.random() * 36 * 36 * 36).toString(36),
+    manifest: getManifest(),
+    cacheBuster: parseInt(Math.random() * 36 * 36 * 36).toString(36),
   },
+  disableHTTPSEnforce: false, // overriden in tests
   disableCSRFCheck: false, // overriden in tests
 };

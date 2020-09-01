@@ -1,9 +1,6 @@
 const url = require("url");
-const crypto = require("crypto");
 
-const getOauthState = (session) =>
-  crypto.createHash("sha256").update(session.id).digest("hex");
-
+const { getOauthState } = require("../auth/oauth-state.js");
 const config = require("../config.js");
 
 const tmpl = require.resolve("./templates/index.handlebars");
@@ -14,12 +11,15 @@ module.exports = async function landing(req, res) {
     res.statusCode = 302;
     res.setHeader(
       "Location",
-      new url.URL(req.app.routes.presetsIndex.stringify(), req.absolute)
+      new url.URL(req.app.routes.presetsBrowse.stringify(), req.absolute)
     );
     return;
   }
 
-  const state = getOauthState(req.session);
+  const state = getOauthState(
+    req.session.id,
+    req.app.routes.presetsBrowse.stringify()
+  );
 
   return res.render(tmpl, {
     slackAuth: {

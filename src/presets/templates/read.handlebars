@@ -1,0 +1,176 @@
+{{#> partials_head . }}
+  {{#with preset.main_status}}
+    {{#if empty~}}
+      empty status
+    {{~else~}}
+      {{~#if status_emoji~}}
+        {{~#if custom_emoji~}}
+          :{{status_emoji}}:
+        {{~else~}}
+          {{{status_emoji_html}}}
+        {{~/if ~}}
+        {{~#if status_text}} | {{/if ~}}
+      {{~/if ~}}
+
+      {{~#if status_text}}{{{status_text_html}}}{{/if ~}}
+    {{/if}} |
+  {{/with}}
+{{/partials_head}}
+<body>
+  <div id="layout">
+    {{> partials_topbar }}
+
+    <h1 class="ph2">Preset</h1>
+
+    <div class="pb4 pl2 pr2 flex flex-column items-center">
+      <div id="target-status" class="status" style="font-size: 1.5em;">
+        {{>partials_status preset.main_status}}
+      </div>
+
+      <form
+        method="POST"
+        action="{{ route "presetUse" preset_id=preset.id }}"
+        class="pt3"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <button type="submit">use</button>
+      </form>
+
+      <form
+        method="POST"
+        action="{{ route "presetDelete" }}"
+        class="pt3"
+      >
+        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+        <input type="hidden" name="id" value="{{preset.id}}">
+        <button type="submit" onclick="return confirm('are you sure?')">delete</button>
+      </form>
+    </div>
+
+    <div style="padding: 1em 0.5em 0 0.5em;">
+      {{#each preset.statuses}}
+        <div class="flex flex-row pb3 items-center">
+          {{#with oauth}}
+            <span class="pr2" style="line-height: 0">
+              {{#if (eq service "slack")}}
+                <a class="icon-group" href="{{ route "accountsSlack" user_id=user_id }}">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.display_name}}
+                      alt="{{profile.display_name}} ({{team.name}})"
+                    {{else}}
+                      alt="{{profile.real_name}} ({{team.name}})"
+                    {{/if}}
+                  >
+                  {{#unless team.icon.image_default}}
+                    <img
+                      src="{{team.icon.image_44}}"
+                      alt="{{team.name}}"
+                      class="team-icon"
+                    >
+                  {{/unless}}
+                </a>
+              {{/if}}
+              {{#if (eq service "github")}}
+                <a class="icon-group" href="{{ route "accountsGithub" user_id=profile.id }}">
+                  <img
+                    src="{{profile.image_72}}"
+                    {{#if profile.name}}
+                      alt="{{profile.name}}"
+                    {{else}}
+                      alt="{{profile.login}}"
+                    {{/if}}
+                  >
+                  <img
+                    src="https://github.githubassets.com/apple-touch-icon.png"
+                    class="team-icon"
+                  >
+                </a>
+              {{/if}}
+            </span>
+          {{/with}}
+
+          <span class="status">
+            {{>partials_status .}}
+          </span>
+
+          <div style="flex-grow: 1"></div>
+
+          <div class="flex flex-row">
+            {{#if (eq @root.preset.statuses.length 1)}}
+              <form
+                method="get"
+                action="#"
+                class="pl2"
+                disabled
+              >
+                <button type="submit" disabled>delete</button>
+              </form>
+            {{else}}
+              <form
+                method="get"
+                action="statusDelete"
+                class="pl2"
+              >
+                <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                <input type="hidden" name="id" value="{{id}}">
+                <button type="submit">delete</button>
+              </form>
+            {{/if}}
+          </div>
+        </div>
+      {{/each}}
+    </div>
+
+    {{> partials_footer . }}
+
+  </div>
+
+  <script type="text/javascript">
+    (function (statusEmojiElement) {
+      if (
+        !statusEmojiElement ||
+        !statusEmojiElement.textContent.trim() ||
+        statusEmojiElement.classList.contains("custom-emoji") ||
+        statusEmojiElement.classList.contains("empty-emoji")
+      ) {
+        return;
+      }
+
+      const emoji = statusEmojiElement.textContent.trim();
+
+      const backgroundColor = `rgb(255, 255, 255)`;
+
+      for (const link of document.head.querySelectorAll(
+        `link[rel="apple-touch-icon"], link[sizes]`
+      )) {
+        const size = parseInt(
+          (link.sizes.value || "180x180").match(/(\d+)x\1/)[1],
+          10
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, size, size);
+
+        const appleTouchIcon = link.rel === "apple-touch-icon";
+        const fontSize = appleTouchIcon
+          ? Math.floor(size * 0.75)
+          : Math.floor(size * 0.65);
+
+        ctx.font = `${fontSize}px serif`;
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(emoji, Math.floor(size * 0.5), Math.floor(size * 0.5));
+
+        link.href = canvas.toDataURL();
+      }
+    })(document.querySelector("#target-status .status_emoji"));
+  </script>
+</body>

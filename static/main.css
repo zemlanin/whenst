@@ -21,7 +21,7 @@ optgroup {
   font-family: "iA Writer Quattro S";
   font-style: normal;
   font-weight: 400;
-  font-display: optional;
+  font-display: swap;
   src: url("fonts/iAWriterQuattroS-Regular.woff2") format("woff2"),
     url("fonts/iAWriterQuattroS-Regular.woff") format("woff");
 }
@@ -30,7 +30,7 @@ optgroup {
   font-family: "iA Writer Quattro S";
   font-style: italic;
   font-weight: 400;
-  font-display: optional;
+  font-display: swap;
   src: url("fonts/iAWriterQuattroS-Italic.woff2") format("woff2"),
     url("fonts/iAWriterQuattroS-Italic.woff") format("woff");
 }
@@ -39,7 +39,7 @@ optgroup {
   font-family: "iA Writer Quattro S";
   font-style: normal;
   font-weight: 700;
-  font-display: optional;
+  font-display: swap;
   src: url("fonts/iAWriterQuattroS-Bold.woff2") format("woff2"),
     url("fonts/iAWriterQuattroS-Bold.woff") format("woff");
 }
@@ -48,7 +48,7 @@ optgroup {
   font-family: "iA Writer Quattro S";
   font-style: italic;
   font-weight: 700;
-  font-display: optional;
+  font-display: swap;
   src: url("fonts/iAWriterQuattroS-BoldItalic.woff2") format("woff2"),
     url("fonts/iAWriterQuattroS-BoldItalic.woff") format("woff");
 }
@@ -116,11 +116,9 @@ a:visited {
 }
 
 .deeper {
-  opacity: 0.5;
   flex-grow: 1;
   align-self: center;
   padding: 0 0.5em;
-  color: blue;
 }
 
 #layout {
@@ -189,6 +187,7 @@ a:visited {
   line-height: 0;
   padding-right: 0.5em;
   padding-bottom: 0.5em;
+  box-sizing: border-box;
 }
 
 .icon-group img {

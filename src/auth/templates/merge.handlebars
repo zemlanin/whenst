@@ -1,63 +1,118 @@
-{{>partials_head}}
+{{#> partials_head . }}
+{{/partials_head}}
+
+{{#*inline "service_user"}}
+  {{#if (eq service "slack")}}
+    <span class="icon-group">
+      <img
+        src="{{profile.image_72}}"
+        {{#if profile.display_name}}
+          alt="{{profile.display_name}} ({{team.name}})"
+        {{else}}
+          alt="{{profile.real_name}} ({{team.name}})"
+        {{/if}}
+      >
+      {{#unless team.icon.image_default}}
+        <img
+          src="{{team.icon.image_44}}"
+          alt="{{team.name}}"
+          class="team-icon"
+        >
+      {{/unless}}
+    </span>
+    <div style="width: 0.5em"></div>
+    <span>
+      {{#if profile.display_name}}
+        {{profile.display_name}}
+      {{else}}
+        {{profile.real_name}}
+      {{/if}}
+      {{#if team}}({{team.name}}){{/if}}
+    </span>
+  {{/if}}
+
+  {{#if (eq service "github")}}
+    <span class="icon-group">
+      <img
+        src="{{profile.image_72}}"
+        {{#if profile.name}}
+          alt="{{profile.name}}"
+        {{else}}
+          alt="{{profile.login}}"
+        {{/if}}
+      >
+      <img
+        src="https://github.githubassets.com/apple-touch-icon.png"
+        class="team-icon"
+      >
+    </span>
+    <div style="width: 0.5em"></div>
+    <span>
+      {{#if profile.name}}
+        {{profile.name}}
+      {{else}}
+        {{profile.login}}
+      {{/if}}
+    </span>
+  {{/if}}
+{{/inline}}
+
 <body>
   <div id="layout">
     {{> partials_topbar }}
 
     {{#with targetOauth}}
       <p>
-        This {{service}} user is already linked to another account
+        Oops, <u>{{display_name}}</u> is already linked to another account
+      </p>
+      <p>
+        We don't support having the same {{service}} user be linked to several accounts, so <b>what should we do</b>?
       </p>
     {{/with}}
 
     <p>
-      Linking it to the current account will:
-      <ul>
-        <li>
-          move {{accountToMerge.oauths.length}} linked users:
-          <ul>
-            {{#each accountToMerge.oauths}}
-              <li>
-                {{#if (eq service "slack")}}
-                  {{#if profile.display_name}}
-                    {{profile.display_name}}
-                  {{else}}
-                    {{profile.real_name}}
-                  {{/if}}
-                  ({{team.name}} {{service}})
-                {{/if}}
-                {{#if (eq service "github")}}
-                  {{#if profile.name}}
-                    {{profile.name}}
-                  {{else}}
-                    {{profile.login}}
-                  {{/if}}
-                  ({{service}})
-                {{/if}}
-              </li>
-            {{/each}}
-          </ul>
-        </li>
-        <li>combine presets from both accounts</li>
-        <li>logout everyone from another account</li>
-      </ul>
+      <b>A:</b> Combine accounts
     </p>
-
-    <div class="flex flex-row justify-around pb4">
-      <form method="POST"
-        action="{{ route "authMerge" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <button type="submit" name="action" value="proceed">Link anyway</button>
-      </form>
-
-      <form method="POST"
-        action="{{ route "authMerge" }}"
-      >
-        <input type="hidden" name="_csrf" value="{{@csrfToken}}">
-        <button type="submit" name="action" value="cancel">Don't link</button>
-      </form>
+    <div class="flex flex-column">
+      {{#each activeAccount.oauths}}
+        <span class="flex flex-row items-center">
+          {{> service_user .}}
+        </span>
+      {{/each}}
+      <span class="flex flex-row items-center justify-center">
+        ➕
+      </span>
+      {{#each accountToMerge.oauths}}
+        <span class="flex flex-row items-center">
+          {{> service_user .}}
+        </span>
+      {{/each}}
     </div>
+    <form method="POST"
+      action="{{ route "authMerge" }}"
+      class="flex flex-row justify-around pt1 pb4"
+    >
+      <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+      <button type="submit" name="action" value="proceed">Combine</button>
+    </form>
 
+    <p>
+      <b>B:</b> Keep accounts separate
+    </p>
+    <div class="flex flex-column">
+      {{#each activeAccount.oauths}}
+        <span class="flex flex-row items-center">
+          {{> service_user .}}
+        </span>
+      {{/each}}
+    </div>
+    <form method="POST"
+      action="{{ route "authMerge" }}"
+      class="flex flex-row justify-around pt1 pb4"
+    >
+      <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+      <button type="submit" name="action" value="nothing">Do nothing</button>
+    </form>
     {{> partials_footer . }}
   </div>
 </body>

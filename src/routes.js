@@ -5,6 +5,8 @@ const UrlPattern = require("url-pattern");
 const CDN = "cdn";
 const METHODS_REGEX = /^(GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) /;
 
+module.exports = {};
+
 const routes = [
   ["GET /", require("./landing/index.js")],
   ["POST /incoming-webhooks/slack", require("./incoming-webhooks/slack.js")],
@@ -17,12 +19,11 @@ const routes = [
   ["POST /auth/logout", require("./auth/logout.js")],
   ["POST /auth/unlink", require("./auth/unlink.js")],
 
-  ["GET /presets", require("./presets/index.js")],
-  ["POST /presets/save", require("./presets/save.js")],
+  ["GET /presets", require("./presets/browse.js")],
+  ["GET /preset(s)/:preset_id", require("./presets/read.js")],
+  ["POST /preset(s)/:preset_id/use", require("./presets/use.js")],
+  ["POST /presets/add", require("./presets/add.js")],
   ["POST /presets/delete", require("./presets/delete.js")],
-
-  ["GET /status", require("./status/index.js")],
-  ["POST /status/use", require("./status/use.js")],
 
   ["GET /settings", require("./settings/index.js")],
 
@@ -50,7 +51,6 @@ const handlers = routes.reduce((acc, [route, handler]) => {
   return acc;
 }, {});
 
-module.exports = {};
 module.exports.handlers = handlers;
 module.exports.reverse = routes.reduce((acc, [route, handler, name]) => {
   if (!route.match(METHODS_REGEX)) {

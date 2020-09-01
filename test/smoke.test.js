@@ -7,6 +7,7 @@ describe("smoke", () => {
   const config = require("../src/config.js");
 
   beforeEach(() => {
+    sinon.replace(config, "disableHTTPSEnforce", true);
     server = require("../index.js").server;
   });
 
@@ -20,19 +21,13 @@ describe("smoke", () => {
     await supertest(server).get("/").expect(200);
   });
 
-  it("should load status", async () => {
-    await supertest(server)
-      .get("/status?status_text=i+hate+emoji&status_emoji=speech_balloon")
-      .expect(200);
-  });
-
   it("should fail: csrf", async () => {
-    await supertest(server).post("/presets/save").expect(403);
+    await supertest(server).post("/presets/add").expect(403);
   });
 
   it("should fail: body", async () => {
     sinon.replace(config, "disableCSRFCheck", true);
-    await supertest(server).post("/presets/save").expect(400);
+    await supertest(server).post("/presets/add").expect(400);
   });
 
   it("should call slack", async () => {

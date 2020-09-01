@@ -25,7 +25,11 @@ module.exports = async function authUnlink(req, res) {
     const db = await req.db();
 
     await db.query(sql`
-      DELETE FROM slack_oauth
+      UPDATE slack_oauth
+      SET revoked = true,
+          access_token = '',
+          access_token_encrypted = null,
+          access_token_salt = null
       WHERE account_id = ${account.id} AND id = ${slack_oauth_id};
     `);
   } else if (req.formBody.get("service") === "github") {
@@ -40,7 +44,11 @@ module.exports = async function authUnlink(req, res) {
     const db = await req.db();
 
     await db.query(sql`
-      DELETE FROM github_oauth
+      UPDATE github_oauth
+      SET revoked = true,
+          access_token = '',
+          access_token_encrypted = null,
+          access_token_salt = null
       WHERE account_id = ${account.id} AND id = ${github_oauth_id};
     `);
   }

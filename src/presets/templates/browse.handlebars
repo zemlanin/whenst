@@ -1,0 +1,313 @@
+{{#> partials_head . }}
+  Presets |
+{{/partials_head}}
+<body>
+  <div id="layout">
+    {{> partials_topbar }}
+
+    <h1 class="ph2">Presets</h1>
+
+    <div style="padding: 0 0.5em 0 0.5em;">
+      {{#if can_save_presets}}
+        <form
+          id="presetAddForm"
+          class="status-form"
+          method="post"
+          action="{{ route "presetAdd" }}"
+        >
+          <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+          <div class="flex flex-row items-center justify-between">
+            {{! chrome doesn't support flexbox in `<fieldset>` }}
+            <div role="group" class="status">
+              <label for="status-form-status_emoji" class="status_emoji empty-emoji">
+                <span class="current-emoji">&nbsp;</span>
+              </label>
+              <input
+                id="status-form-status_emoji"
+                type="text"
+                name="status_emoji"
+                list="emoji_datalist"
+                aria-label="emoji"
+                placeholder="emoji"
+                maxlength="120"
+              >
+              <hr>
+              <input
+                type="text"
+                name="status_text"
+                placeholder="text"
+                class="status_text"
+                maxlength="120"
+              >
+            </div>
+            <div style="width: 0.5em;"></div>
+            <button type="submit" class="primary">save</button>
+          </div>
+        </form>
+
+        <details class="pb3">
+          <summary class="pointer">
+            Accounts
+          </summary>
+
+          <ul class="flex flex-column flex-wrap list pa0 ma0">
+            {{#each account.oauths}}
+              <li class="pv2">
+                {{#if (eq service "slack")}}
+                  <label class="flex flex-row items-center">
+                    <input
+                      type="checkbox"
+                      name="slack_oauth_id"
+                      value="{{oauth_id}}"
+                      form="presetAddForm"
+                      checked
+                    >
+                    <div style="width: 0.5em"></div>
+                    <span class="icon-group">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.display_name}}
+                          alt="{{profile.display_name}} ({{team.name}})"
+                        {{else}}
+                          alt="{{profile.real_name}} ({{team.name}})"
+                        {{/if}}
+                      >
+                      {{#unless team.icon.image_default}}
+                        <img
+                          src="{{team.icon.image_44}}"
+                          alt="{{team.name}}"
+                          class="team-icon"
+                        >
+                      {{/unless}}
+                    </span>
+                    <div style="width: 0.5em"></div>
+                    <span>
+                      {{#if profile.display_name}}
+                        {{profile.display_name}}
+                      {{else}}
+                        {{profile.real_name}}
+                      {{/if}}
+                      {{#if team}}({{team.name}}){{/if}}
+                    <span>
+                  </label>
+                {{/if}}
+                {{#if (eq service "github")}}
+                  <label class="flex flex-row items-center">
+                    <input
+                      type="checkbox"
+                      name="github_oauth_id"
+                      value="{{oauth_id}}"
+                      form="presetAddForm"
+                      checked
+                    >
+                    <div style="width: 0.5em"></div>
+                    <span class="icon-group">
+                      <img
+                        src="{{profile.image_72}}"
+                        {{#if profile.name}}
+                          alt="{{profile.name}}"
+                        {{else}}
+                          alt="{{profile.login}}"
+                        {{/if}}
+                      >
+                      <img
+                        src="https://github.githubassets.com/apple-touch-icon.png"
+                        class="team-icon"
+                      >
+                    </span>
+                    <div style="width: 0.5em"></div>
+                    <span>
+                      {{#if profile.name}}
+                        {{profile.name}}
+                      {{else}}
+                        {{profile.login}}
+                      {{/if}}
+                    <span>
+                  </label>
+                {{/if}}
+              </li>
+            {{/each}}
+
+            {{#if can_link_accounts}}
+              <li class="pv2">
+                <div class="flex flex-row items-center">
+                  <span>
+                    link another account
+                  </span>
+                  <div style="flex-grow: 1"></div>
+                  {{#with slackAuth}}
+                    <form method="GET" action="https://slack.com/oauth/authorize">
+                      <input type="hidden" name="client_id" value="{{ client_id }}">
+                      <input type="hidden" name="redirect_uri" value="{{ absolute "authSlack" }}">
+                      <input type="hidden" name="state" value="{{ state }}">
+                      <input type="hidden" name="scope" value="{{ scope }}">
+                      <button type="submit">slack</button>
+                    </form>
+                  {{/with}}
+                  <div style="width: 0.5em"></div>
+                  {{#with githubAuth}}
+                    <form method="GET" action="https://github.com/login/oauth/authorize">
+                      <input type="hidden" name="client_id" value="{{ client_id }}">
+                      <input type="hidden" name="redirect_uri" value="{{ absolute "authGithub" }}">
+                      <input type="hidden" name="state" value="{{ state }}">
+                      <input type="hidden" name="scope" value="{{ scope }}">
+                      <button type="submit">github</button>
+                    </form>
+                  {{/with}}
+                </div>
+              </li>
+            {{/if}}
+          </ul>
+        </details>
+      {{/if}}
+
+      {{#each presets}}
+        <div class="flex flex-column pb3">
+          <div class="flex flex-row justify-between items-center">
+            <a
+              class="flex flex-row"
+              href="{{ route "presetRead" preset_id=id}}"
+            >
+              <span class="status">
+                {{>partials_status main_status}}
+              </span>
+              <span
+                class="deeper"
+                role="presentation"
+              >❯</span>
+            </a>
+
+            <div class="flex">
+              {{#if main_status.custom_emoji}}
+                {{! TODO }}
+              {{else}}
+                <form method="POST" action="{{ route "presetUse" preset_id=id }}">
+                  <input type="hidden" name="_csrf" value="{{@csrfToken}}">
+                  <button type="submit">use</button>
+                </form>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+
+    {{> partials_footer . }}
+  </div>
+
+  <datalist id="emoji_datalist">
+    {{#each emoji_options}}
+      <option value="{{name}}" data-html="{{html}}"></option>
+    {{/each}}
+  </datalist>
+
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      var INSIDE_COLONS_REGEX = /^:[^:]+:$/;
+      function getDatalistOption(list, value) {
+        value = value.trim();
+
+        if (value && value.match(INSIDE_COLONS_REGEX)) {
+          value = value.slice(1, value.length - 1);
+          return list.querySelector('[value="' + value +'"]');
+        }
+
+        // `data-html` for native emoji's is the emoji itself
+        return list.querySelector('[value="' + value +'"], [data-html="' + value + '"]');
+      }
+
+      function updateCurrentEmoji(event) {
+        var form = event.target.form;
+        var value = event.target.value.trim();
+
+        if (!value) {
+          event.target.setCustomValidity("");
+          form.querySelector('.status_emoji').classList.add("empty-emoji");
+          form.querySelector('.current-emoji').innerHTML = "&nbsp;"
+          return;
+        }
+
+        var datalistOption = getDatalistOption(event.target.list, value);
+        form.querySelector('.status_emoji').classList.remove("empty-emoji");
+
+        if (datalistOption) {
+          event.target.setCustomValidity("");
+          form.querySelector('.current-emoji').innerHTML = datalistOption.dataset.html;
+        } else {
+          event.target.setCustomValidity("emoji not found");
+          form.querySelector('.current-emoji').innerHTML = "<div style='color: red'>☹︎</div>";
+          form.querySelector('.current-emoji').title = event.target.validationMessage;
+          event.target.reportValidity();
+        }
+      }
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll('input[list="emoji_datalist"]'),
+        function (input) {
+          input.addEventListener("change", updateCurrentEmoji);
+        }
+      )
+
+      function updateRequiredFields(event) {
+        var form = event.target.form;
+
+        if (form.status_text.value) {
+          form.status_emoji.removeAttribute("required");
+        } else {
+          form.status_emoji.setAttribute("required", "required");
+        }
+
+        if (form.status_emoji.value) {
+          form.status_text.removeAttribute("required");
+        } else {
+          form.status_text.setAttribute("required", "required");
+        }
+
+        let haveOauthId = false;
+
+        for (const el of form.elements) {
+          if (el.name === "slack_oauth_id" || el.name === "github_oauth_id") {
+            if (el.checked) {
+              haveOauthId = true;
+              break;
+            }
+          }
+        }
+
+        for (const el of form.elements) {
+          if (el.name === "slack_oauth_id" || el.name === "github_oauth_id") {
+            if (haveOauthId) {
+              el.removeAttribute("required");
+            } else {
+              el.setAttribute("required", "required");
+            }
+          }
+        }
+      }
+
+      for (const form of document.querySelectorAll('form.status-form')) {
+        updateRequiredFields({ target: { form: form }});
+        for (const el of form.elements) {
+          if (el.type !== "hidden" && el.type !== "submit") {
+            el.addEventListener("input", updateRequiredFields);
+          }
+        }
+      }
+
+      function keepInvalidDetailsOpen(event) {
+        if (!event.target.open) {
+          const invalidInput = event.target.querySelector("input:invalid")
+
+          if (invalidInput) {
+            event.target.open = true;
+            invalidInput.reportValidity();
+          }
+        }
+      }
+
+      for (const details of document.getElementsByTagName('details')) {
+        details.addEventListener("toggle", keepInvalidDetailsOpen)
+      }
+    });
+  </script>
+</body>

@@ -1,31 +1,34 @@
+const url = require("url");
+
+const sql = require("pg-template-tag").default;
 const nodeEmoji = require("node-emoji");
 const Handlebars = require("handlebars");
-const sql = require("pg-template-tag").default;
 
-function getEmojiHTML(stringWithEmojis, wholeStringIsEmoji) {
-  if (!stringWithEmojis) {
-    return { html: "" };
+const config = require("../config.js");
+const { getOauthState } = require("../auth/oauth-state.js");
+const { getEmojiHTML } = require("./common.js");
+
+const tmpl = require.resolve("./templates/browse.handlebars");
+
+const DEFAULT_EMOJI_LIST = Object.keys(nodeEmoji.emoji).map((name) => ({
+  name,
+  html: nodeEmoji.emoji[name],
+}));
+
+module.exports = async function presetsBrowse(req, res) {
+  const account = await req.getAccount();
+
+  if (!account) {
+    res.statusCode = 302;
+    res.setHeader(
+      "Location",
+      new url.URL(req.app.routes.landing.stringify(), req.absolute)
+    );
+    return;
   }
 
-  if (wholeStringIsEmoji) {
-    stringWithEmojis = `:${stringWithEmojis}:`;
-  }
+  const db = await req.db();
 
-  let custom_emoji = false;
-
-  const html = nodeEmoji.emojify(stringWithEmojis, function onMissing(name) {
-    custom_emoji = true;
-    return `:${name}:`;
-  });
-
-  if (custom_emoji) {
-    return { html, custom_emoji };
-  }
-
-  return { html };
-}
-
-async function queryPresetWithStatuses(db, account, preset_id) {
   const statuses = [];
 
   const dbSlackStatusesRes = await db.query(sql`
@@ -33,8 +36,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     FROM slack_status s
     LEFT JOIN preset p ON p.id = s.preset_id
     WHERE p.account_id = ${account.id}
-      AND p.id = ${preset_id}
-    ORDER BY s.id DESC;
+    ORDER BY p.id DESC, s.id DESC;
   `);
 
   for (const row of dbSlackStatusesRes.rows) {
@@ -43,7 +45,6 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     );
 
     if (!oauth) {
-      // oauth was unlinked, but status preset is still in db
       continue;
     }
 
@@ -54,6 +55,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
 
     statuses.push({
       id: row.id,
+      preset_id: row.preset_id,
       slack_oauth_id: row.slack_oauth_id,
       status_text: row.status_text,
       status_emoji: row.status_emoji,
@@ -69,8 +71,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     FROM github_status s
     LEFT JOIN preset p ON p.id = s.preset_id
     WHERE p.account_id = ${account.id}
-      AND p.id = ${preset_id}
-    ORDER BY s.id DESC;
+    ORDER BY p.id DESC, s.id DESC;
   `);
 
   for (const row of dbGithubStatusesRes.rows) {
@@ -79,7 +80,6 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     );
 
     if (!oauth) {
-      // oauth was unlinked, but status preset is still in db
       continue;
     }
 
@@ -90,6 +90,7 @@ async function queryPresetWithStatuses(db, account, preset_id) {
 
     statuses.push({
       id: row.id,
+      preset_id: row.preset_id,
       github_oauth_id: row.github_oauth_id,
       status_text: row.status_text,
       status_emoji: row.status_emoji,
@@ -100,18 +101,41 @@ async function queryPresetWithStatuses(db, account, preset_id) {
     });
   }
 
-  if (!statuses.length) {
-    return;
+  const presets = [];
+  const presetsById = {};
+
+  for (const status of statuses) {
+    let preset = presetsById[status.preset_id];
+
+    if (!preset) {
+      preset = { id: status.preset_id, main_status: status, statuses: [] };
+
+      presets.push(preset);
+      presetsById[status.preset_id] = preset;
+    }
+
+    preset.statuses.push(status);
   }
 
-  return {
-    id: preset_id,
-    main_status: statuses[0],
-    statuses,
-  };
-}
+  presets.sort((a, b) => b.id - a.id); // DESC
 
-module.exports = {
-  getEmojiHTML,
-  queryPresetWithStatuses,
+  const state = getOauthState(req.session.id, req.url);
+
+  return res.render(tmpl, {
+    account,
+    presets,
+    can_save_presets: presets.length < 100,
+    can_link_accounts: account.oauths.length < 20,
+    slackAuth: {
+      client_id: config.slack.client_id,
+      scope: config.slack.scope,
+      state,
+    },
+    githubAuth: {
+      client_id: config.github.client_id,
+      scope: config.github.scope,
+      state,
+    },
+    emoji_options: DEFAULT_EMOJI_LIST,
+  });
 };
