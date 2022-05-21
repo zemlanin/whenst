@@ -2,9 +2,9 @@ import {
   Temporal,
   Intl,
   toTemporalInstant,
-} from "https://unpkg.com/@js-temporal/polyfill?module";
+} from "https://unpkg.com/@js-temporal/polyfill@0.4.1?module";
 
-import "https://unpkg.com/urlpattern-polyfill?module";
+import "https://unpkg.com/urlpattern-polyfill@4.0.3?module";
 
 const timeURLPattern = new URLPattern({ pathname: "/:continent/:city/:time" });
 
