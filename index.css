@@ -158,18 +158,15 @@ a:hover {
 }
 
 nav {
-  padding: 0.5rem;
+  padding: 0.5rem 0;
   display: flex;
   flex-flow: row wrap;
   align-items: center;
   justify-content: space-between;
 }
 
-nav a {
-  padding: 0.25rem;
-}
-
 nav a.logo {
+  padding: 0.25rem;
   line-height: 0;
 }
 
