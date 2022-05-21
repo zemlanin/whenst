@@ -17,7 +17,9 @@ if (timeURLPattern.test(location.href)) {
   const { continent, city, time } = timeURLPattern.exec(location.href).pathname
     .groups;
 
-  const remoteTZ = Temporal.TimeZone.from(`${continent}/${city}`);
+  const remoteTZ = Temporal.TimeZone.from(
+    `${continent}/${city.toLowerCase() === "kyiv" ? "Kiev" : city}`
+  );
 
   const today = Temporal.Now.plainDate(browserCalendar);
   let remoteDate = undefined;
@@ -37,9 +39,9 @@ if (timeURLPattern.test(location.href)) {
   document.getElementById("remote-time").textContent = remoteDateTime
     .toPlainDateTime()
     .toString({ smallestUnit: "minute" });
-  document.getElementById("remote-place").textContent = remoteTZ
-    .toString()
-    .split("/")[1];
+  document.getElementById("remote-place").textContent = itsKyivNotKiev(
+    remoteTZ.toString().split("/")[1]
+  );
   document.getElementById("remote-url").href = new URL(
     `/${remoteTZ.toString()}/${
       document.getElementById("remote-time").textContent
@@ -55,26 +57,18 @@ document.getElementById("local-time").value = localDateTime
   .toPlainDateTime()
   .toString({ smallestUnit: "minute", calendarName: "never" });
 
-document.getElementById("local-place").textContent = localTZ
-  .toString()
-  .split("/")[1];
-
-document.getElementById("local-url").href = new URL(
-  `/${localTZ.toString()}/${document.getElementById("local-time").value}`,
-  location.href
+document.getElementById("local-place").textContent = itsKyivNotKiev(
+  localTZ.toString().split("/")[1]
 );
+
+document.getElementById("local-url").href = getLocalURL();
 
 document.getElementById("local-label").hidden = false;
 
 document.getElementById("local-time").addEventListener("change", (event) => {
-  const input = event.target;
-
   document.getElementById("remote-label").hidden = true;
 
-  const localURL = new URL(
-    `/${localTZ.toString()}/${input.value}`,
-    location.href
-  );
+  const localURL = getLocalURL();
 
   document.getElementById("local-url").href = localURL;
   history.replaceState(null, "", localURL);
@@ -122,3 +116,21 @@ if ("share" in navigator && "canShare" in navigator) {
 }
 
 function noop() {}
+
+function getLocalURL() {
+  const localDateTime = document.getElementById("local-time").value;
+
+  if (localTZ.toString() === "Europe/Kiev") {
+    return new URL(`/Europe/Kyiv/${localDateTime}`, location.href);
+  }
+
+  return new URL(`/${localTZ.toString()}/${localDateTime}`, location.href);
+}
+
+function itsKyivNotKiev(str) {
+  if (str && str === "Kiev") {
+    return "Kyiv";
+  }
+
+  return str;
+}
