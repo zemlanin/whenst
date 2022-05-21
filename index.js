@@ -6,13 +6,13 @@ import {
 
 import "https://unpkg.com/urlpattern-polyfill@4.0.3?module";
 
-const timeURLPattern = new URLPattern({ pathname: "/:continent/:city/:time" });
+const timeURLPattern = new URLPattern({ pathname: "/:continent/:city/:time?" });
 
 const browserCalendar = new Intl.DateTimeFormat().resolvedOptions().calendar;
 const today = Temporal.Now.plainDate(browserCalendar);
 
 const localTZ = Temporal.Now.timeZone();
-let localDateTime = undefined;
+let localDateTime = Temporal.Now.zonedDateTime(browserCalendar);
 
 if (timeURLPattern.test(location.href)) {
   const { continent, city, time } = timeURLPattern.exec(location.href).pathname
@@ -20,7 +20,9 @@ if (timeURLPattern.test(location.href)) {
 
   const remoteTZ = Temporal.TimeZone.from(`${continent}/${city}`);
   const remoteDateTime = today.toZonedDateTime({
-    plainTime: Temporal.PlainTime.from(time),
+    plainTime: time
+      ? Temporal.PlainTime.from(time)
+      : localDateTime.toPlainTime(),
     timeZone: remoteTZ,
   });
 
@@ -39,8 +41,6 @@ if (timeURLPattern.test(location.href)) {
   document.getElementById("remote-label").hidden = false;
 
   localDateTime = remoteDateTime.withTimeZone(localTZ);
-} else {
-  localDateTime = Temporal.Now.zonedDateTime(browserCalendar);
 }
 
 document.getElementById("local-time").value = localDateTime
