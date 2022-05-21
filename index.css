@@ -1,0 +1,168 @@
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/iAWriterQuattroS-Regular.woff2") format("woff2"),
+    url("/fonts/iAWriterQuattroS-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/iAWriterQuattroS-Italic.woff2") format("woff2"),
+    url("/fonts/iAWriterQuattroS-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/iAWriterQuattroS-Bold.woff2") format("woff2"),
+    url("/fonts/iAWriterQuattroS-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "iA Writer Quattro S";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/iAWriterQuattroS-BoldItalic.woff2") format("woff2"),
+    url("/fonts/iAWriterQuattroS-BoldItalic.woff") format("woff");
+}
+
+body,
+span,
+div,
+button,
+input,
+select,
+textarea,
+optgroup {
+  font-family: "iA Writer Quattro S", ui-monospace, system-ui-monospaced,
+    "SF Mono", "Menlo", Consolas, "Andale Mono WT", "Andale Mono",
+    "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono",
+    "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco,
+    "Courier New", Courier, monospace;
+}
+
+div,
+span,
+input,
+button {
+  line-height: 1.35em;
+}
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25em;
+}
+
+button {
+  border-radius: 0;
+  cursor: pointer;
+}
+
+button:disabled,
+form:invalid button[type="submit"] {
+  cursor: not-allowed;
+}
+
+.button,
+button[type="submit"] {
+  color: black;
+  background-color: lightgray;
+  border-color: lightgray;
+  padding: 0.25em;
+  box-sizing: border-box;
+  border-width: 1px;
+  border-style: solid;
+}
+
+@media (prefers-color-scheme: dark) {
+  .button,
+  button[type="submit"] {
+    background-color: darkgray;
+    border-color: darkgray;
+  }
+}
+
+.button.primary,
+button.primary[type="submit"] {
+  background-color: royalblue;
+  border-color: royalblue;
+  color: white;
+}
+
+.button.danger,
+button.danger[type="submit"] {
+  background-color: rgb(202, 60, 60);
+  border-color: rgb(202, 60, 60);
+  color: white;
+}
+
+.button:disabled,
+.button.primary:disabled,
+button[type="submit"]:disabled,
+button.primary[type="submit"]:disabled,
+form:invalid button[type="submit"],
+form:invalid button.primary[type="submit"] {
+  background-color: #e6e6e6;
+  border-color: #e6e6e6;
+  color: #555;
+}
+
+a,
+a:link,
+a:visited {
+  color: #0969da;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#layout {
+  width: 30em;
+  margin: 0em auto;
+  max-width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: white;
+  }
+
+  a,
+  a:link,
+  a:visited {
+    color: #539bf5;
+  }
+}
+
+nav {
+  padding: 0.5rem;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+}
+
+nav a {
+  padding: 0.25rem;
+}
+
+nav a.logo {
+  line-height: 0;
+}
