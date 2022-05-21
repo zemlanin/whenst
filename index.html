@@ -3,7 +3,7 @@
   <meta charset="utf-8" />
   <title>when.st</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" type="text/css" href="/index.css?_=3" />
+  <link rel="stylesheet" type="text/css" href="/index.css?_=4" />
   <link rel="shortcut icon" type="image/png" href="/images/favicon-white.png" />
   <link
     rel="icon"
@@ -54,31 +54,34 @@
           <img src="/images/logo-white-square.png" width="36" height="36" />
         </picture>
       </a>
+    </nav>
+
+    <div class="spacer"></div>
+
+    <form id="clock" action="/" method="GET">
       <div id="remote-label" hidden>
         <a href="#" id="remote-url">
           <b id="remote-time"></b> in <b id="remote-place"></b
         ></a>
         is
       </div>
-    </nav>
-
-    <form id="clock" action="/" method="GET">
-      <input id="local-time" name="t" type="time" value="" required />
+      <input id="local-time" name="t" type="datetime-local" value="" required />
       <div id="local-label" hidden>in <b id="local-place">Madrid</b></div>
     </form>
 
     <div style="height: 2rem; width: 100%"></div>
 
     <div id="url-row">
-      <input readonly type="url" id="url-input" />
+      <a href="/" id="local-url">Permalink</a>
       <button class="primary" id="url-copy">Copy</button>
+      <button id="url-share" hidden>Share</button>
     </div>
 
-    <div class="spacer">&nbsp;</div>
+    <div class="spacer2"></div>
     <div id="credits">
       Made by <a href="https://anton.codes">Anton</a> /
       <a href="https://twitter.com/zemlanin">@zemlanin</a>
     </div>
   </div>
-  <script src="/index.js?_=3" type="module"></script>
+  <script src="/index.js?_=4" type="module"></script>
 </body>
