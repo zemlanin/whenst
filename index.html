@@ -54,26 +54,30 @@
           <img src="/images/logo-white-square.png" width="36" height="36" />
         </picture>
       </a>
-      <div>
-        <b id="remote-time">16:20</b> in <b id="remote-place">London</b> is
+      <div id="remote-label" hidden>
+        <a href="#" id="remote-url">
+          <b id="remote-time"></b> in <b id="remote-place"></b
+        ></a>
+        is
       </div>
     </nav>
 
     <form id="clock" action="/" method="GET">
-      <input id="local-time" name="t" type="time" value="17:20" required />
-      <div style="align-self: end">in <b id="local-place">Madrid</b></div>
+      <input id="local-time" name="t" type="time" value="" required />
+      <div id="local-label" hidden>in <b id="local-place">Madrid</b></div>
     </form>
 
     <div style="height: 2rem; width: 100%"></div>
 
     <div id="url-row">
-      <input
-        readonly
-        type="url"
-        id="url-input"
-        value="https://when.st/Europe/Madrid/17:20"
-      />
+      <input readonly type="url" id="url-input" />
       <button class="primary" id="url-copy">Copy</button>
+    </div>
+
+    <div class="spacer">&nbsp;</div>
+    <div id="credits">
+      Made by <a href="https://anton.codes">Anton</a> /
+      <a href="https://twitter.com/zemlanin">@zemlanin</a>
     </div>
   </div>
   <script src="/index.js" type="module"></script>

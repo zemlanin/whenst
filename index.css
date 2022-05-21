@@ -140,6 +140,8 @@ a:hover {
   max-width: 100%;
   display: flex;
   flex-flow: column;
+  min-height: -webkit-fill-available;
+  min-height: fill-available;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -179,6 +181,12 @@ form#clock {
 form#clock input[type="time"] {
   font-size: 3rem;
   text-align: center;
+  align-self: center;
+}
+
+#local-label {
+  align-self: end;
+  margin-top: 0.5rem;
 }
 
 #url-row {
@@ -194,4 +202,13 @@ form#clock input[type="time"] {
 
 #url-row button {
   /*font-size: 2rem;*/
+}
+
+.spacer {
+  min-height: 1rem;
+  flex-grow: 1;
+}
+
+#credits {
+  align-self: center;
 }
