@@ -54,13 +54,26 @@
           <img src="/images/logo-white-square.png" width="36" height="36" />
         </picture>
       </a>
-      <div />
+      <div>
+        <b id="remote-time">16:20</b> in <b id="remote-place">London</b> is
+      </div>
     </nav>
 
-    <div>
-      15:42 in London is
-      <br />
-      16:42 in Madrid
+    <form id="clock" action="/" method="GET">
+      <input id="local-time" name="t" type="time" value="17:20" required />
+      <div style="align-self: end">in <b id="local-place">Madrid</b></div>
+    </form>
+
+    <div style="height: 2rem; width: 100%"></div>
+
+    <div id="url-row">
+      <input
+        readonly
+        type="url"
+        id="url-input"
+        value="https://when.st/Europe/Madrid/17:20"
+      />
+      <button class="primary" id="url-copy">Copy</button>
     </div>
   </div>
   <script src="/index.js" type="module"></script>

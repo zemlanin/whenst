@@ -47,6 +47,7 @@ optgroup {
     "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono",
     "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco,
     "Courier New", Courier, monospace;
+  font-size: 16px;
 }
 
 div,
@@ -79,7 +80,7 @@ form:invalid button[type="submit"] {
 }
 
 .button,
-button[type="submit"] {
+button {
   color: black;
   background-color: lightgray;
   border-color: lightgray;
@@ -91,21 +92,21 @@ button[type="submit"] {
 
 @media (prefers-color-scheme: dark) {
   .button,
-  button[type="submit"] {
+  button {
     background-color: darkgray;
     border-color: darkgray;
   }
 }
 
 .button.primary,
-button.primary[type="submit"] {
+button.primary {
   background-color: royalblue;
   border-color: royalblue;
   color: white;
 }
 
 .button.danger,
-button.danger[type="submit"] {
+button.danger {
   background-color: rgb(202, 60, 60);
   border-color: rgb(202, 60, 60);
   color: white;
@@ -113,10 +114,10 @@ button.danger[type="submit"] {
 
 .button:disabled,
 .button.primary:disabled,
-button[type="submit"]:disabled,
-button.primary[type="submit"]:disabled,
-form:invalid button[type="submit"],
-form:invalid button.primary[type="submit"] {
+button:disabled,
+button.primary:disabled,
+form:invalid button,
+form:invalid button.primary {
   background-color: #e6e6e6;
   border-color: #e6e6e6;
   color: #555;
@@ -137,6 +138,8 @@ a:hover {
   width: 30em;
   margin: 0em auto;
   max-width: 100%;
+  display: flex;
+  flex-flow: column;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -157,6 +160,7 @@ nav {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  justify-content: space-between;
 }
 
 nav a {
@@ -165,4 +169,29 @@ nav a {
 
 nav a.logo {
   line-height: 0;
+}
+
+form#clock {
+  display: flex;
+  flex-flow: column;
+}
+
+form#clock input[type="time"] {
+  font-size: 3rem;
+  text-align: center;
+}
+
+#url-row {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+}
+
+#url-row input {
+  /*font-size: 2rem;*/
+  flex-grow: 1;
+}
+
+#url-row button {
+  /*font-size: 2rem;*/
 }
