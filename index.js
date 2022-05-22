@@ -50,8 +50,6 @@ if (timeURLPattern.test(location.href)) {
 
   localDateTime = remoteDateTime.withTimeZone(localTZ);
   updateTitle(remoteDateTime, remoteTZ);
-} else {
-  updateTitle();
 }
 
 document.getElementById("local-time").value = formatDT(localDateTime);
@@ -107,7 +105,16 @@ if ("share" in navigator && "canShare" in navigator) {
   document.getElementById("url-share").addEventListener("click", (event) => {
     const button = event.target;
 
-    const payload = { url: document.getElementById("local-url").href };
+    const timeStr = formatDT(localDateTime);
+
+    const placeStr = itsKyivNotKiev(localTZ.toString().split("/")[1]);
+
+    const title = `${timeStr} in ${placeStr}`;
+
+    const payload = {
+      title: title,
+      url: document.getElementById("local-url").href,
+    };
 
     if (navigator.canShare(payload)) {
       navigator.share(payload).then(noop, noop);
