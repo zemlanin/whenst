@@ -1,10 +1,5 @@
-import {
-  Temporal,
-  Intl,
-  toTemporalInstant,
-} from "https://unpkg.com/@js-temporal/polyfill@0.4.1?module";
-
 import "https://unpkg.com/urlpattern-polyfill@4.0.3?module";
+import { Temporal } from "https://unpkg.com/@js-temporal/polyfill@0.4.1?module";
 
 const timeURLPattern = new URLPattern({ pathname: "/:continent/:city/:time?" });
 
@@ -105,14 +100,7 @@ if ("share" in navigator && "canShare" in navigator) {
   document.getElementById("url-share").addEventListener("click", (event) => {
     const button = event.target;
 
-    const timeStr = formatDT(localDateTime);
-
-    const placeStr = itsKyivNotKiev(localTZ.toString().split("/")[1]);
-
-    const title = `${timeStr} in ${placeStr}`;
-
     const payload = {
-      title: title,
       url: document.getElementById("local-url").href,
     };
 
