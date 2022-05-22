@@ -165,8 +165,8 @@ input {
   max-width: 100%;
   display: flex;
   flex-flow: column;
-  min-height: calc(100vh - 2rem);
-  min-height: calc(100dvh - 2rem);
+  min-height: calc(100vh - 1rem);
+  min-height: calc(100dvh - 1rem);
 }
 
 nav {
