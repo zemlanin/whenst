@@ -36,9 +36,7 @@ if (timeURLPattern.test(location.href)) {
     timeZone: remoteTZ,
   });
 
-  document.getElementById("remote-time").textContent = remoteDateTime
-    .toPlainDateTime()
-    .toString({ smallestUnit: "minute" });
+  document.getElementById("remote-time").textContent = formatDT(remoteDateTime);
   document.getElementById("remote-place").textContent = itsKyivNotKiev(
     remoteTZ.toString().split("/")[1]
   );
@@ -51,11 +49,12 @@ if (timeURLPattern.test(location.href)) {
   document.getElementById("remote-label").hidden = false;
 
   localDateTime = remoteDateTime.withTimeZone(localTZ);
+  updateTitle(remoteDateTime, remoteTZ);
+} else {
+  updateTitle();
 }
 
-document.getElementById("local-time").value = localDateTime
-  .toPlainDateTime()
-  .toString({ smallestUnit: "minute", calendarName: "never" });
+document.getElementById("local-time").value = formatDT(localDateTime);
 
 document.getElementById("local-place").textContent = itsKyivNotKiev(
   localTZ.toString().split("/")[1]
@@ -67,9 +66,12 @@ document.getElementById("local-label").hidden = false;
 
 document.getElementById("local-time").addEventListener("change", (event) => {
   document.getElementById("remote-label").hidden = true;
+  localDateTime = Temporal.PlainDateTime.from(
+    event.target.value
+  ).toZonedDateTime(localTZ);
+  updateTitle();
 
   const localURL = getLocalURL();
-
   document.getElementById("local-url").href = localURL;
   history.replaceState(null, "", localURL);
 });
@@ -118,13 +120,20 @@ if ("share" in navigator && "canShare" in navigator) {
 function noop() {}
 
 function getLocalURL() {
-  const localDateTime = document.getElementById("local-time").value;
-
   if (localTZ.toString() === "Europe/Kiev") {
-    return new URL(`/Europe/Kyiv/${localDateTime}`, location.href);
+    return new URL(`/Europe/Kyiv/${formatDT(localDateTime)}`, location.href);
   }
 
-  return new URL(`/${localTZ.toString()}/${localDateTime}`, location.href);
+  return new URL(
+    `/${localTZ.toString()}/${formatDT(localDateTime)}`,
+    location.href
+  );
+}
+
+function formatDT(dt) {
+  return dt
+    .toPlainDateTime()
+    .toString({ smallestUnit: "minute", calendarName: "never" });
 }
 
 function itsKyivNotKiev(str) {
@@ -133,4 +142,12 @@ function itsKyivNotKiev(str) {
   }
 
   return str;
+}
+
+function updateTitle(dt, tz) {
+  const timeStr = formatDT(dt || localDateTime);
+
+  const placeStr = itsKyivNotKiev((tz || localTZ).toString().split("/")[1]);
+
+  document.title = `${timeStr} in ${placeStr} | when.st`;
 }
