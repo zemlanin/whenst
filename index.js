@@ -168,14 +168,6 @@ function formatDT(dt) {
     .toString({ smallestUnit: "minute", calendarName: "never" });
 }
 
-function itsKyivNotKiev(str) {
-  if (str === "Kiev") {
-    return "Kyiv";
-  }
-
-  return str;
-}
-
 function updateTitle(dt, tz) {
   const timeStr = formatDT(dt || localDateTime);
 
@@ -189,5 +181,11 @@ function getLocationFromTimezone(tz) {
 
   const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
 
-  return itsKyivNotKiev(location).replace(/^St_/, "St. ").replace(/_/g, " ");
+  if (location === "Kiev") {
+    return "Kyiv";
+  } else if (location === "Sao_Paulo") {
+    return "São Paulo";
+  }
+
+  return location.replace(/^St_/, "St. ").replace(/_/g, " ");
 }
