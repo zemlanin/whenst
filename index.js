@@ -32,9 +32,8 @@ if (timeURLPattern.test(location.href)) {
   });
 
   document.getElementById("remote-time").textContent = formatDT(remoteDateTime);
-  document.getElementById("remote-place").textContent = itsKyivNotKiev(
-    remoteTZ.toString().split("/")[1]
-  );
+  document.getElementById("remote-place").textContent =
+    getLocationFromTimezone(remoteTZ);
   document.getElementById("remote-url").href = new URL(
     `/${remoteTZ.toString()}/${
       document.getElementById("remote-time").textContent
@@ -49,9 +48,8 @@ if (timeURLPattern.test(location.href)) {
 
 document.getElementById("local-time").value = formatDT(localDateTime);
 
-document.getElementById("local-place").textContent = itsKyivNotKiev(
-  localTZ.toString().split("/")[1]
-);
+document.getElementById("local-place").textContent =
+  getLocationFromTimezone(localTZ);
 
 document.getElementById("local-url").href = getLocalURL();
 
@@ -142,7 +140,11 @@ function itsKyivNotKiev(str) {
 function updateTitle(dt, tz) {
   const timeStr = formatDT(dt || localDateTime);
 
-  const placeStr = itsKyivNotKiev((tz || localTZ).toString().split("/")[1]);
+  const placeStr = getLocationFromTimezone(tz || localTZ);
 
   document.title = `${timeStr} in ${placeStr} | when.st`;
+}
+
+function getLocationFromTimezone(tz) {
+  return itsKyivNotKiev(tz.toString().split("/")[1]).replace(/_/g, " ");
 }
