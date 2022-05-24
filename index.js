@@ -1,32 +1,25 @@
 import "https://unpkg.com/urlpattern-polyfill@4.0.3?module";
 import { Temporal } from "https://unpkg.com/@js-temporal/polyfill@0.4.1?module";
 
-const timeURLPattern = new URLPattern({ pathname: "/:continent/:city/:time?" });
-
 const browserCalendar = "iso8601";
 
 const localTZ = Temporal.Now.timeZone();
 let localDateTime = Temporal.Now.zonedDateTime(browserCalendar);
 
-if (timeURLPattern.test(location.href)) {
-  const { continent, city, time } = timeURLPattern.exec(location.href).pathname
-    .groups;
+const [remoteTZ, timeString] = extractDataFromURL();
 
-  const remoteTZ = Temporal.TimeZone.from(
-    `${continent}/${city.toLowerCase() === "kyiv" ? "Kiev" : city}`
-  );
-
+if (remoteTZ) {
   const today = Temporal.Now.plainDate(browserCalendar);
   let remoteDate = undefined;
   try {
-    remoteDate = Temporal.PlainDate.from(time);
+    remoteDate = Temporal.PlainDate.from(timeString);
   } catch (e) {
     //
   }
 
   const remoteDateTime = (remoteDate || today).toZonedDateTime({
-    plainTime: time
-      ? Temporal.PlainTime.from(time)
+    plainTime: timeString
+      ? Temporal.PlainTime.from(timeString)
       : localDateTime.toPlainTime(),
     timeZone: remoteTZ,
   });
@@ -112,6 +105,52 @@ if ("share" in navigator && "canShare" in navigator) {
 
 function noop() {}
 
+function extractDataFromURL() {
+  const timeURLPattern = new URLPattern({
+    pathname: "/:continent/:state/:extra*",
+  });
+
+  if (!timeURLPattern.test(location.href)) {
+    return [];
+  }
+
+  const {
+    continent,
+    state,
+    extra: extraString,
+  } = timeURLPattern.exec(location.href).pathname.groups;
+
+  const extra = extraString.split("/");
+
+  let timeString = undefined;
+  let remoteTZ = undefined;
+
+  try {
+    remoteTZ = Temporal.TimeZone.from(
+      `${continent}/${state.toLowerCase() === "kyiv" ? "Kiev" : state}`
+    );
+
+    timeString = extra[0];
+  } catch (e) {
+    if (e instanceof RangeError) {
+      try {
+        remoteTZ = Temporal.TimeZone.from(`${continent}/${state}/${extra[0]}`);
+        timeString = extra[1];
+      } catch (e) {
+        if (e instanceof RangeError) {
+          return [];
+        } else {
+          throw e;
+        }
+      }
+    } else {
+      throw e;
+    }
+  }
+
+  return [remoteTZ, timeString];
+}
+
 function getLocalURL() {
   if (localTZ.toString() === "Europe/Kiev") {
     return new URL(`/Europe/Kyiv/${formatDT(localDateTime)}`, location.href);
@@ -130,7 +169,7 @@ function formatDT(dt) {
 }
 
 function itsKyivNotKiev(str) {
-  if (str && str === "Kiev") {
+  if (str === "Kiev") {
     return "Kyiv";
   }
 
@@ -146,5 +185,9 @@ function updateTitle(dt, tz) {
 }
 
 function getLocationFromTimezone(tz) {
-  return itsKyivNotKiev(tz.toString().split("/")[1]).replace(/_/g, " ");
+  const parts = tz.toString().split("/");
+
+  const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
+
+  return itsKyivNotKiev(location).replace(/^St_/, "St. ").replace(/_/g, " ");
 }
