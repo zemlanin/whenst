@@ -156,6 +156,7 @@ input {
   input {
     background-color: black;
     color: white;
+    border-color: darkgray;
   }
 }
 
@@ -190,7 +191,6 @@ form#clock {
 form#clock input[type="datetime-local"] {
   text-align: center;
   align-self: center;
-  margin: 0.5rem 0;
   font-size: 1.3rem;
 }
 
@@ -202,12 +202,18 @@ form#clock input[type="datetime-local"] {
 
 #remote-label {
   align-self: center;
-  margin: 0.5rem 0;
+  margin: 1rem 0;
+}
+
+#local-relative {
+  color: gray;
+  align-self: center;
+  font-style: italic;
 }
 
 #local-label {
   align-self: center;
-  margin: 0.5rem 0;
+  margin: 1rem 0;
 }
 
 #url-row {
