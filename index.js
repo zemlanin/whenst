@@ -1,5 +1,5 @@
-import "https://unpkg.com/urlpattern-polyfill@4.0.3?module";
-import { Temporal } from "https://unpkg.com/@js-temporal/polyfill@0.4.1?module";
+import "urlpattern-polyfill";
+import { Temporal } from "@js-temporal/polyfill";
 
 const browserCalendar = "iso8601";
 

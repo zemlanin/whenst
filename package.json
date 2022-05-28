@@ -1,0 +1,26 @@
+{
+  "name": "whenst",
+  "version": "1.0.0",
+  "description": "",
+  "source": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build",
+    "start": "parcel serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://zemlanin@github.com/zemlanin/whenst.git"
+  },
+  "author": "Anton Verinov <anton@verinov.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zemlanin/whenst/issues"
+  },
+  "homepage": "https://github.com/zemlanin/whenst#readme",
+  "devDependencies": {
+    "@js-temporal/polyfill": "^0.4.1",
+    "parcel": "^2.6.0",
+    "urlpattern-polyfill": "^5.0.3"
+  }
+}
