@@ -243,3 +243,9 @@ form#clock input[type="datetime-local"] {
   align-self: center;
   margin-top: 2rem;
 }
+
+#the-tweet img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}
