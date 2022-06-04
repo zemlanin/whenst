@@ -183,6 +183,10 @@ nav a.logo {
   line-height: 0;
 }
 
+nav a.about {
+  padding: 0.25rem;
+}
+
 form#clock {
   display: flex;
   flex-flow: column;
