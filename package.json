@@ -9,7 +9,7 @@
     "start": "parcel serve",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./index.*\"",
+    "prettier": "prettier \"./index.*\" \"./*.html\"",
     "eslint": "eslint \"./index.js\""
   },
   "repository": {
