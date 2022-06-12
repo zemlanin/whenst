@@ -9,8 +9,8 @@
     "start": "parcel serve",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./index.*\" \"./*.html\"",
-    "eslint": "eslint \"./index.js\""
+    "prettier": "prettier \"./*.{html,js,css}\"",
+    "eslint": "eslint \"./*.js\""
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,11 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.1.1",
     "@js-temporal/polyfill": "^0.4.1",
     "eslint": "^8.17.0",
     "parcel": "^2.6.0",
+    "posthtml-inline-svg": "^0.2.0",
     "prettier": "^2.6.2",
     "urlpattern-polyfill": "^5.0.3"
   }

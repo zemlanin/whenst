@@ -220,19 +220,44 @@ form#clock input[type="datetime-local"] {
   margin: 1rem 0;
 }
 
-#url-row {
+#local-url {
+  display: inline-block;
+  padding-bottom: 1px;
+  line-height: 0;
+}
+
+#local-url:hover {
+  border-bottom: #0969da 1px solid;
+}
+
+#saved-timezones {
+}
+
+#saved-timezones .header {
   display: flex;
-  flex-flow: row wrap;
-  gap: 0.5rem;
-  justify-content: center;
+  flex-flow: row;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-#url-row input {
-  flex-grow: 1;
+#saved-timezones .timezone-row {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
 }
 
-#url-row button {
+#saved-timezones .timezone-row input {
+  text-align: center;
+}
+
+#saved-timezones .timezone-row .timezone-label {
+  flex-shrink: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .spacer {
@@ -252,4 +277,31 @@ form#clock input[type="datetime-local"] {
   width: auto;
   height: auto;
   max-width: 100%;
+}
+
+#timezones-edit ul {
+  list-style: none;
+  padding: 0;
+}
+
+#timezones-edit ul li {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+#add-timezone {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+#add-timezone input {
+  width: 100px;
+  flex-grow: 1;
+  flex-basis: 0;
+  margin-right: 0.25rem;
 }

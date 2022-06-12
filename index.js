@@ -1,5 +1,9 @@
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
+import {
+  init as initSavedTimezones,
+  updateSavedTimezoneDatetimes,
+} from "./saved-timezones";
 
 const browserCalendar = "iso8601";
 const rtfAlways = new Intl.RelativeTimeFormat("en", {
@@ -147,6 +151,7 @@ document.getElementById("local-time").addEventListener("change", (event) => {
   localDateTime = Temporal.PlainDateTime.from(
     event.target.value
   ).toZonedDateTime(localTZ);
+  updateSavedTimezoneDatetimes(localDateTime);
   updateTitle();
   updateRelative();
 
@@ -155,50 +160,7 @@ document.getElementById("local-time").addEventListener("change", (event) => {
   history.replaceState(null, "", localURL);
 });
 
-let restoreCopyButtonTextTimeout = undefined;
-
-document.getElementById("url-copy").addEventListener("click", (event) => {
-  const button = event.target;
-  const scheduleTextContentRestore = () => {
-    if (restoreCopyButtonTextTimeout) {
-      clearTimeout(restoreCopyButtonTextTimeout);
-    }
-    restoreCopyButtonTextTimeout = setTimeout(() => {
-      button.textContent = "Copy";
-      restoreCopyButtonTextTimeout = undefined;
-    }, 2000);
-  };
-
-  navigator.clipboard.writeText(document.getElementById("local-url").href).then(
-    () => {
-      button.textContent = "Copied";
-      scheduleTextContentRestore();
-    },
-    () => {
-      button.textContent = "Error";
-      scheduleTextContentRestore();
-    }
-  );
-});
-
-if ("share" in navigator && "canShare" in navigator) {
-  document.getElementById("url-share").hidden = false;
-  document.getElementById("url-share").addEventListener("click", (event) => {
-    const button = event.target;
-
-    const payload = {
-      url: document.getElementById("local-url").href,
-    };
-
-    if (navigator.canShare(payload)) {
-      navigator.share(payload).then(noop, noop);
-    } else {
-      button.hidden = true;
-    }
-  });
-}
-
-function noop() {}
+initSavedTimezones(localDateTime);
 
 function extractDataFromURL() {
   const timeURLPattern = new URLPattern({
