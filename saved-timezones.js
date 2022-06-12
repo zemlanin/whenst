@@ -89,7 +89,7 @@ function renderTimezoneRow(tz, labelText) {
 
   const dt = document.createElement("input");
   dt.type = "datetime-local";
-  dt.readOnly = true;
+  dt.readonly = true;
   dt.dataset.tz = tz;
   dt.value = new Date();
   row.appendChild(dt);
