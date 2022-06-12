@@ -251,6 +251,7 @@ form#clock input[type="datetime-local"] {
 
 #saved-timezones .timezone-row input {
   text-align: center;
+  margin-right: 0;
 }
 
 #saved-timezones .timezone-row .timezone-label {
