@@ -163,6 +163,8 @@ input {
 #layout {
   width: 30rem;
   margin: 0rem auto;
+  padding: 0 0.25rem;
+  box-sizing: border-box;
   max-width: 100%;
   display: flex;
   flex-flow: column;
@@ -179,12 +181,10 @@ nav {
 }
 
 nav a.logo {
-  padding: 0.25rem;
   line-height: 0;
 }
 
 nav a.about {
-  padding: 0.25rem;
 }
 
 form#clock {
