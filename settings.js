@@ -72,8 +72,11 @@ function updateSavedTimezonesList() {
   for (const { id, timezone, label } of saved) {
     const item = document.createElement("li");
 
-    const span = document.createElement("span");
-    span.innerText = label
+    const anchor = document.createElement("a");
+    anchor.className = "timezone-label";
+    const TZstring = timezone.toString();
+    anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+    anchor.innerText = label
       ? `${label} (${getLocationFromTimezone(timezone)})`
       : getLocationFromTimezone(timezone);
 
@@ -92,7 +95,7 @@ function updateSavedTimezonesList() {
 
     form.addEventListener("submit", deleteFormHandler);
 
-    item.appendChild(span);
+    item.appendChild(anchor);
     item.appendChild(form);
 
     list.appendChild(item);

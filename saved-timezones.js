@@ -85,12 +85,14 @@ function renderTimezoneRow(tz, labelText) {
   row.role = "listitem";
   row.className = "timezone-row";
 
-  const label = document.createElement("div");
-  label.className = "timezone-label";
-  label.innerText = labelText
+  const anchor = document.createElement("a");
+  anchor.className = "timezone-label";
+  const TZstring = tz.toString();
+  anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+  anchor.innerText = labelText
     ? `${labelText} (${getLocationFromTimezone(tz)})`
     : getLocationFromTimezone(tz);
-  row.appendChild(label);
+  row.appendChild(anchor);
 
   const dt = document.createElement("input");
   dt.type = "datetime-local";
