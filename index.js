@@ -179,7 +179,7 @@ document.getElementById("local-time").addEventListener("change", (event) => {
   history.replaceState(null, "", localURL);
 });
 
-initSavedTimezones(localDateTime);
+initSavedTimezones(localDateTime, remoteTZ);
 
 function extractDataFromURL() {
   const timeURLPattern = new URLPattern({

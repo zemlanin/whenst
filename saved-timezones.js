@@ -1,14 +1,11 @@
 import { Temporal } from "@js-temporal/polyfill";
+import { saveTimezoneToLocalStorage, getSavedTimezones } from "./storage";
 
-export function init(datetime) {
+export function init(datetime, remoteTZ) {
   const localTZ = Temporal.Now.timeZone();
   const root = document.getElementById("saved-timezones");
 
   const timezones = getSavedTimezones();
-
-  if (timezones.length === 0) {
-    root.querySelector("a").textContent = "Add";
-  }
 
   for (const { label, timezone } of getSavedTimezones()) {
     if (timezone === localTZ) {
@@ -21,33 +18,40 @@ export function init(datetime) {
   }
 
   updateSavedTimezoneDatetimes(datetime);
+
+  if (
+    remoteTZ &&
+    !timezones.some(
+      (entry) => entry.timezone.toString() === remoteTZ.toString()
+    )
+  ) {
+    suggestSaving(remoteTZ);
+  }
 }
 
-function getSavedTimezones() {
-  const timezones = Intl.supportedValuesOf("timeZone");
+function suggestSaving(tz) {
+  const root = document.getElementById("saved-timezones");
 
-  try {
-    const raw = localStorage.getItem("whenst.saved-timezones");
+  const row = document.createElement("div");
+  row.role = "listitem";
+  row.className = "timezone-row";
 
-    if (!raw) {
-      return [];
-    }
+  const anchor = document.createElement("a");
+  anchor.className = "timezone-label";
+  const TZstring = tz.toString();
+  anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+  anchor.innerText = getLocationFromTimezone(tz);
+  row.appendChild(anchor);
 
-    return JSON.parse(raw)
-      .map((d) => {
-        return {
-          id: d.id,
-          label: d.label || "",
-          timezone: d.timezone,
-        };
-      })
-      .filter(
-        ({ id, timezone }) => id && timezone && timezones.includes(timezone)
-      );
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
+  const saveButton = document.createElement("button");
+  saveButton.innerText = "Save";
+  saveButton.addEventListener("click", function () {
+    saveTimezoneToLocalStorage({ timezone: tz });
+    location.reload();
+  });
+  row.appendChild(saveButton);
+
+  root.appendChild(row);
 }
 
 export function updateSavedTimezoneDatetimes(datetime) {

@@ -1,3 +1,5 @@
+import { saveTimezoneToLocalStorage, getSavedTimezones } from "./storage";
+
 const timezones = Intl.supportedValuesOf("timeZone");
 
 const datalist = document.getElementById("timezones-datalist");
@@ -40,18 +42,7 @@ addTimezoneForm.addEventListener("submit", (event) => {
     form.timezone.setCustomValidity("Unknown timezone");
   }
 
-  const current = getSavedTimezones();
-  localStorage.setItem(
-    "whenst.saved-timezones",
-    JSON.stringify([
-      {
-        id: `${+new Date()}${Math.random().toString().slice(1)}`,
-        label,
-        timezone,
-      },
-      ...current,
-    ])
-  );
+  saveTimezoneToLocalStorage({ timezone, label });
 
   form.timezone.value = "";
   form.label.value = "";
@@ -114,31 +105,6 @@ function deleteFormHandler(event) {
     JSON.stringify(getSavedTimezones().filter(({ id }) => id !== deletedId))
   );
   updateSavedTimezonesList();
-}
-
-function getSavedTimezones() {
-  try {
-    const raw = localStorage.getItem("whenst.saved-timezones");
-
-    if (!raw) {
-      return [];
-    }
-
-    return JSON.parse(raw)
-      .map((d) => {
-        return {
-          id: d.id,
-          label: d.label || "",
-          timezone: d.timezone,
-        };
-      })
-      .filter(
-        ({ id, timezone }) => id && timezone && timezones.includes(timezone)
-      );
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
 }
 
 function getLocationFromTimezone(tz) {
