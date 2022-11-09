@@ -39,7 +39,10 @@ function suggestSaving(tz) {
   const anchor = document.createElement("a");
   anchor.className = "timezone-label";
   const TZstring = tz.toString();
-  anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+  anchor.href = new URL(
+    `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`,
+    location.href
+  );
   anchor.innerText = getLocationFromTimezone(tz);
   row.appendChild(anchor);
 
@@ -91,8 +94,10 @@ function renderTimezoneRow(tz, labelText) {
 
   const anchor = document.createElement("a");
   anchor.className = "timezone-label";
-  const TZstring = tz.toString();
-  anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+  anchor.href = new URL(
+    `/${tz === "Europe/Kiev" ? "Europe/Kyiv" : tz}`,
+    location.href
+  );
   anchor.innerText = labelText
     ? `${labelText} (${getLocationFromTimezone(tz)})`
     : getLocationFromTimezone(tz);

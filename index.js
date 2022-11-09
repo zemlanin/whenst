@@ -23,10 +23,29 @@ window.Temporal = Temporal;
 let [remoteTZ, timeString] = extractDataFromURL();
 
 if (remoteTZ && timeString === "now") {
+  if (localTZ.toString() !== remoteTZ.toString()) {
+    const localAsSavedRow = document.getElementById("local-as-saved");
+
+    const label = localAsSavedRow.querySelector(".timezone-label");
+    label.innerText = `Local (${getLocationFromTimezone(localTZ)})`;
+    const localTZstring = localTZ.toString();
+    label.href = new URL(
+      `/${localTZstring === "Europe/Kiev" ? "Europe/Kyiv" : localTZstring}`,
+      location.href
+    );
+
+    const dt = localAsSavedRow.querySelector('input[type="datetime-local"]');
+    dt.dataset.tz = localTZ.toString();
+
+    localAsSavedRow.hidden = false;
+    localAsSavedRow.classList.add("timezone-row");
+  }
+
   localTZ = remoteTZ;
   now = Temporal.Now.zonedDateTime(browserCalendar, remoteTZ);
   localDateTime = now;
   window.localDateTime = localDateTime;
+
   updateRelative(true);
 } else if (remoteTZ && timeString) {
   const today = Temporal.Now.plainDate(browserCalendar);

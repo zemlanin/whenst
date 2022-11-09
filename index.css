@@ -233,6 +233,12 @@ form#clock input[type="datetime-local"] {
 #saved-timezones {
 }
 
+#saved-timezones #local-as-saved {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+}
+
 #saved-timezones .header {
   display: flex;
   flex-flow: row;
