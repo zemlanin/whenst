@@ -13,7 +13,7 @@ const rtfAuto = new Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 
-const localTZ = Temporal.Now.timeZone();
+let localTZ = Temporal.Now.timeZone();
 let now = Temporal.Now.zonedDateTime(browserCalendar);
 let localDateTime = now;
 
@@ -22,7 +22,13 @@ window.Temporal = Temporal;
 
 let [remoteTZ, timeString] = extractDataFromURL();
 
-if (remoteTZ && timeString) {
+if (remoteTZ && timeString === "now") {
+  localTZ = remoteTZ;
+  now = Temporal.Now.zonedDateTime(browserCalendar, remoteTZ);
+  localDateTime = now;
+  window.localDateTime = localDateTime;
+  updateRelative(true);
+} else if (remoteTZ && timeString) {
   const today = Temporal.Now.plainDate(browserCalendar);
   let remoteDate = undefined;
   try {
@@ -70,7 +76,7 @@ if (remoteTZ && timeString) {
 }
 
 function updateRelative(withRemote) {
-  const now = Temporal.Now.zonedDateTime(browserCalendar);
+  const now = Temporal.Now.zonedDateTime(browserCalendar, localTZ);
   const today = now.startOfDay();
   const durationSinceNow = localDateTime.since(now);
   const durationSinceToday = localDateTime.startOfDay().since(today);
@@ -99,7 +105,7 @@ function updateRelative(withRemote) {
       .total("day");
     const totalWeeks = localDateTime
       .startOfDay()
-      .since(today, { largestUnit: "week", roundingMode: "floor" })
+      .since(today, { largestUnit: "day", roundingMode: "floor" })
       .total({ unit: "week", relativeTo: today });
     const totalMonths = durationSinceToday.total({
       unit: "month",
