@@ -20,9 +20,9 @@ let localDateTime = now;
 window.localDateTime = localDateTime;
 window.Temporal = Temporal;
 
-const [remoteTZ, timeString] = extractDataFromURL();
+let [remoteTZ, timeString] = extractDataFromURL();
 
-if (remoteTZ) {
+if (remoteTZ && timeString) {
   const today = Temporal.Now.plainDate(browserCalendar);
   let remoteDate = undefined;
   try {
@@ -31,20 +31,33 @@ if (remoteTZ) {
     //
   }
 
-  const remoteDateTime = (remoteDate || today).toZonedDateTime({
-    plainTime: timeString
-      ? Temporal.PlainTime.from(timeString)
-      : localDateTime.toPlainTime(),
-    timeZone: remoteTZ,
-  });
+  if (timeString && timeString !== "now") {
+    try {
+      Temporal.PlainTime.from(timeString);
+    } catch (e) {
+      timeString = "now";
+    }
+  }
+
+  const remoteDateTime =
+    timeString === "now"
+      ? Temporal.Now.zonedDateTime(browserCalendar, remoteTZ)
+      : (remoteDate || today).toZonedDateTime({
+          plainTime: timeString
+            ? Temporal.PlainTime.from(timeString)
+            : localDateTime.toPlainTime(),
+          timeZone: remoteTZ,
+        });
   localDateTime = remoteDateTime.withTimeZone(localTZ);
 
   document.getElementById("remote-time").textContent = formatDT(remoteDateTime);
   updateRelative(true);
   document.getElementById("remote-place").textContent =
     getLocationFromTimezone(remoteTZ);
+
+  const remoteTZstring = remoteTZ.toString();
   document.getElementById("remote-url").href = new URL(
-    `/${remoteTZ.toString()}/${
+    `/${remoteTZstring === "Europe/Kiev" ? "Europe/Kyiv" : remoteTZstring}/${
       document.getElementById("remote-time").textContent
     }`,
     location.href
@@ -164,7 +177,7 @@ initSavedTimezones(localDateTime);
 
 function extractDataFromURL() {
   const timeURLPattern = new URLPattern({
-    pathname: "/:continent/:state/:extra*",
+    pathname: "/:continent/:state{/*}?",
   });
 
   if (!timeURLPattern.test(location.href)) {
@@ -174,10 +187,10 @@ function extractDataFromURL() {
   const {
     continent,
     state,
-    extra: extraString,
+    0: extraString,
   } = timeURLPattern.exec(location.href).pathname.groups;
 
-  const extra = extraString.split("/");
+  const extra = extraString ? extraString.split("/") : [];
 
   let timeString = undefined;
   let remoteTZ = undefined;
@@ -187,12 +200,12 @@ function extractDataFromURL() {
       `${continent}/${state.toLowerCase() === "kyiv" ? "Kiev" : state}`
     );
 
-    timeString = extra[0];
+    timeString = extra[0] ?? "now";
   } catch (e) {
     if (e instanceof RangeError) {
       try {
         remoteTZ = Temporal.TimeZone.from(`${continent}/${state}/${extra[0]}`);
-        timeString = extra[1];
+        timeString = extra[1] ?? "now";
       } catch (e) {
         if (e instanceof RangeError) {
           return [];
