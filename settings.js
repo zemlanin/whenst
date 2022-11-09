@@ -116,6 +116,11 @@ function deleteFormHandler(event) {
 function getSavedTimezones() {
   try {
     const raw = localStorage.getItem("whenst.saved-timezones");
+
+    if (!raw) {
+      return [];
+    }
+
     return JSON.parse(raw)
       .map((d) => {
         return {
