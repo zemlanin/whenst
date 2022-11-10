@@ -90,14 +90,6 @@ button {
   border-style: solid;
 }
 
-@media (prefers-color-scheme: dark) {
-  .button,
-  button {
-    background-color: lightgray;
-    border-color: lightgray;
-  }
-}
-
 .button.primary,
 button.primary {
   background-color: royalblue;
