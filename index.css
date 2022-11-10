@@ -93,8 +93,8 @@ button {
 @media (prefers-color-scheme: dark) {
   .button,
   button {
-    background-color: darkgray;
-    border-color: darkgray;
+    background-color: lightgray;
+    border-color: lightgray;
   }
 }
 
@@ -157,6 +157,17 @@ input {
     background-color: black;
     color: white;
     border-color: darkgray;
+  }
+  
+  .button:disabled,
+  .button.primary:disabled,
+  button:disabled,
+  button.primary:disabled,
+  form:invalid button,
+  form:invalid button.primary {
+    background-color: darkgray;
+    border-color: darkgray;
+    color: #555;
   }
 }
 
