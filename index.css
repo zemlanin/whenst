@@ -150,7 +150,7 @@ input {
     color: white;
     border-color: darkgray;
   }
-  
+
   .button:disabled,
   .button.primary:disabled,
   button:disabled,
