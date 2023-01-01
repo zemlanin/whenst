@@ -23,13 +23,13 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^6.1.1",
-    "@js-temporal/polyfill": "^0.4.1",
-    "eslint": "^8.17.0",
-    "parcel": "^2.6.0",
+    "@fortawesome/fontawesome-free": "^6.2.1",
+    "@js-temporal/polyfill": "^0.4.3",
+    "eslint": "^8.31.0",
+    "parcel": "^2.8.2",
     "posthtml-inline-svg": "^0.2.0",
     "posthtml-shorten": "^1.0.0",
-    "prettier": "^2.6.2",
-    "urlpattern-polyfill": "^5.0.3"
+    "prettier": "^2.8.1",
+    "urlpattern-polyfill": "^5.0.9"
   }
 }
