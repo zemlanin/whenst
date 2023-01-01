@@ -28,7 +28,6 @@
     "eslint": "^8.31.0",
     "parcel": "^2.8.2",
     "posthtml-inline-svg": "^0.2.0",
-    "posthtml-shorten": "^1.0.0",
     "prettier": "^2.8.1",
     "urlpattern-polyfill": "^5.0.9"
   }
