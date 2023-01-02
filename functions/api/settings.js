@@ -11,6 +11,7 @@ export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
   const headers = new Headers();
   headers.set("content-type", "application/json");
+  headers.set("vary", "cookie");
 
   if (!sessionId) {
     // TODO: set cache headers for requests without a session cookie
