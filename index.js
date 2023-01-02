@@ -202,7 +202,7 @@ initSavedTimezones(localDateTime, remoteTZ);
 function extractDataFromURL() {
   const utcURLPattern = new URLPattern(
     {
-      pathname: "/utc{:offset}?{/*}?",
+      pathname: "/(utc|gmt){:offset}?{/*}?",
     },
     { ignoreCase: true }
   );
