@@ -11,15 +11,17 @@ export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
   const headers = new Headers();
   headers.set("content-type", "application/json");
+
+  // > Cloudflare does not consider vary values in caching decisions
+  // https://developers.cloudflare.com/cache/about/cache-control#other
   headers.set("vary", "Cookie");
 
   if (!sessionId) {
-    headers.set("Cache-Control", "public, max-age=14400");
+    headers.set("Cache-Control", "public, max-age=14400, no-cache=Cookie");
     return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });
   }
 
-  headers.set("Cache-Control", "no-cache");
-
+  headers.set("Cache-Control", "no-cache=Cookie");
   const timezones = await context.env.KV.get(`timezones:${sessionId}`);
 
   if (!timezones) {
