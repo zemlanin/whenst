@@ -1,6 +1,9 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { loadSettings, addTimezone } from "./api";
 
+export const RELATIVE_UTC_ID_REGEX = /^[+-][0-1]?[0-9](:[0-5][0-9])?$/;
+export const STRICT_RELATIVE_UTC_ID_REGEX = /^[+-][0-1][0-9](:[0-5][0-9])?$/;
+
 export async function init(datetime, remoteTZ) {
   const localTZ = Temporal.Now.timeZone();
   const root = document.getElementById("saved-timezones");
@@ -38,11 +41,7 @@ function suggestSaving(tz) {
 
   const anchor = document.createElement("a");
   anchor.className = "timezone-label";
-  const TZstring = tz.toString();
-  anchor.href = new URL(
-    `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`,
-    location.href
-  );
+  anchor.href = new URL(getPathnameFromTimezone(tz), location.href);
   anchor.innerText = getLocationFromTimezone(tz);
   row.appendChild(anchor);
 
@@ -74,7 +73,15 @@ function formatDT(dt) {
     .toString({ smallestUnit: "minute", calendarName: "never" });
 }
 
-function getLocationFromTimezone(tz) {
+export function getLocationFromTimezone(tz) {
+  if (tz.toString() === "UTC") {
+    return "UTC";
+  }
+
+  if (tz.toString().match(STRICT_RELATIVE_UTC_ID_REGEX)) {
+    return "UTC" + tz;
+  }
+
   const parts = tz.toString().split("/");
 
   const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
@@ -88,6 +95,22 @@ function getLocationFromTimezone(tz) {
   return location.replace(/^St_/, "St. ").replace(/_/g, " ");
 }
 
+export function getPathnameFromTimezone(tz) {
+  if (tz.toString() === "UTC") {
+    return "/UTC";
+  }
+
+  if (tz.toString().match(STRICT_RELATIVE_UTC_ID_REGEX)) {
+    return "/UTC" + tz;
+  }
+
+  if (tz.toString() === "Europe/Kiev") {
+    return "/Europe/Kyiv";
+  }
+
+  return `/${tz}`;
+}
+
 function renderTimezoneRow(tz, labelText) {
   const row = document.createElement("div");
   row.role = "listitem";
@@ -95,10 +118,7 @@ function renderTimezoneRow(tz, labelText) {
 
   const anchor = document.createElement("a");
   anchor.className = "timezone-label";
-  anchor.href = new URL(
-    `/${tz === "Europe/Kiev" ? "Europe/Kyiv" : tz}`,
-    location.href
-  );
+  anchor.href = new URL(getPathnameFromTimezone(tz), location.href);
   anchor.innerText = labelText
     ? `${labelText} (${getLocationFromTimezone(tz)})`
     : getLocationFromTimezone(tz);

@@ -1,4 +1,8 @@
 import { loadSettings, addTimezone, deleteTimezone } from "./api";
+import {
+  getLocationFromTimezone,
+  getPathnameFromTimezone,
+} from "./saved-timezones";
 
 const timezones = Intl.supportedValuesOf("timeZone");
 
@@ -65,8 +69,7 @@ async function updateSavedTimezonesList() {
 
     const anchor = document.createElement("a");
     anchor.className = "timezone-label";
-    const TZstring = timezone.toString();
-    anchor.href = `/${TZstring === "Europe/Kiev" ? "Europe/Kyiv" : TZstring}`;
+    anchor.href = getPathnameFromTimezone(timezone);
     anchor.innerText = label
       ? `${label} (${getLocationFromTimezone(timezone)})`
       : getLocationFromTimezone(timezone);
@@ -101,18 +104,4 @@ function deleteFormHandler(event) {
   deleteTimezone({ id: form.id.value }).then(() => {
     updateSavedTimezonesList();
   });
-}
-
-function getLocationFromTimezone(tz) {
-  const parts = tz.toString().split("/");
-
-  const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
-
-  if (location === "Kiev") {
-    return "Kyiv";
-  } else if (location === "Sao_Paulo") {
-    return "São Paulo";
-  }
-
-  return location.replace(/^St_/, "St. ").replace(/_/g, " ");
 }

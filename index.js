@@ -1,8 +1,12 @@
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
 import {
+  RELATIVE_UTC_ID_REGEX,
+  STRICT_RELATIVE_UTC_ID_REGEX,
   init as initSavedTimezones,
   updateSavedTimezoneDatetimes,
+  getLocationFromTimezone,
+  getPathnameFromTimezone,
 } from "./saved-timezones";
 
 const browserCalendar = "iso8601";
@@ -28,11 +32,7 @@ if (remoteTZ && timeString === "now") {
 
     const label = localAsSavedRow.querySelector(".timezone-label");
     label.innerText = `Local (${getLocationFromTimezone(localTZ)})`;
-    const localTZstring = localTZ.toString();
-    label.href = new URL(
-      `/${localTZstring === "Europe/Kiev" ? "Europe/Kyiv" : localTZstring}`,
-      location.href
-    );
+    label.href = new URL(getPathnameFromTimezone(localTZ), location.href);
 
     const dt = localAsSavedRow.querySelector('input[type="datetime-local"]');
     dt.dataset.tz = localTZ.toString();
@@ -80,9 +80,8 @@ if (remoteTZ && timeString === "now") {
   document.getElementById("remote-place").textContent =
     getLocationFromTimezone(remoteTZ);
 
-  const remoteTZstring = remoteTZ.toString();
   document.getElementById("remote-url").href = new URL(
-    `/${remoteTZstring === "Europe/Kiev" ? "Europe/Kyiv" : remoteTZstring}/${
+    `${getPathnameFromTimezone(remoteTZ)}/${
       document.getElementById("remote-time").textContent
     }`,
     location.href
@@ -201,11 +200,44 @@ document.getElementById("local-time").addEventListener("change", (event) => {
 initSavedTimezones(localDateTime, remoteTZ);
 
 function extractDataFromURL() {
-  const timeURLPattern = new URLPattern({
+  const utcURLPattern = new URLPattern(
+    {
+      pathname: "/utc{:offset}?{/*}?",
+    },
+    { ignoreCase: true }
+  );
+
+  const matchesUTC = utcURLPattern.test(location.href);
+
+  if (matchesUTC) {
+    const { offset, 0: extraString } = utcURLPattern.exec(location.href)
+      .pathname.groups;
+
+    const extra = extraString ? extraString.split("/") : [];
+
+    if (!offset) {
+      const timeString = extra[0] ?? "now";
+      return ["UTC", timeString];
+    }
+
+    if (offset.match(RELATIVE_UTC_ID_REGEX)) {
+      const timeString = extra[0] ?? "now";
+      const strictOffset = offset.match(STRICT_RELATIVE_UTC_ID_REGEX)
+        ? offset
+        : `${offset[0]}0${offset.slice(1)}`;
+
+      return [strictOffset, timeString];
+    }
+
+    return [];
+  }
+
+  const geoURLPattern = new URLPattern({
     pathname: "/:continent/:state{/*}?",
   });
 
-  if (!timeURLPattern.test(location.href)) {
+  const matchesGeo = geoURLPattern.test(location.href);
+  if (!matchesGeo) {
     return [];
   }
 
@@ -213,7 +245,7 @@ function extractDataFromURL() {
     continent,
     state,
     0: extraString,
-  } = timeURLPattern.exec(location.href).pathname.groups;
+  } = geoURLPattern.exec(location.href).pathname.groups;
 
   const extra = extraString ? extraString.split("/") : [];
 
@@ -221,11 +253,17 @@ function extractDataFromURL() {
   let remoteTZ = undefined;
 
   try {
-    remoteTZ = Temporal.TimeZone.from(
-      `${continent}/${state.toLowerCase() === "kyiv" ? "Kiev" : state}`
-    );
+    const continentLowerCase = continent.toLowerCase();
 
-    timeString = extra[0] ?? "now";
+    remoteTZ =
+      continentLowerCase === "utc"
+        ? Temporal.TimeZone.from("UTC")
+        : Temporal.TimeZone.from(
+            `${continent}/${state.toLowerCase() === "kyiv" ? "Kiev" : state}`
+          );
+
+    timeString =
+      (continentLowerCase.startsWith("utc") ? state : extra[0]) ?? "now";
   } catch (e) {
     if (e instanceof RangeError) {
       try {
@@ -247,12 +285,8 @@ function extractDataFromURL() {
 }
 
 function getLocalURL() {
-  if (localTZ.toString() === "Europe/Kiev") {
-    return new URL(`/Europe/Kyiv/${formatDT(localDateTime)}`, location.href);
-  }
-
   return new URL(
-    `/${localTZ.toString()}/${formatDT(localDateTime)}`,
+    `${getPathnameFromTimezone(localTZ)}/${formatDT(localDateTime)}`,
     location.href
   );
 }
@@ -269,18 +303,4 @@ function updateTitle(dt, tz) {
   const placeStr = getLocationFromTimezone(tz || localTZ);
 
   document.title = `${timeStr} in ${placeStr} | when.st`;
-}
-
-function getLocationFromTimezone(tz) {
-  const parts = tz.toString().split("/");
-
-  const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
-
-  if (location === "Kiev") {
-    return "Kyiv";
-  } else if (location === "Sao_Paulo") {
-    return "São Paulo";
-  }
-
-  return location.replace(/^St_/, "St. ").replace(/_/g, " ");
 }
