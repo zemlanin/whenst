@@ -14,7 +14,7 @@ export async function onRequest(context) {
   headers.set("vary", "Cookie");
 
   if (!sessionId) {
-    headers.set("Cache-Control", "public, max-age=14400");
+    headers.set("Cache-Control", "public, s-maxage=14400, max-age=14400");
     return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });
   }
 
