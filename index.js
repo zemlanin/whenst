@@ -210,7 +210,7 @@ function extractDataFromURL() {
   const matchesUTC = utcURLPattern.test(location.href);
 
   if (matchesUTC) {
-    const { offset, 0: extraString } = utcURLPattern.exec(location.href)
+    const { offset, 1: extraString } = utcURLPattern.exec(location.href)
       .pathname.groups;
 
     const extra = extraString ? extraString.split("/") : [];
