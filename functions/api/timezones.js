@@ -103,7 +103,7 @@ const addBodyValidator = new Validator({
     },
     timezone: {
       type: "string",
-      minLength: 4,
+      minLength: 2,
       maxLength: 80,
     },
     label: {
