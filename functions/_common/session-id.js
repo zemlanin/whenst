@@ -13,9 +13,9 @@ export async function extractSessionIdFromCookie(context) {
     return null;
   }
 
-  const [id, signature] = str.split(".");
+  const [sessionId, signature] = str.split(".");
 
-  if (!id || !signature) {
+  if (!sessionId || !signature) {
     return null;
   }
 
@@ -29,11 +29,18 @@ export async function extractSessionIdFromCookie(context) {
   const key = await importKey(context.env.SESSION_SECRET);
   const sigBuf = Uint8Array.from(sigRaw, (c) => c.charCodeAt(0));
 
-  if (!(await crypto.subtle.verify("HMAC", key, sigBuf, id))) {
+  if (
+    !(await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBuf,
+      new TextEncoder().encode(sessionId)
+    ))
+  ) {
     return null;
   }
 
-  return id;
+  return sessionId;
 }
 
 export function generateSessionId() {
