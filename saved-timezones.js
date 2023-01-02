@@ -1,13 +1,13 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { saveTimezoneToLocalStorage, getSavedTimezones } from "./storage";
+import { loadSettings, addTimezone } from "./api";
 
-export function init(datetime, remoteTZ) {
+export async function init(datetime, remoteTZ) {
   const localTZ = Temporal.Now.timeZone();
   const root = document.getElementById("saved-timezones");
 
-  const timezones = getSavedTimezones();
+  const { timezones } = await loadSettings();
 
-  for (const { label, timezone } of getSavedTimezones()) {
+  for (const { label, timezone } of timezones) {
     if (timezone === localTZ) {
       continue;
     }
@@ -49,8 +49,9 @@ function suggestSaving(tz) {
   const saveButton = document.createElement("button");
   saveButton.innerText = "Save";
   saveButton.addEventListener("click", function () {
-    saveTimezoneToLocalStorage({ timezone: tz });
-    location.reload();
+    addTimezone({ timezone: tz }).then(() => {
+      location.reload();
+    });
   });
   row.appendChild(saveButton);
 

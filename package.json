@@ -2,15 +2,33 @@
   "name": "whenst",
   "version": "1.0.0",
   "description": "",
-  "source": "index.html",
+  "targets": {
+    "default": {
+      "context": "browser",
+      "source": "index.html",
+      "distDir": "./dist",
+      "includeNodeModules": true
+    },
+    "functions": {
+      "context": "node",
+      "source": [
+        "functions/api/settings.js",
+        "functions/api/timezones.js"
+      ],
+      "distDir": "./dist/functions/api/",
+      "outputFormat": "esmodule",
+      "includeNodeModules": true,
+      "isLibrary": true
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build",
-    "start": "parcel serve",
+    "start": "wrangler pages dev dist --kv KV --persist",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,js,css}\"",
-    "eslint": "eslint \"./*.js\""
+    "prettier": "prettier \"./*.{html,js,css}\" \"./functions/**/*.js\"",
+    "eslint": "eslint \"./*.js\" \"./functions/**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -23,12 +41,15 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "devDependencies": {
+    "@cfworker/json-schema": "^1.12.5",
     "@fortawesome/fontawesome-free": "^6.2.1",
     "@js-temporal/polyfill": "^0.4.3",
+    "cookie": "^0.5.0",
     "eslint": "^8.31.0",
     "parcel": "^2.8.2",
     "posthtml-inline-svg": "^0.2.0",
     "prettier": "^2.8.1",
-    "urlpattern-polyfill": "^5.0.9"
+    "urlpattern-polyfill": "^5.0.9",
+    "wrangler": "^2.6.2"
   }
 }
