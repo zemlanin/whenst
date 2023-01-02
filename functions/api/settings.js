@@ -11,12 +11,14 @@ export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
   const headers = new Headers();
   headers.set("content-type", "application/json");
-  headers.set("vary", "cookie");
+  headers.set("vary", "Cookie");
 
   if (!sessionId) {
     // TODO: set cache headers for requests without a session cookie
     return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });
   }
+
+  headers.set("Cache-Control", "no-cache");
 
   const timezones = await context.env.KV.get(`timezones:${sessionId}`);
 
