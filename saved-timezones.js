@@ -15,6 +15,10 @@ export async function init(datetime, remoteTZ) {
       continue;
     }
 
+    if (timezone === "unix") {
+      continue;
+    }
+
     const row = renderTimezoneRow(timezone, label);
 
     root.appendChild(row);
@@ -24,6 +28,7 @@ export async function init(datetime, remoteTZ) {
 
   if (
     remoteTZ &&
+    remoteTZ !== "unix" &&
     !timezones.some(
       (entry) => entry.timezone.toString() === remoteTZ.toString()
     )
@@ -33,6 +38,10 @@ export async function init(datetime, remoteTZ) {
 }
 
 function suggestSaving(tz) {
+  if (tz === "unix") {
+    return;
+  }
+
   const root = document.getElementById("saved-timezones");
 
   const row = document.createElement("div");
@@ -112,6 +121,10 @@ export function getPathnameFromTimezone(tz) {
 }
 
 function renderTimezoneRow(tz, labelText) {
+  if (tz === "unix") {
+    return;
+  }
+
   const row = document.createElement("div");
   row.role = "listitem";
   row.className = "timezone-row";

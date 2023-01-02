@@ -26,7 +26,33 @@ window.Temporal = Temporal;
 
 let [remoteTZ, timeString] = extractDataFromURL();
 
-if (remoteTZ && timeString === "now") {
+if (remoteTZ === "unix") {
+  const remoteDate = Temporal.PlainDate.from(timeString);
+
+  const remoteDateTime =
+    timeString === "now"
+      ? Temporal.Now.zonedDateTime(browserCalendar, "UTC")
+      : remoteDate.toZonedDateTime({
+          plainTime: timeString
+            ? Temporal.PlainTime.from(timeString)
+            : localDateTime.toPlainTime(),
+          timeZone: "UTC",
+        });
+  const epochSeconds = remoteDateTime.epochSeconds;
+  localDateTime = remoteDateTime.withTimeZone(localTZ);
+
+  document.getElementById("remote-time").textContent = epochSeconds;
+  updateRelative(true);
+  document.getElementById("remote-place").textContent = "Unix Time";
+
+  document.getElementById("remote-url").href = new URL(
+    `/unix/${epochSeconds}`,
+    location.href
+  );
+  document.getElementById("remote-label").hidden = false;
+
+  document.title = `${epochSeconds} in Unix Time | when.st`;
+} else if (remoteTZ && timeString === "now") {
   if (localTZ.toString() !== remoteTZ.toString()) {
     const localAsSavedRow = document.getElementById("local-as-saved");
 
@@ -200,6 +226,24 @@ document.getElementById("local-time").addEventListener("change", (event) => {
 initSavedTimezones(localDateTime, remoteTZ);
 
 function extractDataFromURL() {
+  const unixURLPattern = new URLPattern(
+    {
+      pathname: "/unix{/:seconds(\\d+)}?",
+    },
+    { ignoreCase: true }
+  );
+  const matchesUnix = unixURLPattern.test(location.href);
+  if (matchesUnix) {
+    const { seconds } = unixURLPattern.exec(location.href).pathname.groups;
+
+    return [
+      "unix",
+      (seconds !== undefined ? new Date(+seconds * 1000) : new Date())
+        .toISOString()
+        .replace(/Z$/, ""),
+    ];
+  }
+
   const utcURLPattern = new URLPattern(
     {
       pathname: "/(utc|gmt){:offset}?{/*}?",
@@ -208,7 +252,6 @@ function extractDataFromURL() {
   );
 
   const matchesUTC = utcURLPattern.test(location.href);
-
   if (matchesUTC) {
     const { offset, 1: extraString } = utcURLPattern.exec(location.href)
       .pathname.groups;
