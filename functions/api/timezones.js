@@ -34,9 +34,7 @@ async function addTimezone(context) {
 
   let cookieValue;
 
-  if (timezones.some((v) => v.id === newTimezone.id)) {
-    cookieValue = await getSessionCookie(context, sessionId);
-  } else {
+  if (timezones.every((v) => v.id !== newTimezone.id)) {
     await context.env.KV.put(
       `timezones:${sessionId || newSessionId}`,
       JSON.stringify([newTimezone, ...timezones])
@@ -46,15 +44,17 @@ async function addTimezone(context) {
   }
 
   const headers = new Headers();
-  headers.set(
-    "set-cookie",
-    cookie.serialize(COOKIE_NAME, cookieValue, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-      secure: !!context.env.CF_PAGES,
-    })
-  );
+  if (cookieValue) {
+    headers.set(
+      "set-cookie",
+      cookie.serialize(COOKIE_NAME, cookieValue, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        secure: !!context.env.CF_PAGES,
+      })
+    );
+  }
 
   return new Response(null, {
     status: 200,
@@ -89,21 +89,8 @@ async function deleteTimezone(context) {
     await context.env.KV.delete(`timezones:${sessionId}`);
   }
 
-  const headers = new Headers();
-  const cookieValue = await getSessionCookie(context, sessionId);
-  headers.set(
-    "set-cookie",
-    cookie.serialize(COOKIE_NAME, cookieValue, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-      secure: !!context.env.CF_PAGES,
-    })
-  );
-
   return new Response(null, {
     status: 200,
-    headers,
   });
 }
 
