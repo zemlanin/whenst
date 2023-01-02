@@ -17,11 +17,11 @@ export async function onRequest(context) {
   headers.set("vary", "Cookie");
 
   if (!sessionId) {
-    headers.set("Cache-Control", "public, max-age=14400, no-cache=Cookie");
+    headers.set("Cache-Control", "public, max-age=14400, no-cache=Cookie, Private=Cookie");
     return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });
   }
 
-  headers.set("Cache-Control", "no-cache=Cookie");
+  headers.set("Cache-Control", "no-cache=Cookie, Private=Cookie");
   const timezones = await context.env.KV.get(`timezones:${sessionId}`);
 
   if (!timezones) {
