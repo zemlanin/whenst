@@ -28,7 +28,8 @@ let [remoteTZ, timeString] = extractDataFromURL();
 
 if (
   remoteTZ &&
-  !location.pathname.startsWith(getPathnameFromTimezone(remoteTZ))
+  (location.pathname !== getPathnameFromTimezone(remoteTZ) ||
+    !location.pathname.startsWith(getPathnameFromTimezone(remoteTZ) + "/"))
 ) {
   const canonicalPathname =
     timeString && timeString !== "now"

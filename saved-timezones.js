@@ -117,7 +117,7 @@ export function getPathnameFromTimezone(tz) {
   }
 
   if (tz.toString().match(STRICT_RELATIVE_UTC_ID_REGEX)) {
-    return "/UTC" + tz;
+    return "/UTC" + tz.toString().replace(/^([+-])0?(1?[0-9]):00$/, "$1$2");
   }
 
   if (tz.toString() === "Europe/Kiev") {
