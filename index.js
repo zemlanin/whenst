@@ -26,18 +26,25 @@ window.Temporal = Temporal;
 
 let [remoteTZ, timeString] = extractDataFromURL();
 
-if (remoteTZ === "unix") {
-  const remoteDate = Temporal.PlainDate.from(timeString);
+if (
+  remoteTZ &&
+  !location.pathname.startsWith(getPathnameFromTimezone(remoteTZ))
+) {
+  const canonicalPathname =
+    timeString && timeString !== "now"
+      ? `${getPathnameFromTimezone(remoteTZ)}/${timeString}`
+      : getPathnameFromTimezone(remoteTZ);
 
+  history.replaceState(null, "", canonicalPathname);
+} else if (!remoteTZ && location.pathname !== "/" && location.pathname !== "") {
+  history.replaceState(null, "", "/");
+}
+
+if (remoteTZ === "unix") {
   const remoteDateTime =
     timeString === "now"
       ? Temporal.Now.zonedDateTime(browserCalendar, "UTC")
-      : remoteDate.toZonedDateTime({
-          plainTime: timeString
-            ? Temporal.PlainTime.from(timeString)
-            : localDateTime.toPlainTime(),
-          timeZone: "UTC",
-        });
+      : Temporal.PlainDateTime.from(timeString).toZonedDateTime("UTC");
   const epochSeconds = remoteDateTime.epochSeconds;
   localDateTime = remoteDateTime.withTimeZone(localTZ);
 
@@ -228,7 +235,7 @@ initSavedTimezones(localDateTime, remoteTZ);
 function extractDataFromURL() {
   const unixURLPattern = new URLPattern(
     {
-      pathname: "/unix{/:seconds(\\d+)}?",
+      pathname: "/unix{/:seconds(\\d*)}?",
     },
     { ignoreCase: true }
   );
@@ -238,9 +245,9 @@ function extractDataFromURL() {
 
     return [
       "unix",
-      (seconds !== undefined ? new Date(+seconds * 1000) : new Date())
-        .toISOString()
-        .replace(/Z$/, ""),
+      seconds
+        ? new Date(+seconds * 1000).toISOString().replace(/Z$/, "")
+        : "now",
     ];
   }
 
@@ -260,7 +267,7 @@ function extractDataFromURL() {
 
     if (!offset) {
       const timeString = extra[0] ?? "now";
-      return ["UTC", timeString];
+      return [Temporal.TimeZone.from("UTC"), timeString];
     }
 
     if (offset.match(RELATIVE_UTC_ID_REGEX)) {
@@ -269,7 +276,7 @@ function extractDataFromURL() {
         ? offset
         : `${offset[0]}0${offset.slice(1)}`;
 
-      return [strictOffset, timeString];
+      return [Temporal.TimeZone.from(strictOffset), timeString];
     }
 
     return [];
