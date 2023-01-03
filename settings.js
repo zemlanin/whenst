@@ -1,3 +1,5 @@
+import { Temporal } from "@js-temporal/polyfill";
+
 import { loadSettings, addTimezone, deleteTimezone } from "./api";
 import {
   getLocationFromTimezone,
@@ -69,10 +71,16 @@ async function updateSavedTimezonesList() {
 
     const anchor = document.createElement("a");
     anchor.className = "timezone-label";
-    anchor.href = getPathnameFromTimezone(timezone);
     anchor.innerText = label
       ? `${label} (${getLocationFromTimezone(timezone)})`
       : getLocationFromTimezone(timezone);
+
+    try {
+      Temporal.TimeZone.from(timezone);
+      anchor.href = getPathnameFromTimezone(timezone);
+    } catch (e) {
+      anchor.className += " invalid";
+    }
 
     const form = document.createElement("form");
     form.action = "javascript:void(0)";

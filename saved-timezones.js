@@ -21,7 +21,9 @@ export async function init(datetime, remoteTZ) {
 
     const row = renderTimezoneRow(timezone, label);
 
-    root.appendChild(row);
+    if (row) {
+      root.appendChild(row);
+    }
   }
 
   updateSavedTimezoneDatetimes(datetime);
@@ -95,6 +97,11 @@ export function getLocationFromTimezone(tz) {
 
   const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
 
+  if (!location) {
+    // fallback for invalidly saved timezones
+    return tz.toString();
+  }
+
   if (location === "Kiev") {
     return "Kyiv";
   } else if (location === "Sao_Paulo") {
@@ -122,6 +129,12 @@ export function getPathnameFromTimezone(tz) {
 
 function renderTimezoneRow(tz, labelText) {
   if (tz === "unix") {
+    return;
+  }
+
+  try {
+    Temporal.TimeZone.from(tz);
+  } catch (e) {
     return;
   }
 
