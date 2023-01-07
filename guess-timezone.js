@@ -10,6 +10,11 @@ const TZ_ETC = "Etc/GMT";
 export function guessTimezone(input, { strict } = {}) {
   const inputLowerCase = input.toLowerCase();
 
+  if (inputLowerCase === "factory") {
+    // https://github.com/eggert/tz/blob/main/factory
+    return null;
+  }
+
   try {
     const directMatch = Temporal.TimeZone.from(input);
 
