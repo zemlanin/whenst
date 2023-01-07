@@ -2,10 +2,11 @@ import { Temporal } from "@js-temporal/polyfill";
 
 import { loadSettings, addTimezone, deleteTimezone } from "./api";
 import {
-  STRICT_RELATIVE_UTC_ID_REGEX,
   getLocationFromTimezone,
   getPathnameFromTimezone,
 } from "./saved-timezones";
+
+import { guessTimezone } from "./guess-timezone";
 
 const timezones = Intl.supportedValuesOf("timeZone");
 
@@ -19,46 +20,10 @@ for (const tz of timezones) {
 
 const addTimezoneForm = document.getElementById("add-timezone");
 addTimezoneForm.addEventListener("submit", (event) => {
-  const form = event.target;
-
   event.preventDefault();
-  let inputValue = form.timezone.value;
-  let timezone;
 
-  const inputLowerCase = inputValue.toLowerCase();
-
-  try {
-    timezone = Temporal.TimeZone.from(inputValue).toString();
-  } catch (e) {
-    if (inputLowerCase === "europe/kyiv" || inputLowerCase === "kyiv") {
-      timezone = "Europe/Kiev";
-    } else if (inputLowerCase === "utc" || inputLowerCase === "gmt") {
-      timezone = "UTC";
-    } else if (
-      inputLowerCase.match(/^(utc|gmt)[+-][0-1]?[0-9](:[0-5][0-9])?$/)
-    ) {
-      // ^- RELATIVE_UTC_ID_REGEX
-
-      const offset = inputLowerCase.slice("utc".length);
-      const strictOffset = offset.match(STRICT_RELATIVE_UTC_ID_REGEX)
-        ? offset
-        : `${offset[0]}0${offset.slice(1)}`;
-
-      try {
-        timezone = Temporal.TimeZone.from(strictOffset).toString();
-      } catch (e) {
-        //
-      }
-    } else {
-      const guessTimezones = timezones.filter((v) =>
-        v.toLowerCase().includes(inputLowerCase)
-      );
-
-      if (guessTimezones.length === 1) {
-        timezone = guessTimezones[0];
-      }
-    }
-  }
+  const form = event.target;
+  const timezone = guessTimezone(form.timezone.value);
 
   if (!timezone) {
     form.timezone.setCustomValidity("Unknown timezone");
@@ -66,12 +31,26 @@ addTimezoneForm.addEventListener("submit", (event) => {
   }
 
   const label = form.label.value || "";
-  addTimezone({ timezone, label }).then(() => {
+  addTimezone({ timezone: timezone.toString(), label }).then(() => {
     form.timezone.value = "";
     form.label.value = "";
 
     updateSavedTimezonesList();
   });
+});
+
+addTimezoneForm.addEventListener("input", (event) => {
+  const input = event.target;
+  const value = input.value;
+
+  if (!value) {
+    input.setCustomValidity("");
+    return;
+  }
+
+  const timezone = guessTimezone(value);
+
+  input.setCustomValidity(timezone ? "" : "Unknown timezone");
 });
 
 updateSavedTimezonesList();
