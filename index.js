@@ -1,8 +1,8 @@
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
+
+import { guessTimezone } from "./guess-timezone";
 import {
-  RELATIVE_UTC_ID_REGEX,
-  STRICT_RELATIVE_UTC_ID_REGEX,
   init as initSavedTimezones,
   updateSavedTimezoneDatetimes,
   getLocationFromTimezone,
@@ -252,39 +252,8 @@ function extractDataFromURL() {
     ];
   }
 
-  const utcURLPattern = new URLPattern(
-    {
-      pathname: "/(utc|gmt){:offset}?{/*}?",
-    },
-    { ignoreCase: true }
-  );
-
-  const matchesUTC = utcURLPattern.test(location.href);
-  if (matchesUTC) {
-    const { offset, 1: extraString } = utcURLPattern.exec(location.href)
-      .pathname.groups;
-
-    const extra = extraString ? extraString.split("/") : [];
-
-    if (!offset) {
-      const timeString = extra[0] ?? "now";
-      return [Temporal.TimeZone.from("UTC"), timeString];
-    }
-
-    if (offset.match(RELATIVE_UTC_ID_REGEX)) {
-      const timeString = extra[0] ?? "now";
-      const strictOffset = offset.match(STRICT_RELATIVE_UTC_ID_REGEX)
-        ? offset
-        : `${offset[0]}0${offset.slice(1)}`;
-
-      return [Temporal.TimeZone.from(strictOffset), timeString];
-    }
-
-    return [];
-  }
-
   const geoURLPattern = new URLPattern({
-    pathname: "/:continent/:state{/*}?",
+    pathname: "/:zeroth{/*}?",
   });
 
   const matchesGeo = geoURLPattern.test(location.href);
@@ -292,47 +261,33 @@ function extractDataFromURL() {
     return [];
   }
 
-  const {
-    continent,
-    state,
-    0: extraString,
-  } = geoURLPattern.exec(location.href).pathname.groups;
+  const { zeroth, 0: extra } = geoURLPattern.exec(location.href).pathname
+    .groups;
 
-  const extra = extraString ? extraString.split("/") : [];
-
-  let timeString = undefined;
-  let remoteTZ = undefined;
-
-  try {
-    const continentLowerCase = continent.toLowerCase();
-
-    remoteTZ =
-      continentLowerCase === "utc"
-        ? Temporal.TimeZone.from("UTC")
-        : Temporal.TimeZone.from(
-            `${continent}/${state.toLowerCase() === "kyiv" ? "Kiev" : state}`
-          );
-
-    timeString =
-      (continentLowerCase.startsWith("utc") ? state : extra[0]) ?? "now";
-  } catch (e) {
-    if (e instanceof RangeError) {
-      try {
-        remoteTZ = Temporal.TimeZone.from(`${continent}/${state}/${extra[0]}`);
-        timeString = extra[1] ?? "now";
-      } catch (e) {
-        if (e instanceof RangeError) {
-          return [];
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      throw e;
-    }
+  if (zeroth === "") {
+    return [];
   }
 
-  return [remoteTZ, timeString];
+  const [first, second, third] = extra?.split("/") ?? [];
+
+  let remoteTZ = guessTimezone(`${zeroth}/${first}/${second}`, {
+    strict: true,
+  });
+  if (remoteTZ) {
+    return [remoteTZ, third ?? "now"];
+  }
+
+  remoteTZ = guessTimezone(`${zeroth}/${first}`, { strict: true });
+  if (remoteTZ) {
+    return [remoteTZ, second ?? "now"];
+  }
+
+  remoteTZ = guessTimezone(`${zeroth}`, { strict: true });
+  if (remoteTZ) {
+    return [remoteTZ, first ?? "now"];
+  }
+
+  return [];
 }
 
 function getLocalURL() {

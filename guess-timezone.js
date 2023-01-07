@@ -4,7 +4,7 @@ import { STRICT_RELATIVE_UTC_ID_REGEX } from "./saved-timezones";
 
 const timezones = Intl.supportedValuesOf("timeZone");
 
-export function guessTimezone(input) {
+export function guessTimezone(input, { strict } = {}) {
   const inputLowerCase = input.toLowerCase();
 
   try {
@@ -48,9 +48,19 @@ export function guessTimezone(input) {
     }
   }
 
-  const guessTimezones = timezones.filter((v) =>
-    v.toLowerCase().includes(inputLowerCase)
-  );
+  const guessTimezones = strict
+    ? timezones.filter((v) => {
+        const tzLowerCase = v.toLowerCase();
+        if (tzLowerCase === inputLowerCase) {
+          return true;
+        }
+
+        const parts = tzLowerCase.split("/");
+        const last = parts[parts.length - 1];
+
+        return inputLowerCase === last;
+      })
+    : timezones.filter((v) => v.toLowerCase().includes(inputLowerCase));
 
   if (guessTimezones.length === 1) {
     return Temporal.TimeZone.from(guessTimezones[0]);
