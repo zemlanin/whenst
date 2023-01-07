@@ -35,7 +35,12 @@ if (
     !location.pathname.startsWith(getPathnameFromTimezone(remoteTZ) + "/"))
 ) {
   const canonicalPathname =
-    timeString && timeString !== "now"
+    remoteTZ === "unix" && timeString !== "now"
+      ? `/unix/${
+          Temporal.PlainDateTime.from(timeString).toZonedDateTime("UTC")
+            .epochSeconds
+        }`
+      : timeString && timeString !== "now"
       ? `${getPathnameFromTimezone(remoteTZ)}/${timeString}`
       : getPathnameFromTimezone(remoteTZ);
 
