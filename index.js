@@ -18,7 +18,10 @@ const rtfAuto = new Intl.RelativeTimeFormat("en", {
 });
 
 let localTZ = Temporal.Now.timeZone();
-let now = Temporal.Now.zonedDateTime(browserCalendar);
+let now = Temporal.Now.zonedDateTime(browserCalendar).with({
+  second: 0,
+  millisecond: 0,
+});
 let localDateTime = now;
 
 window.localDateTime = localDateTime;
@@ -76,7 +79,10 @@ if (remoteTZ === "unix") {
   }
 
   localTZ = remoteTZ;
-  now = Temporal.Now.zonedDateTime(browserCalendar, remoteTZ);
+  now = Temporal.Now.zonedDateTime(browserCalendar, remoteTZ).with({
+    second: 0,
+    millisecond: 0,
+  });
   localDateTime = now;
   window.localDateTime = localDateTime;
 
@@ -100,7 +106,10 @@ if (remoteTZ === "unix") {
 
   const remoteDateTime =
     timeString === "now"
-      ? Temporal.Now.zonedDateTime(browserCalendar, remoteTZ)
+      ? Temporal.Now.zonedDateTime(browserCalendar, remoteTZ).with({
+          second: 0,
+          millisecond: 0,
+        })
       : (remoteDate || today).toZonedDateTime({
           plainTime: timeString
             ? Temporal.PlainTime.from(timeString)
