@@ -7,8 +7,20 @@ const timezones = Intl.supportedValuesOf("timeZone");
 export function guessTimezone(input, { strict } = {}) {
   const inputLowerCase = input.toLowerCase();
 
+  // https://github.com/eggert/tz/blob/main/etcetera
+  if (inputLowerCase.startsWith("etc/")) {
+    return null;
+  }
+
   try {
-    return Temporal.TimeZone.from(input);
+    const directMatch = Temporal.TimeZone.from(input);
+
+    // https://github.com/eggert/tz/blob/main/etcetera
+    if (directMatch.id.startsWith("Etc/")) {
+      return null;
+    }
+
+    return directMatch;
   } catch (e) {
     //
   }
