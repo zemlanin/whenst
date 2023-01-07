@@ -236,9 +236,17 @@ initSavedTimezones(localDateTime, remoteTZ)
     console.error(e);
   })
   .then(() => {
-    document.getElementById("clock").hidden = false;
-    document.getElementById("saved-timezones").hidden = false;
+    showMainUI();
   });
+
+setTimeout(() => {
+  showMainUI();
+}, 500);
+
+function showMainUI() {
+  document.getElementById("clock").hidden = false;
+  document.getElementById("saved-timezones").hidden = false;
+}
 
 function extractDataFromURL() {
   const unixURLPattern = new URLPattern(
