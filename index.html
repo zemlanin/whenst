@@ -59,7 +59,7 @@
 
     <div class="spacer"></div>
 
-    <form id="clock" action="/" method="GET">
+    <form id="clock" action="/" method="GET" hidden>
       <div id="remote-label" hidden>
         <a href="#" id="remote-url">
           <b id="remote-time"></b> in <b id="remote-place"></b
@@ -83,11 +83,11 @@
 
     <div class="spacer"></div>
 
-    <div id="saved-timezones">
+    <div id="saved-timezones" hidden>
       <div id="local-as-saved" hidden>
         <a class="timezone-label"></a>
 
-        <input type="datetime-local" readonly />
+        <div data-tz="" readonly></div>
       </div>
       <div class="header">
         <b>Saved timezones</b><a href="/settings.html">Edit</a>

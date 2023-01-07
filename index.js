@@ -68,7 +68,7 @@ if (remoteTZ === "unix") {
     label.innerText = `Local (${getLocationFromTimezone(localTZ)})`;
     label.href = new URL(getPathnameFromTimezone(localTZ), location.href);
 
-    const dt = localAsSavedRow.querySelector('input[type="datetime-local"]');
+    const dt = localAsSavedRow.querySelector("div[data-tz]");
     dt.dataset.tz = localTZ.toString();
 
     localAsSavedRow.hidden = false;
@@ -231,7 +231,14 @@ document.getElementById("local-time").addEventListener("change", (event) => {
   history.replaceState(null, "", localURL);
 });
 
-initSavedTimezones(localDateTime, remoteTZ);
+initSavedTimezones(localDateTime, remoteTZ)
+  .catch((e) => {
+    console.error(e);
+  })
+  .then(() => {
+    document.getElementById("clock").hidden = false;
+    document.getElementById("saved-timezones").hidden = false;
+  });
 
 function extractDataFromURL() {
   const unixURLPattern = new URLPattern(

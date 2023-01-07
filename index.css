@@ -203,6 +203,10 @@ form#clock {
   flex-flow: column;
 }
 
+form#clock[hidden] {
+  display: none;
+}
+
 form#clock input[type="datetime-local"] {
   text-align: center;
   align-self: center;
@@ -245,9 +249,7 @@ form#clock input[type="datetime-local"] {
 }
 
 #saved-timezones #local-as-saved {
-  border-bottom: 1px solid lightgray;
-  margin-bottom: 1em;
-  padding-bottom: 1em;
+  margin-bottom: 1.5em;
 }
 
 #saved-timezones .header {
@@ -255,7 +257,7 @@ form#clock input[type="datetime-local"] {
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 #saved-timezones .timezone-row {
@@ -263,10 +265,18 @@ form#clock input[type="datetime-local"] {
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem;
+  background-color: rgba(128, 128, 128, 0);
+  transition: background-color ease-in-out 0.3s;
 }
 
-#saved-timezones .timezone-row input {
+#saved-timezones .timezone-row:hover {
+  background-color: rgba(128, 128, 128, 0.25);
+  transition: background-color ease-in-out 0s;
+}
+
+#saved-timezones .timezone-row div[data-tz] {
   text-align: center;
   margin-right: 0;
 }

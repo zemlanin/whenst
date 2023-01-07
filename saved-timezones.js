@@ -69,19 +69,21 @@ function suggestSaving(tz) {
 }
 
 export function updateSavedTimezoneDatetimes(datetime) {
-  const inputs = document
+  const timestamps = document
     .getElementById("saved-timezones")
-    .querySelectorAll('.timezone-row input[type="datetime-local"]');
+    .querySelectorAll(".timezone-row div[data-tz]");
 
-  for (const input of inputs) {
-    input.value = formatDT(datetime.withTimeZone(input.dataset.tz));
+  for (const el of timestamps) {
+    try {
+      el.textContent = datetime
+        .withTimeZone(Temporal.TimeZone.from(el.dataset.tz))
+        .toPlainDateTime()
+        .toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+    } catch (e) {
+      console.error(e);
+      el.textContent = "";
+    }
   }
-}
-
-function formatDT(dt) {
-  return dt
-    .toPlainDateTime()
-    .toString({ smallestUnit: "minute", calendarName: "never" });
 }
 
 export function getLocationFromTimezone(tz) {
@@ -150,11 +152,9 @@ function renderTimezoneRow(tz, labelText) {
     : getLocationFromTimezone(tz);
   row.appendChild(anchor);
 
-  const dt = document.createElement("input");
-  dt.type = "datetime-local";
-  dt.readOnly = true;
+  const dt = document.createElement("div");
   dt.dataset.tz = tz;
-  dt.value = new Date();
+  dt.textContent = "";
   row.appendChild(dt);
 
   return row;
