@@ -4,20 +4,26 @@ import { STRICT_RELATIVE_UTC_ID_REGEX } from "./saved-timezones";
 
 const timezones = Intl.supportedValuesOf("timeZone");
 
+// https://github.com/eggert/tz/blob/main/etcetera
+const TZ_ETC = "Etc/GMT";
+
 export function guessTimezone(input, { strict } = {}) {
   const inputLowerCase = input.toLowerCase();
-
-  // https://github.com/eggert/tz/blob/main/etcetera
-  if (inputLowerCase.startsWith("etc/")) {
-    return null;
-  }
 
   try {
     const directMatch = Temporal.TimeZone.from(input);
 
-    // https://github.com/eggert/tz/blob/main/etcetera
-    if (directMatch.id.startsWith("Etc/")) {
-      return null;
+    if (directMatch.id === TZ_ETC) {
+      return Temporal.TimeZone.from("UTC");
+    }
+
+    if (directMatch.id.startsWith(TZ_ETC)) {
+      const reverseOffset = directMatch.id.slice(TZ_ETC.length);
+      const offset = reverseOffset.startsWith("-")
+        ? `+${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`
+        : `-${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`;
+
+      return Temporal.TimeZone.from(offset);
     }
 
     return directMatch;
