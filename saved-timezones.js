@@ -73,12 +73,29 @@ export function updateSavedTimezoneDatetimes(datetime) {
     .getElementById("saved-timezones")
     .querySelectorAll(".timezone-row div[data-tz]");
 
+  const localDateString = datetime.toLocaleString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+
   for (const el of timestamps) {
     try {
-      el.textContent = datetime
+      const plainDateTime = datetime
         .withTimeZone(Temporal.TimeZone.from(el.dataset.tz))
-        .toPlainDateTime()
-        .toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+        .toPlainDateTime();
+
+      const dateString = plainDateTime.toLocaleString(undefined, {
+        day: "numeric",
+        month: "short",
+      });
+      const timeString = plainDateTime.toLocaleString(undefined, {
+        timeStyle: "short",
+      });
+
+      el.textContent =
+        localDateString === dateString
+          ? timeString
+          : `${dateString}, ${timeString}`;
     } catch (e) {
       console.error(e);
       el.textContent = "";
