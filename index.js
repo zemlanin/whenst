@@ -123,15 +123,14 @@ if (remoteTZ === "unix") {
         });
   localDateTime = remoteDateTime.withTimeZone(localTZ);
 
-  document.getElementById("remote-time").textContent = formatDT(remoteDateTime);
+  document.getElementById("remote-time").textContent =
+    formatDTDisplay(remoteDateTime);
   updateRelative(true);
   document.getElementById("remote-place").textContent =
     getLocationFromTimezone(remoteTZ);
 
   document.getElementById("remote-url").href = new URL(
-    `${getPathnameFromTimezone(remoteTZ)}/${
-      document.getElementById("remote-time").textContent
-    }`,
+    `${getPathnameFromTimezone(remoteTZ)}/${formatDTInput(remoteDateTime)}`,
     location.href
   );
   document.getElementById("remote-label").hidden = false;
@@ -222,7 +221,7 @@ function scheduleUpdateRelative() {
 
 scheduleUpdateRelative();
 
-document.getElementById("local-time").value = formatDT(localDateTime);
+document.getElementById("local-time").value = formatDTInput(localDateTime);
 
 document.getElementById("local-place").textContent =
   getLocationFromTimezone(localTZ);
@@ -239,7 +238,7 @@ document.getElementById("local-time").addEventListener("blur", (event) => {
   try {
     Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(localTZ);
   } catch (e) {
-    event.target.value = formatDT(
+    event.target.value = formatDTInput(
       Temporal.Now.zonedDateTime(browserCalendar, localTZ).with({
         second: 0,
         millisecond: 0,
@@ -345,19 +344,33 @@ function extractDataFromURL() {
 
 function getLocalURL() {
   return new URL(
-    `${getPathnameFromTimezone(localTZ)}/${formatDT(localDateTime)}`,
+    `${getPathnameFromTimezone(localTZ)}/${formatDTInput(localDateTime)}`,
     location.href
   );
 }
 
-function formatDT(dt) {
+function formatDTInput(dt) {
   return dt
     .toPlainDateTime()
     .toString({ smallestUnit: "minute", calendarName: "never" });
 }
 
+function formatDTDisplay(dt) {
+  return dt.toPlainDateTime().toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function formatDTTitle(dt) {
+  return dt.toPlainDateTime().toLocaleString(undefined, {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+}
+
 function updateTitle(dt, tz) {
-  const timeStr = formatDT(dt || localDateTime);
+  const timeStr = formatDTTitle(dt || localDateTime);
 
   const placeStr = getLocationFromTimezone(tz || localTZ);
 
