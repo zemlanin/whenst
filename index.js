@@ -67,7 +67,10 @@ if (remoteTZ === "unix") {
   );
   document.getElementById("remote-label").hidden = false;
 
-  document.title = `${epochSeconds} in Unix Time | when.st`;
+  document.title =
+    timeString === "now"
+      ? `Unix Time | when.st`
+      : `${epochSeconds} in Unix Time | when.st`;
 } else if (remoteTZ && timeString === "now") {
   if (localTZ.toString() !== remoteTZ.toString()) {
     const localAsSavedRow = document.getElementById("local-as-saved");
@@ -90,6 +93,8 @@ if (remoteTZ === "unix") {
   });
   localDateTime = now;
   window.localDateTime = localDateTime;
+
+  updateTitle(undefined, remoteTZ);
 
   updateRelative(true);
 } else if (remoteTZ && timeString) {
@@ -135,8 +140,9 @@ if (remoteTZ === "unix") {
   );
   document.getElementById("remote-label").hidden = false;
 
-  updateTitle(remoteDateTime, remoteTZ);
+  updateTitle(timeString === "now" ? undefined : remoteDateTime, remoteTZ);
 } else {
+  updateTitle();
   updateRelative();
 }
 
@@ -277,7 +283,7 @@ function onLocalTimeInputChange(event) {
     return;
   }
   updateSavedTimezoneDatetimes(localDateTime);
-  updateTitle();
+  updateTitle(localDateTime, localTZ);
   updateRelative();
 
   const localURL = getLocalURL();
@@ -370,9 +376,17 @@ function formatDTTitle(dt) {
 }
 
 function updateTitle(dt, tz) {
-  const timeStr = formatDTTitle(dt || localDateTime);
+  if (!dt && !tz) {
+    document.title = `when.st`;
+    return;
+  }
 
-  const placeStr = getLocationFromTimezone(tz || localTZ);
+  const placeStr = getLocationFromTimezone(tz);
+  if (!dt) {
+    document.title = `Time in ${placeStr} | when.st`;
+    return;
+  }
 
+  const timeStr = formatDTTitle(dt);
   document.title = `${timeStr} in ${placeStr} | when.st`;
 }
