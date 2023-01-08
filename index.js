@@ -231,18 +231,23 @@ document.getElementById("local-url").href = getLocalURL();
 
 document.getElementById("local-label").hidden = false;
 
-document.getElementById("local-time").addEventListener("change", (event) => {
-  document.getElementById("remote-label").hidden = true;
-  localDateTime = Temporal.PlainDateTime.from(
-    event.target.value
-  ).toZonedDateTime(localTZ);
-  updateSavedTimezoneDatetimes(localDateTime);
-  updateTitle();
-  updateRelative();
+document
+  .getElementById("local-time")
+  .addEventListener("change", onLocalTimeInputChange);
 
-  const localURL = getLocalURL();
-  document.getElementById("local-url").href = localURL;
-  history.replaceState(null, "", localURL);
+document.getElementById("local-time").addEventListener("blur", (event) => {
+  try {
+    Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(localTZ);
+  } catch (e) {
+    event.target.value = formatDT(
+      Temporal.Now.zonedDateTime(browserCalendar, localTZ).with({
+        second: 0,
+        millisecond: 0,
+      })
+    );
+
+    onLocalTimeInputChange(event);
+  }
 });
 
 initSavedTimezones(localDateTime, remoteTZ)
@@ -260,6 +265,25 @@ setTimeout(() => {
 function showMainUI() {
   document.getElementById("clock").hidden = false;
   document.getElementById("saved-timezones").hidden = false;
+}
+
+function onLocalTimeInputChange(event) {
+  document.getElementById("remote-label").hidden = true;
+  try {
+    localDateTime = Temporal.PlainDateTime.from(
+      event.target.value
+    ).toZonedDateTime(localTZ);
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+  updateSavedTimezoneDatetimes(localDateTime);
+  updateTitle();
+  updateRelative();
+
+  const localURL = getLocalURL();
+  document.getElementById("local-url").href = localURL;
+  history.replaceState(null, "", localURL);
 }
 
 function extractDataFromURL() {
