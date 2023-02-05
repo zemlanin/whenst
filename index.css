@@ -72,6 +72,8 @@ h3 {
 button {
   border-radius: 0;
   cursor: pointer;
+  margin: 0;
+  font-weight: 400;
 }
 
 button:disabled,
@@ -205,6 +207,9 @@ nav a.about {
 form#clock {
   display: flex;
   flex-flow: column;
+  min-height: 30vh;
+  padding: 1rem 0;
+  justify-content: center;
 }
 
 form#clock[hidden] {
@@ -225,7 +230,7 @@ form#clock input[type="datetime-local"] {
 
 #remote-label {
   align-self: center;
-  margin: 1rem 0;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -245,7 +250,7 @@ form#clock input[type="datetime-local"] {
 
 #local-label {
   align-self: center;
-  margin: 1rem 0;
+  margin-top: 1rem;
 }
 
 #local-url {
@@ -279,16 +284,11 @@ form#clock input[type="datetime-local"] {
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25rem;
+  padding: 0 0.25rem;
   margin: 0 -0.25rem 0.5rem;
   background-color: rgba(128, 128, 128, 0);
   transition: background-color ease-in-out 0.3s;
-}
-
-#saved-timezones .timezone-row:hover,
-#timezones-edit .timezone-row.sortable-ghost {
-  background-color: rgba(128, 128, 128, 0.25);
-  transition: background-color ease-in-out 0s;
+  min-height: 2.25em;
 }
 
 #saved-timezones .timezone-row div[data-tz] {
@@ -325,6 +325,11 @@ form#clock input[type="datetime-local"] {
 #timezones-edit ul {
   list-style: none;
   padding: 0;
+}
+
+#timezones-edit .timezone-row.sortable-ghost {
+  background-color: rgba(128, 128, 128, 0.25);
+  transition: background-color ease-in-out 0s;
 }
 
 #timezones-edit .timezone-row .dnd-handle {
