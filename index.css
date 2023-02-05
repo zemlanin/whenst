@@ -233,6 +233,10 @@ form#clock input[type="datetime-local"] {
   white-space: nowrap;
 }
 
+#remote-relative {
+  white-space: nowrap;
+}
+
 #local-relative {
   color: gray;
   align-self: center;
