@@ -336,7 +336,7 @@ form#clock input[type="datetime-local"] {
   width: 1rem;
   line-height: 0;
   cursor: grab;
-  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0;
 }
 
 #timezones-edit .timezone-row .dnd-handle svg {
