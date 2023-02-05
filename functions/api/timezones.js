@@ -14,6 +14,8 @@ export async function onRequest(context) {
       return addTimezone(context);
     case "DELETE":
       return deleteTimezone(context);
+    case "PATCH":
+      return reorderTimezone(context);
   }
 
   return new Response(null, { status: 400 });
@@ -94,6 +96,48 @@ async function deleteTimezone(context) {
   });
 }
 
+async function reorderTimezone(context) {
+  const sessionId = await extractSessionIdFromCookie(context);
+
+  if (!sessionId) {
+    return new Response(null, { status: 200 });
+  }
+
+  const { id, index } = (await validateBody(context.request)) || {};
+
+  if (!id) {
+    return new Response(null, { status: 401 });
+  }
+
+  const timezonesStr = await context.env.KV.get(`timezones:${sessionId}`);
+  const oldTimezones = JSON.parse(timezonesStr || "[]");
+
+  const oldIndex = oldTimezones.findIndex((v) => v.id === id);
+  if (oldIndex === -1 || oldIndex === index) {
+    return new Response(null, {
+      status: 200,
+    });
+  }
+
+  const movedTimezone = oldTimezones[oldIndex];
+
+  let timezonesWithoutMovedItem = oldTimezones.filter(
+    (v) => v.id !== movedTimezone.id
+  );
+
+  const timezones = [
+    ...timezonesWithoutMovedItem.slice(0, index),
+    movedTimezone,
+    ...timezonesWithoutMovedItem.slice(index),
+  ];
+
+  await context.env.KV.put(`timezones:${sessionId}`, JSON.stringify(timezones));
+
+  return new Response(null, {
+    status: 200,
+  });
+}
+
 const addBodyValidator = new Validator({
   properties: {
     id: {
@@ -126,6 +170,21 @@ const deleteBodyValidator = new Validator({
   required: ["id"],
 });
 
+const reorderBodyValidator = new Validator({
+  properties: {
+    id: {
+      type: "string",
+      minLength: 4,
+      maxLength: 80,
+    },
+    index: {
+      type: "integer",
+      minimum: 0,
+    },
+  },
+  required: ["id", "index"],
+});
+
 const alwaysInvalid = {
   validate() {
     return false;
@@ -150,6 +209,8 @@ async function validateBody(request) {
       ? addBodyValidator
       : request.method === "DELETE"
       ? deleteBodyValidator
+      : request.method === "PATCH"
+      ? reorderBodyValidator
       : alwaysInvalid
   ).validate(parsed);
 
@@ -168,6 +229,13 @@ async function validateBody(request) {
   if (request.method === "DELETE") {
     return {
       id: parsed.id,
+    };
+  }
+
+  if (request.method === "PATCH") {
+    return {
+      id: parsed.id,
+      index: parsed.index,
     };
   }
 

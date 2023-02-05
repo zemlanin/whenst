@@ -15,7 +15,7 @@ export async function addTimezone({ id, timezone, label }) {
   }
 
   const resp = await fetch("/api/timezones", {
-    method: "put",
+    method: "PUT",
     headers: {
       "content-type": "application/json",
     },
@@ -33,11 +33,25 @@ export async function addTimezone({ id, timezone, label }) {
 
 export async function deleteTimezone({ id }) {
   const resp = await fetch("/api/timezones", {
-    method: "delete",
+    method: "DELETE",
     headers: {
       "content-type": "application/json",
     },
     body: JSON.stringify({ id }),
+  });
+
+  if (resp.status >= 400) {
+    throw resp;
+  }
+}
+
+export async function reorderTimezone({ id, index }) {
+  const resp = await fetch("/api/timezones", {
+    method: "PATCH",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ id, index }),
   });
 
   if (resp.status >= 400) {

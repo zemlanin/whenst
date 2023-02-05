@@ -44,12 +44,14 @@
     "@cfworker/json-schema": "^1.12.5",
     "@fortawesome/fontawesome-free": "^6.2.1",
     "@js-temporal/polyfill": "^0.4.3",
+    "@parcel/transformer-inline-string": "^2.8.2",
     "cookie": "^0.5.0",
     "eslint": "^8.31.0",
     "parcel": "^2.8.2",
     "posthtml-inline-svg": "^0.2.0",
     "prettier": "^2.8.1",
+    "sortablejs": "^1.15.0",
     "urlpattern-polyfill": "^6.0.2",
-    "wrangler": "^2.6.2"
+    "wrangler": "^2.9.0"
   }
 }

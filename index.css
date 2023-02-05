@@ -286,7 +286,7 @@ form#clock input[type="datetime-local"] {
 }
 
 #saved-timezones .timezone-row:hover,
-#timezones-edit .timezone-row:hover {
+#timezones-edit .timezone-row.sortable-ghost {
   background-color: rgba(128, 128, 128, 0.25);
   transition: background-color ease-in-out 0s;
 }
@@ -325,6 +325,26 @@ form#clock input[type="datetime-local"] {
 #timezones-edit ul {
   list-style: none;
   padding: 0;
+}
+
+#timezones-edit .timezone-row .dnd-handle {
+  width: 1rem;
+  line-height: 0;
+  cursor: grab;
+  margin-right: 0.5rem;
+}
+
+#timezones-edit .timezone-row .dnd-handle svg {
+  fill: #888;
+}
+
+#timezones-edit .timezone-row.saving .dnd-handle svg {
+  fill: red;
+}
+
+#timezones-edit .timezone-row .timezone-label-wrapper {
+  flex-grow: 1;
+  margin: 0 0.5rem;
 }
 
 #add-timezone {
