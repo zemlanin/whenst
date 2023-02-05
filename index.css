@@ -94,8 +94,8 @@ button {
 
 .button.primary,
 button.primary {
-  background-color: royalblue;
-  border-color: royalblue;
+  background-color: #0969da;
+  border-color: #0969da;
   color: white;
 }
 
@@ -140,7 +140,24 @@ input {
   border: lightgray 1px solid;
   background-color: white;
   color: black;
-  border-radius: 4px;
+  border-radius: 0;
+  outline: none;
+  border-color: #0969da;
+  accent-color: #0969da;
+}
+
+input:focus {
+  outline: none;
+  border-color: #0969da;
+}
+
+input::-webkit-datetime-edit-minute-field:focus,
+input::-webkit-datetime-edit-hour-field:focus,
+input::-webkit-datetime-edit-day-field:focus,
+input::-webkit-datetime-edit-month-field:focus,
+input::-webkit-datetime-edit-year-field:focus {
+  background-color: #0969da;
+  border-radius: 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -163,6 +180,20 @@ input {
     background-color: black;
     color: white;
     border-color: darkgray;
+    accent-color: #539bf5;
+  }
+
+  input::-webkit-datetime-edit-minute-field:focus,
+  input::-webkit-datetime-edit-hour-field:focus,
+  input::-webkit-datetime-edit-day-field:focus,
+  input::-webkit-datetime-edit-month-field:focus,
+  input::-webkit-datetime-edit-year-field:focus {
+    background-color: #539bf5;
+    color: black;
+  }
+
+  input:focus {
+    border-color: #539bf5;
   }
 
   .button:disabled,
@@ -174,6 +205,13 @@ input {
     background-color: darkgray;
     border-color: darkgray;
     color: #555;
+  }
+
+  .button.primary,
+  button.primary {
+    background-color: #539bf5;
+    border-color: #539bf5;
+    color: black;
   }
 }
 
@@ -363,5 +401,6 @@ form#clock input[type="datetime-local"] {
   width: 100px;
   flex-grow: 1;
   flex-basis: 0;
-  margin-right: 0.25rem;
+  margin: 0 0.25rem 0 0;
+  padding: 0 0.25rem;
 }
