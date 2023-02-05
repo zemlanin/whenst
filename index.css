@@ -143,7 +143,10 @@ input {
   border-radius: 0;
   outline: none;
   border-color: #0969da;
-  accent-color: #0969da;
+  /*
+    iOS Safari applies `accent-color` to `input[type="datetime-local"]` _text_
+    accent-color: #0969da;
+  */
 }
 
 input:focus {
@@ -180,7 +183,10 @@ input::-webkit-datetime-edit-year-field:focus {
     background-color: black;
     color: white;
     border-color: darkgray;
-    accent-color: #539bf5;
+    /*
+      iOS Safari applies `accent-color` to `input[type="datetime-local"]` _text_
+      accent-color: #539bf5;
+    */
   }
 
   input::-webkit-datetime-edit-minute-field:focus,
