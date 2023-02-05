@@ -65,6 +65,7 @@ async function updateSavedTimezonesList() {
 
   for (const { id, timezone, label } of timezones) {
     const item = document.createElement("li");
+    item.className = "timezone-row";
 
     const anchor = document.createElement("a");
     anchor.className = "timezone-label";

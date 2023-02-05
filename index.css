@@ -273,7 +273,8 @@ form#clock input[type="datetime-local"] {
   margin-bottom: 1rem;
 }
 
-#saved-timezones .timezone-row {
+#saved-timezones .timezone-row,
+#timezones-edit .timezone-row {
   display: flex;
   flex-flow: row;
   justify-content: space-between;
@@ -284,7 +285,8 @@ form#clock input[type="datetime-local"] {
   transition: background-color ease-in-out 0.3s;
 }
 
-#saved-timezones .timezone-row:hover {
+#saved-timezones .timezone-row:hover,
+#timezones-edit .timezone-row:hover {
   background-color: rgba(128, 128, 128, 0.25);
   transition: background-color ease-in-out 0s;
 }
@@ -323,14 +325,6 @@ form#clock input[type="datetime-local"] {
 #timezones-edit ul {
   list-style: none;
   padding: 0;
-}
-
-#timezones-edit ul li {
-  display: flex;
-  flex-flow: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.25rem;
 }
 
 #add-timezone {
