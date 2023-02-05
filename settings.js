@@ -68,6 +68,10 @@ addTimezoneForm.addEventListener("input", (event) => {
   const input = event.target;
   const value = input.value;
 
+  if (input.name === "label") {
+    return;
+  }
+
   if (!value) {
     input.setCustomValidity("");
     return;
