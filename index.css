@@ -226,6 +226,11 @@ form#clock input[type="datetime-local"] {
 #remote-label {
   align-self: center;
   margin: 1rem 0;
+  text-align: center;
+}
+
+#remote-place {
+  white-space: nowrap;
 }
 
 #local-relative {
