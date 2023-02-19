@@ -73,7 +73,7 @@ export function updateSavedTimezoneDatetimes(datetime) {
     .getElementById("saved-timezones")
     .querySelectorAll(".timezone-row div[data-tz]");
 
-  const localDateString = datetime.toLocaleString(undefined, {
+  const localDateString = datetime.toPlainDateTime().toLocaleString(undefined, {
     day: "numeric",
     month: "short",
   });
