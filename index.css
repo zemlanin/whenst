@@ -142,7 +142,7 @@ input {
   color: black;
   border-radius: 0;
   outline: none;
-  border-color: #0969da;
+  border-color: lightgray;
   /*
     iOS Safari applies `accent-color` to `input[type="datetime-local"]` _text_
     accent-color: #0969da;
