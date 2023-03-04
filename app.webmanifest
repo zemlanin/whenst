@@ -3,8 +3,6 @@
   "short_name": "when.st",
   "start_url": "/",
   "display": "minimal-ui",
-  "theme_color": "#0969da",
-  "background_color": "#fff",
   "icons": [
     {
       "src": "/images/favicon-white.png",
