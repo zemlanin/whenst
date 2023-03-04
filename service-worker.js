@@ -31,14 +31,20 @@ async function activate() {
 }
 addEventListener("activate", (e) => e.waitUntil(activate()));
 
+let staleAPICache = false;
+
 self.addEventListener("fetch", (e) => {
-  const { origin } = new URL(e.request.url);
+  const { origin, pathname } = new URL(e.request.url);
 
   if (origin !== location.origin) {
     return;
   }
 
   if (e.request.method !== "GET") {
+    if (pathname.startsWith("/api/")) {
+      staleAPICache = true;
+    }
+
     return;
   }
 
@@ -52,24 +58,20 @@ self.addEventListener("fetch", (e) => {
         }
       }
 
-      let response;
-      try {
-        response = await fetch(e.request);
-      } catch (err) {
-        const r = await getResponseWithIndexFallback(e.request);
-
-        if (r) {
-          return r;
-        }
-
-        throw err;
+      if (pathname.startsWith("/api/") && staleAPICache) {
+        const response = fetchAndCache(e.request);
+        staleAPICache = false;
+        return response;
       }
 
-      if (response.ok) {
-        const cache = await caches.open(version);
-        cache.put(e.request, response.clone());
+      const cachedResponse = await getResponseWithIndexFallback(e.request);
+      if (cachedResponse) {
+        fetchAndCache(e.request);
+
+        return cachedResponse;
       }
-      return response;
+
+      return fetchAndCache(e.request);
     })()
   );
 });
@@ -89,4 +91,25 @@ async function getResponseWithIndexFallback(request) {
       return index;
     }
   }
+}
+
+async function fetchAndCache(request) {
+  let response;
+  try {
+    response = await fetch(request);
+  } catch (err) {
+    const r = await getResponseWithIndexFallback(request);
+
+    if (r) {
+      return r;
+    }
+
+    throw err;
+  }
+
+  if (response.ok) {
+    const cache = await caches.open(version);
+    cache.put(request, response.clone());
+  }
+  return response;
 }
