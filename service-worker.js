@@ -32,7 +32,7 @@ async function activate() {
 addEventListener("activate", (e) => e.waitUntil(activate()));
 
 self.addEventListener("fetch", (e) => {
-  const { origin, pathname } = new URL(e.request.url);
+  const { origin } = new URL(e.request.url);
 
   if (origin !== location.origin) {
     return;
@@ -45,17 +45,10 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     (async () => {
       if (!navigator.onLine) {
-        const r = await caches.match(e.request);
+        const r = await getResponseWithIndexFallback(e.request);
+
         if (r) {
           return r;
-        }
-      }
-
-      if (!pathname.includes(".") && !pathname.startsWith("/api/")) {
-        const index = await caches.match("/");
-
-        if (index) {
-          return index;
         }
       }
 
@@ -63,7 +56,8 @@ self.addEventListener("fetch", (e) => {
       try {
         response = await fetch(e.request);
       } catch (err) {
-        const r = await caches.match(e.request);
+        const r = await getResponseWithIndexFallback(e.request);
+
         if (r) {
           return r;
         }
@@ -79,3 +73,20 @@ self.addEventListener("fetch", (e) => {
     })()
   );
 });
+
+async function getResponseWithIndexFallback(request) {
+  const { pathname } = new URL(request.url);
+
+  const r = await caches.match(request);
+  if (r) {
+    return r;
+  }
+
+  if (!pathname.includes(".") && !pathname.startsWith("/api/")) {
+    const index = await caches.match("/");
+
+    if (index) {
+      return index;
+    }
+  }
+}
