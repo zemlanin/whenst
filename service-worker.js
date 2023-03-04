@@ -65,10 +65,17 @@ self.addEventListener("fetch", (e) => {
         return response;
       }
 
-      const r = (await caches.match(e.request)) || (await caches.match("/"));
-
+      const r = await caches.match(e.request);
       if (r) {
         return r;
+      }
+
+      if (!pathname.includes(".")) {
+        const index = await caches.match("/");
+
+        if (index) {
+          return index;
+        }
       }
 
       const response = await fetch(e.request.url);
