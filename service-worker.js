@@ -65,16 +65,10 @@ self.addEventListener("fetch", (e) => {
         return response;
       }
 
-      const r = await caches.match(
-        pathname.endsWith(".html") ? pathname.replace(/\.html$/, "") : e.request
-      );
+      const r = (await caches.match(e.request)) || (await caches.match("/"));
+
       if (r) {
         return r;
-      }
-
-      const index = await caches.match("/");
-      if (index) {
-        return index;
       }
 
       const response = await fetch(e.request.url);
