@@ -10,6 +10,14 @@ async function install() {
       .map((p) => p.replace(/\.html$/, "")),
   ]);
 
+  const keys = await cache.keys();
+  for (const request of keys) {
+    const response = await caches.match(request);
+    if (response && !response.ok) {
+      cache.delete(request);
+    }
+  }
+
   self.skipWaiting();
 }
 addEventListener("install", (e) => e.waitUntil(install()));
@@ -47,8 +55,10 @@ self.addEventListener("fetch", (e) => {
           throw err;
         }
 
-        const cache = await caches.open(version);
-        cache.put(e.request, response.clone());
+        if (response.ok) {
+          const cache = await caches.open(version);
+          cache.put(e.request, response.clone());
+        }
         return response;
       }
 
@@ -64,7 +74,12 @@ self.addEventListener("fetch", (e) => {
         return index;
       }
 
-      return fetch(e.request.url);
+      const response = await fetch(e.request.url);
+      if (response.ok) {
+        const cache = await caches.open(version);
+        cache.put(e.request, response.clone());
+      }
+      return response;
     })()
   );
 });
