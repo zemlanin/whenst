@@ -2,12 +2,12 @@ import { manifest, version } from "@parcel/service-worker";
 
 async function install() {
   const cache = await caches.open(version);
+
   await cache.addAll([
-    ...manifest,
-    "/",
+    ...manifest.filter((p) => !p.endsWith(".html")),
     ...manifest
       .filter((p) => p.endsWith(".html"))
-      .map((p) => p.replace(/\.html$/, "")),
+      .map((p) => p.replace(/\.html$/, "").replace(/^\/index$/, "/")),
   ]);
 
   const keys = await cache.keys();
