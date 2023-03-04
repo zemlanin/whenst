@@ -44,33 +44,14 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     (async () => {
-      if (pathname.startsWith("/api/")) {
-        let response;
-
-        try {
-          response = await fetch(e.request);
-        } catch (err) {
-          const r = await caches.match(e.request);
-          if (r) {
-            return r;
-          }
-
-          throw err;
+      if (!navigator.onLine) {
+        const r = await caches.match(e.request);
+        if (r) {
+          return r;
         }
-
-        if (response.ok) {
-          const cache = await caches.open(version);
-          cache.put(e.request, response.clone());
-        }
-        return response;
       }
 
-      const r = await caches.match(e.request);
-      if (r) {
-        return r;
-      }
-
-      if (!pathname.includes(".")) {
+      if (!pathname.includes(".") && !pathname.startsWith("/api/")) {
         const index = await caches.match("/");
 
         if (index) {
@@ -78,7 +59,18 @@ self.addEventListener("fetch", (e) => {
         }
       }
 
-      const response = await fetch(e.request.url);
+      let response;
+      try {
+        response = await fetch(e.request);
+      } catch (err) {
+        const r = await caches.match(e.request);
+        if (r) {
+          return r;
+        }
+
+        throw err;
+      }
+
       if (response.ok) {
         const cache = await caches.open(version);
         cache.put(e.request, response.clone());
