@@ -115,7 +115,6 @@ async function fetchAndCache(request) {
 }
 
 self.addEventListener("message", (event) => {
-  console.log(event.data);
   if (event.data.type === "GET_VERSION") {
     event.ports[0].postMessage(version);
   }
@@ -123,19 +122,15 @@ self.addEventListener("message", (event) => {
   if (event.data.type === "GET_COLOR") {
     (async () => {
       const cache = await caches.open(version);
-      let response = await cache.match("/_fake/color");
+      const response = await cache.match("/_fake/color");
       let text;
 
       if (response) {
         text = await response.text();
       } else {
         text = "#" + Math.random().toString(16).slice(2, 8);
-        response = new Response(text);
-        await cache.put("/_fake/color", response);
+        await cache.put("/_fake/color", new Response(text));
       }
-
-      console.log(event.ports);
-      console.log(text);
 
       event.ports?.[0].postMessage(text);
     })();
