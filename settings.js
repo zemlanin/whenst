@@ -84,6 +84,8 @@ addTimezoneForm.addEventListener("input", (event) => {
 
 updateSavedTimezonesList();
 
+loadDataForNerds();
+
 async function updateSavedTimezonesList() {
   const { timezones } = await loadSettings();
 
@@ -149,4 +151,49 @@ function deleteFormHandler(event) {
   deleteTimezone({ id: form.id.value }).then(() => {
     updateSavedTimezonesList();
   });
+}
+
+async function loadDataForNerds() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  const [color, version] = await Promise.all([
+    postSWMessage({ type: "GET_COLOR" }),
+    postSWMessage({ type: "GET_VERSION" }),
+  ]);
+
+  document.getElementById("sw-version").textContent = version;
+  document.getElementById("cached-color-square").style.backgroundColor = color;
+  document.getElementById("cached-color-text").textContent = color;
+}
+
+async function postSWMessage(data) {
+  const channel = new MessageChannel();
+  const response = new Promise((resolve, reject) => {
+    const cleanup = () => {
+      channel.port1.removeEventListener("message", handleMessage);
+      channel.port1.removeEventListener("messageerror", handleMessage);
+      channel.port1.close();
+    };
+
+    const handleMessage = (event) => {
+      resolve(event.data);
+      cleanup();
+    };
+
+    const handleError = (event) => {
+      reject(event.data);
+      cleanup();
+    };
+
+    channel.port1.addEventListener("message", handleMessage);
+    channel.port1.addEventListener("messageerror", handleError);
+    channel.port1.start();
+  });
+
+  const registration = await navigator.serviceWorker.ready;
+  registration.active.postMessage(data, [channel.port2]);
+
+  return response;
 }

@@ -78,12 +78,31 @@
       <ul id="timezones-list"></ul>
     </div>
 
+    <h2>Data for nerds</h2>
+    <ul style="margin-top: 0">
+      <li>Service Worker version: <b id="sw-version">...</b></li>
+      <li>
+        Cached color:
+        <div
+          id="cached-color-square"
+          style="
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            background-color: transparent;
+            border: 1px solid lightgray;
+          "
+        ></div>
+        <b id="cached-color-text">...</b>
+      </li>
+    </ul>
+
     <div class="spacer2"></div>
     <div id="credits">
       Made by <a href="https://anton.codes">Anton</a> /
       <a href="https://devua.club/@zemlanin" rel="me">@zemlanin</a>
     </div>
   </div>
-  <script src="/settings.js" type="module"></script>
   <script src="/register-sw.js" type="module"></script>
+  <script src="/settings.js" type="module"></script>
 </body>

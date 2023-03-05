@@ -113,3 +113,31 @@ async function fetchAndCache(request) {
   }
   return response;
 }
+
+self.addEventListener("message", (event) => {
+  console.log(event.data);
+  if (event.data.type === "GET_VERSION") {
+    event.ports[0].postMessage(version);
+  }
+
+  if (event.data.type === "GET_COLOR") {
+    (async () => {
+      const cache = await caches.open(version);
+      let response = await cache.match("/_fake/color");
+      let text;
+
+      if (response) {
+        text = await response.text();
+      } else {
+        text = "#" + Math.random().toString(16).slice(2, 8);
+        response = new Response(text);
+        await cache.put("/_fake/color", response);
+      }
+
+      console.log(event.ports);
+      console.log(text);
+
+      event.ports?.[0].postMessage(text);
+    })();
+  }
+});
