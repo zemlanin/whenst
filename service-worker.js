@@ -114,25 +114,14 @@ async function fetchAndCache(request) {
   return response;
 }
 
+const favoriteColor = "#" + Math.random().toString(16).slice(2, 8);
+
 self.addEventListener("message", (event) => {
   if (event.data.type === "GET_VERSION") {
     event.ports[0].postMessage(version);
   }
 
   if (event.data.type === "GET_COLOR") {
-    (async () => {
-      const cache = await caches.open(version);
-      const response = await cache.match("/_fake/color");
-      let text;
-
-      if (response) {
-        text = await response.text();
-      } else {
-        text = "#" + Math.random().toString(16).slice(2, 8);
-        await cache.put("/_fake/color", new Response(text));
-      }
-
-      event.ports?.[0].postMessage(text);
-    })();
+    event.ports?.[0].postMessage(favoriteColor);
   }
 });
