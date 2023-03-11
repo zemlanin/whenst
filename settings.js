@@ -84,8 +84,6 @@ addTimezoneForm.addEventListener("input", (event) => {
 
 updateSavedTimezonesList();
 
-loadDataForNerds();
-
 async function updateSavedTimezonesList() {
   const { timezones } = await loadSettings();
 
@@ -153,6 +151,7 @@ function deleteFormHandler(event) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 async function loadDataForNerds() {
   if (!("serviceWorker" in navigator)) {
     return;
