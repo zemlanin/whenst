@@ -94,7 +94,11 @@ document.getElementById("sign-out-button").addEventListener("click", () => {
 updateSavedTimezonesList();
 
 async function updateSavedTimezonesList() {
-  const { timezones } = await loadSettings();
+  const { timezones, signedIn } = await loadSettings();
+
+  if (signedIn) {
+    document.getElementById("sign-out-button").parentNode.hidden = false;
+  }
 
   const list = document.getElementById("timezones-list");
   for (const item of list.querySelectorAll("li")) {

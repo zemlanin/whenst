@@ -7,7 +7,7 @@ import {
   getSessionCookie,
 } from "../_common/session-id.js";
 
-const EMPTY_RESPONSE = { timezones: [] };
+const EMPTY_RESPONSE = { timezones: [], signedIn: false };
 
 export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
@@ -31,7 +31,13 @@ export async function onRequest(context) {
   );
 
   if (!timezones) {
-    return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });
+    return new Response(
+      JSON.stringify({
+        timezones: [],
+        signedIn: true,
+      }),
+      { headers }
+    );
   }
 
   headers.set(
@@ -43,7 +49,10 @@ export async function onRequest(context) {
       secure: !!context.env.CF_PAGES,
     })
   );
-  return new Response(JSON.stringify({ timezones: JSON.parse(timezones) }), {
-    headers,
-  });
+  return new Response(
+    JSON.stringify({ timezones: JSON.parse(timezones), signedIn: true }),
+    {
+      headers,
+    }
+  );
 }
