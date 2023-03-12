@@ -13,22 +13,6 @@
       ],
       "distDir": "./dist",
       "includeNodeModules": true
-    },
-    "functions": {
-      "context": "node",
-      "source": [
-        "functions/api/settings.js",
-        "functions/api/timezones.js",
-        "functions/api/session.js",
-        "functions/api/account.js",
-        "functions/api/sqrap/code.js",
-        "functions/api/sqrap/init.js",
-        "functions/api/sqrap/status.js"
-      ],
-      "distDir": "./dist/functions/api/",
-      "outputFormat": "esmodule",
-      "includeNodeModules": true,
-      "isLibrary": true
     }
   },
   "alias": {

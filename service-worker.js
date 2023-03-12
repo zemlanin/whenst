@@ -4,10 +4,7 @@ async function install() {
   const cache = await caches.open(version);
 
   await cache.addAll([
-    ...manifest
-      .filter((p) => !p.endsWith(".html"))
-      // filter out `functions/api/*` from cached URLs
-      .filter((p) => !p.endsWith(".js") || p.match(/\.[0-9a-f]{8}\.js$/)),
+    ...manifest.filter((p) => !p.endsWith(".html")),
     ...manifest
       .filter((p) => p.endsWith(".html"))
       .map((p) => p.replace(/\.html$/, "").replace(/^\/index$/, "/")),
