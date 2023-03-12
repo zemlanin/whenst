@@ -98,7 +98,7 @@ function LinkPage() {
                   });
 
                   sqrapStatus({ code: code.peek() }).then(
-                    async (done) => {
+                    async ({ done }) => {
                       if (done) {
                         // request new settings to invalidate SW cache
                         await loadSettings();
