@@ -72,6 +72,7 @@
     "posthtml-inline-svg": "^0.2.0",
     "preact": "^10.13.1",
     "prettier": "^2.8.1",
+    "randomstring": "^1.2.3",
     "sortablejs": "^1.15.0",
     "urlpattern-polyfill": "^6.0.2",
     "wrangler": "^2.9.0"

@@ -3,7 +3,11 @@ import { Temporal } from "@js-temporal/polyfill";
 export async function loadSettings() {
   await transferLocalTimezones();
 
-  const resp = await fetch("/api/settings");
+  const resp = await fetch("/api/settings", {
+    headers: {
+      accept: "application/json",
+    },
+  });
   const settings = await resp.json();
 
   return settings;
@@ -17,6 +21,7 @@ export async function addTimezone({ id, timezone, label }) {
   const resp = await fetch("/api/timezones", {
     method: "PUT",
     headers: {
+      accept: "application/json",
       "content-type": "application/json",
     },
     body: JSON.stringify({
@@ -35,6 +40,7 @@ export async function deleteTimezone({ id }) {
   const resp = await fetch("/api/timezones", {
     method: "DELETE",
     headers: {
+      accept: "application/json",
       "content-type": "application/json",
     },
     body: JSON.stringify({ id }),
@@ -49,6 +55,7 @@ export async function reorderTimezone({ id, index }) {
   const resp = await fetch("/api/timezones", {
     method: "PATCH",
     headers: {
+      accept: "application/json",
       "content-type": "application/json",
     },
     body: JSON.stringify({ id, index }),
@@ -93,4 +100,52 @@ export async function transferLocalTimezones() {
   } catch (e) {
     console.error(e);
   }
+}
+
+export async function sqrapInit() {
+  const resp = await fetch("/api/sqrap/init", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+    },
+  });
+  const { code } = await resp.json();
+
+  return { code };
+}
+
+export async function sqrapStatus({ code }) {
+  const resp = await fetch(
+    "/api/sqrap/status?" + new URLSearchParams({ code }),
+    {
+      headers: {
+        accept: "application/json",
+      },
+    }
+  );
+
+  if (200 <= resp.status && resp.status < 300) {
+    // { "done": boolean }
+    return await resp.json();
+  }
+
+  throw resp;
+}
+
+export async function sqrapCode({ code }) {
+  const resp = await fetch("/api/sqrap/code", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+
+  if (200 <= resp.status && resp.status < 300) {
+    // { "done": true }
+    return await resp.json();
+  }
+
+  throw resp;
 }

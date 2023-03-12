@@ -1,4 +1,6 @@
 import cookie from "cookie";
+
+import { getAccount } from "../_common/account.js";
 import {
   COOKIE_NAME,
   extractSessionIdFromCookie,
@@ -22,7 +24,11 @@ export async function onRequest(context) {
   }
 
   headers.set("cache-control", "private, no-cache");
-  const timezones = await context.env.KV.get(`timezones:${sessionId}`);
+  const account = await getAccount(context, sessionId);
+
+  const timezones = await context.env.KV.get(
+    `timezones:${account ? account.id : sessionId}`
+  );
 
   if (!timezones) {
     return new Response(JSON.stringify(EMPTY_RESPONSE), { headers });

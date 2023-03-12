@@ -1,6 +1,7 @@
 import cookie from "cookie";
 import { Validator } from "@cfworker/json-schema";
 
+import { getAccount } from "../_common/account.js";
 import {
   COOKIE_NAME,
   generateSessionId,
@@ -31,14 +32,17 @@ async function addTimezone(context) {
     return new Response(null, { status: 400 });
   }
 
-  const timezonesStr = await context.env.KV.get(`timezones:${sessionId}`);
+  const account = await getAccount(context, sessionId);
+  const timezonesStr = await context.env.KV.get(
+    `timezones:${account ? account.id : sessionId}`
+  );
   const timezones = JSON.parse(timezonesStr || "[]");
 
   let cookieValue;
 
   if (timezones.every((v) => v.id !== newTimezone.id)) {
     await context.env.KV.put(
-      `timezones:${sessionId || newSessionId}`,
+      `timezones:${(account ? account.id : sessionId) || newSessionId}`,
       JSON.stringify([newTimezone, ...timezones])
     );
 
@@ -77,18 +81,18 @@ async function deleteTimezone(context) {
     return new Response(null, { status: 400 });
   }
 
-  const timezonesStr = await context.env.KV.get(`timezones:${sessionId}`);
+  const account = await getAccount(context, sessionId);
+  const timezonesKey = `timezones:${account ? account.id : sessionId}`;
+
+  const timezonesStr = await context.env.KV.get(timezonesKey);
   const timezones = JSON.parse(timezonesStr || "[]").filter(
     (v) => v.id !== deletedTimezone.id
   );
 
   if (timezones.length) {
-    await context.env.KV.put(
-      `timezones:${sessionId}`,
-      JSON.stringify(timezones)
-    );
+    await context.env.KV.put(timezonesKey, JSON.stringify(timezones));
   } else {
-    await context.env.KV.delete(`timezones:${sessionId}`);
+    await context.env.KV.delete(timezonesKey);
   }
 
   return new Response(null, {
@@ -109,7 +113,10 @@ async function reorderTimezone(context) {
     return new Response(null, { status: 401 });
   }
 
-  const timezonesStr = await context.env.KV.get(`timezones:${sessionId}`);
+  const account = await getAccount(context, sessionId);
+  const timezonesKey = `timezones:${account ? account.id : sessionId}`;
+
+  const timezonesStr = await context.env.KV.get(timezonesKey);
   const oldTimezones = JSON.parse(timezonesStr || "[]");
 
   const oldIndex = oldTimezones.findIndex((v) => v.id === id);
@@ -131,7 +138,7 @@ async function reorderTimezone(context) {
     ...timezonesWithoutMovedItem.slice(index),
   ];
 
-  await context.env.KV.put(`timezones:${sessionId}`, JSON.stringify(timezones));
+  await context.env.KV.put(timezonesKey, JSON.stringify(timezones));
 
   return new Response(null, {
     status: 200,
