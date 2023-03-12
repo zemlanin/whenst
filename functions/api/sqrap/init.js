@@ -1,5 +1,4 @@
 import cookie from "cookie";
-import randomstring from "randomstring";
 
 import {
   COOKIE_NAME,
@@ -13,10 +12,7 @@ export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
   const newSessionId = sessionId ? null : generateSessionId();
 
-  const code = randomstring.generate({
-    length: 6,
-    charset: "ABCDEFGHJKLMNPRSTVWXYZ23456789",
-  });
+  const code = generateCode();
 
   await context.env.KV.put(
     `sqrap:${code}:sessionId`,
@@ -45,4 +41,13 @@ export async function onRequest(context) {
     status: 200,
     headers,
   });
+}
+
+function generateCode() {
+  // cloudflare workers don't like `randomstring`
+  const charset = "ABCDEFGHJKLMNPRSTVWXYZ23456789";
+
+  return [...crypto.getRandomValues(new Uint8Array(6))]
+    .map((b) => charset[Math.floor((b * charset.length) / 256)])
+    .join("");
 }
