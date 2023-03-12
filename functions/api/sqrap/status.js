@@ -42,16 +42,14 @@ export async function onRequest(context) {
     `sqrap:${code}:${sessionId}:account`
   );
   if (!newAccountRaw) {
-    return new Response(JSON.stringify({ done: false, error: "Not found" }), {
-      status: 404,
+    return new Response(JSON.stringify({ done: false, error: null }), {
+      status: 200,
       headers,
     });
   }
 
   const newAccount = JSON.parse(newAccountRaw);
   await associateSessionWithAccount(context, sessionId, newAccount);
-
-  console.log({ sessionId, account: newAccount });
 
   await context.env.KV.delete(`sqrap:${code}:sessionId`);
   await context.env.KV.delete(`sqrap:${code}:${sessionId}:account`);
