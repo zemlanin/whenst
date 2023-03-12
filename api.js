@@ -149,3 +149,19 @@ export async function sqrapCode({ code }) {
 
   throw resp;
 }
+
+export async function signOut() {
+  const resp = await fetch("/api/session", {
+    method: "DELETE",
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  if (200 <= resp.status && resp.status < 300) {
+    // { "done": true }
+    return await resp.json();
+  }
+
+  throw resp;
+}

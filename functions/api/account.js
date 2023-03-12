@@ -1,0 +1,2 @@
+// `GET /account`
+// `DELETE /account`

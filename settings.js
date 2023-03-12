@@ -7,6 +7,7 @@ import {
   addTimezone,
   deleteTimezone,
   reorderTimezone,
+  signOut,
 } from "./api";
 import {
   getLocationFromTimezone,
@@ -80,6 +81,14 @@ addTimezoneForm.addEventListener("input", (event) => {
   const timezone = guessTimezone(value);
 
   input.setCustomValidity(timezone ? "" : "Unknown timezone");
+});
+
+document.getElementById("sign-out-button").addEventListener("click", () => {
+  signOut().then(async () => {
+    // request new settings to invalidate SW cache
+    await loadSettings();
+    location.href = "/";
+  });
 });
 
 updateSavedTimezonesList();
