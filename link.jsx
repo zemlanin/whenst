@@ -170,7 +170,13 @@ function LinkPage() {
         }}
         disabled={checkingCode}
       >
-        <input name="code" required maxLength="6" placeholder="code" />{" "}
+        <input
+          name="code"
+          required
+          maxLength="6"
+          placeholder="code"
+          autoComplete="off"
+        />{" "}
         <button className="primary" type="submit" disabled={checkingCode}>
           Send
         </button>
