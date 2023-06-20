@@ -3,7 +3,7 @@
   <meta charset="utf-8" />
   <title>when.st</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="app.webmanifest" />
+  <link rel="manifest" href="/app.webmanifest" />
   <link rel="stylesheet" type="text/css" href="/index.css" />
   <link rel="shortcut icon" type="image/png" href="/images/favicon-white.png" />
   <link
@@ -58,48 +58,14 @@
       <a href="/about.html" class="about">About</a>
     </nav>
 
-    <div class="spacer"></div>
+    <main></main>
 
-    <form id="clock" action="/" method="GET" hidden>
-      <div id="remote-label" hidden>
-        <a href="#" id="remote-url">
-          <b id="remote-time"></b> in&nbsp;<b id="remote-place"></b></a
-        >&nbsp;<span id="remote-relative">is</span>
-      </div>
-      <input id="local-time" name="t" type="datetime-local" value="" required />
-      <div id="local-relative"></div>
-      <div id="local-label" hidden>
-        in <b id="local-place"></b>
-        <a href="/" id="local-url" title="permalink"
-          ><icon
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            src="./node_modules/@fortawesome/fontawesome-free/svgs/solid/arrow-up-right-from-square.svg"
-          ></icon
-        ></a>
-      </div>
-    </form>
-
-    <div class="spacer"></div>
-
-    <div id="saved-timezones" hidden>
-      <div id="local-as-saved" hidden>
-        <a class="timezone-label"></a>
-
-        <div data-tz="" readonly></div>
-      </div>
-      <div class="header">
-        <b>Other timezones</b><a href="/settings.html">Edit</a>
-      </div>
-    </div>
-
-    <div class="spacer"></div>
+    <div class="spacer2"></div>
     <div id="credits">
       Made by <a href="https://anton.codes">Anton</a> /
       <a href="https://devua.club/@zemlanin" rel="me">@zemlanin</a>
     </div>
   </div>
   <script src="/register-sw.js" type="module"></script>
-  <script src="/index.js" type="module"></script>
+  <script src="/index.jsx" type="module"></script>
 </body>

@@ -248,63 +248,55 @@ nav a.logo {
 nav a.about {
 }
 
-form#clock {
-  display: flex;
-  flex-flow: column;
-  min-height: 30vh;
-  padding: 1rem 0;
-  justify-content: center;
+.clock-row {
+  margin: 1em 0;
 }
 
-form#clock[hidden] {
+.clock-row:first-of-type {
+  margin-top: 0;
+}
+
+.clock-row form.clock {
+  display: flex;
+  flex-flow: column;
+  /* min-height: 30vh; */
+  padding: 1rem 0;
+  justify-content: center;
+  padding-top: 0;
+}
+
+.clock-row form.clock[hidden] {
   display: none;
 }
 
-form#clock input[type="datetime-local"] {
+.clock-row form.clock input[type="datetime-local"],
+.clock-row form.clock input.unix-input {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss03";
+}
+
+.clock-row form.clock input.unix-input {
+  width: 14ch;
+}
+
+.clock-row form.clock input[type="datetime-local"],
+.clock-row form.clock input.unix-input {
   text-align: center;
-  align-self: center;
+  align-self: flex-end;
   font-size: 1.3rem;
 }
 
 @media (min-width: 30rem) {
-  form#clock input[type="datetime-local"] {
+  .clock-row form.clock input[type="datetime-local"],
+  .clock-row form.clock input.unix-input {
     font-size: 2rem;
   }
 }
 
-#remote-label {
-  align-self: center;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-#remote-place {
-  white-space: nowrap;
-}
-
-#remote-relative {
-  white-space: nowrap;
-}
-
-#local-relative {
+.clock-row form.clock .relative {
   color: gray;
-  align-self: center;
+  align-self: flex-end;
   font-style: italic;
-}
-
-#local-label {
-  align-self: center;
-  margin-top: 1rem;
-}
-
-#local-url {
-  display: inline-block;
-  padding-bottom: 1px;
-  line-height: 0;
-}
-
-#local-url:hover {
-  border-bottom: #0969da 1px solid;
 }
 
 #saved-timezones {

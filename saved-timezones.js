@@ -1,107 +1,5 @@
-import { Temporal } from "@js-temporal/polyfill";
-import { loadSettings, addTimezone } from "./api";
-
 export const RELATIVE_UTC_ID_REGEX = /^[+-][0-1]?[0-9](:[0-5][0-9])?$/;
 export const STRICT_RELATIVE_UTC_ID_REGEX = /^[+-][0-1][0-9](:[0-5][0-9])?$/;
-
-export async function init(datetime, remoteTZ) {
-  const localTZ = Temporal.Now.timeZone();
-  const root = document.getElementById("saved-timezones");
-
-  const { timezones } = await loadSettings();
-
-  for (const { label, timezone } of timezones) {
-    if (timezone === localTZ) {
-      continue;
-    }
-
-    if (timezone === "unix") {
-      continue;
-    }
-
-    const row = renderTimezoneRow(timezone, label);
-
-    if (row) {
-      root.appendChild(row);
-    }
-  }
-
-  updateSavedTimezoneDatetimes(datetime);
-
-  if (
-    remoteTZ &&
-    remoteTZ !== "unix" &&
-    !timezones.some(
-      (entry) => entry.timezone.toString() === remoteTZ.toString()
-    )
-  ) {
-    suggestSaving(remoteTZ);
-  }
-}
-
-function suggestSaving(tz) {
-  if (tz === "unix") {
-    return;
-  }
-
-  const root = document.getElementById("saved-timezones");
-
-  const row = document.createElement("div");
-  row.role = "listitem";
-  row.className = "timezone-row";
-
-  const anchor = document.createElement("a");
-  anchor.className = "timezone-label";
-  anchor.href = new URL(getPathnameFromTimezone(tz), location.href);
-  anchor.innerText = getLocationFromTimezone(tz);
-  row.appendChild(anchor);
-
-  const saveButton = document.createElement("button");
-  saveButton.innerText = "Save";
-  saveButton.addEventListener("click", function () {
-    addTimezone({ timezone: tz }).then(() => {
-      location.reload();
-    });
-  });
-  row.appendChild(saveButton);
-
-  root.appendChild(row);
-}
-
-export function updateSavedTimezoneDatetimes(datetime) {
-  const timestamps = document
-    .getElementById("saved-timezones")
-    .querySelectorAll(".timezone-row div[data-tz]");
-
-  const localDateString = datetime.toPlainDateTime().toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-  });
-
-  for (const el of timestamps) {
-    try {
-      const plainDateTime = datetime
-        .withTimeZone(Temporal.TimeZone.from(el.dataset.tz))
-        .toPlainDateTime();
-
-      const dateString = plainDateTime.toLocaleString(undefined, {
-        day: "numeric",
-        month: "short",
-      });
-      const timeString = plainDateTime.toLocaleString(undefined, {
-        timeStyle: "short",
-      });
-
-      el.textContent =
-        localDateString === dateString
-          ? timeString
-          : `${dateString}, ${timeString}`;
-    } catch (e) {
-      console.error(e);
-      el.textContent = "";
-    }
-  }
-}
 
 export function getLocationFromTimezone(tz) {
   if (tz.toString() === "UTC") {
@@ -131,6 +29,10 @@ export function getLocationFromTimezone(tz) {
 }
 
 export function getPathnameFromTimezone(tz) {
+  if (tz.toString() === "unix") {
+    return "/unix";
+  }
+
   if (tz.toString() === "UTC") {
     return "/UTC";
   }
@@ -144,35 +46,4 @@ export function getPathnameFromTimezone(tz) {
   }
 
   return `/${tz}`;
-}
-
-function renderTimezoneRow(tz, labelText) {
-  if (tz === "unix") {
-    return;
-  }
-
-  try {
-    Temporal.TimeZone.from(tz);
-  } catch (e) {
-    return;
-  }
-
-  const row = document.createElement("div");
-  row.role = "listitem";
-  row.className = "timezone-row";
-
-  const anchor = document.createElement("a");
-  anchor.className = "timezone-label";
-  anchor.href = new URL(getPathnameFromTimezone(tz), location.href);
-  anchor.innerText = labelText
-    ? `${labelText} (${getLocationFromTimezone(tz)})`
-    : getLocationFromTimezone(tz);
-  row.appendChild(anchor);
-
-  const dt = document.createElement("div");
-  dt.dataset.tz = tz;
-  dt.textContent = "";
-  row.appendChild(dt);
-
-  return row;
 }
