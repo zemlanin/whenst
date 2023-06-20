@@ -152,6 +152,21 @@ function ClockRow({
     }
   };
 
+  const onBlur = (event) => {
+    try {
+      Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(timeZone);
+    } catch (e) {
+      event.target.value = formatDTInput(
+        Temporal.Now.zonedDateTime(browserCalendar, timeZone).with({
+          second: 0,
+          millisecond: 0,
+        })
+      );
+
+      onTimeChange(event);
+    }
+  };
+
   return (
     <div className="clock-row">
       {secondary ? (
@@ -173,6 +188,7 @@ function ClockRow({
           value={timeInTZ}
           required
           onChange={onTimeChange}
+          onBlur={onBlur}
         />
         {relative ? <div className="relative">{relative}</div> : null}
       </form>
@@ -184,7 +200,7 @@ function UnixRow({ rootDT, writeToLocation }) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
 
   const onTimeChange = (event) => {
-    if (!event.target.value) {
+    if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
       return;
     }
 
@@ -197,6 +213,14 @@ function UnixRow({ rootDT, writeToLocation }) {
     } catch (e) {
       console.error(e);
       return;
+    }
+  };
+
+  const onBlur = (event) => {
+    if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
+      event.target.value = Math.floor(+new Date() / 1000).toString();
+
+      onTimeChange(event);
     }
   };
 
@@ -215,6 +239,8 @@ function UnixRow({ rootDT, writeToLocation }) {
           required
           onChange={onTimeChange}
           onInput={onTimeChange}
+          onBlur={onBlur}
+          autoComplete="off"
         />
       </form>
     </div>
