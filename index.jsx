@@ -121,6 +121,7 @@ function ClockRow({
   const tzName = getLocationFromTimezone(timeZone);
   const tzURL = new URL(getPathnameFromTimezone(timeZone), location.href);
   const timeInTZ = useComputed(() => formatDTInput(dt.value));
+  const timestampURL = useComputed(() => `${tzURL}/${timeInTZ}`);
   const relative = useSignal(null);
   useSignalEffect(() => {
     if (!withRelative) {
@@ -172,8 +173,6 @@ function ClockRow({
     }
   };
 
-  const timestampURL = `${tzURL}/${timeInTZ}`;
-
   return (
     <div className="clock-row">
       {secondary ? (
@@ -209,12 +208,12 @@ function ClockRow({
 
 function ClockRowActions({ timestampURL, dt }) {
   const copyURL = navigator.clipboard
-    ? () => navigator.clipboard.writeText(timestampURL)
+    ? () => navigator.clipboard.writeText(timestampURL.peek())
     : null;
   const shareURL = navigator.share
     ? async () => {
         try {
-          await navigator.share({ url: timestampURL });
+          await navigator.share({ url: timestampURL.peek() });
         } catch (e) {
           //
         }
@@ -296,6 +295,9 @@ function ActionButton({ label, labelSuccess, labelFailure, action, primary }) {
 
 function UnixRow({ rootDT, writeToLocation }) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
+  const timestampURL = useComputed(() =>
+    new URL(`/unix/${timeInUnix}`, location.href).toString()
+  );
 
   const onTimeChange = (event) => {
     if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
@@ -341,6 +343,8 @@ function UnixRow({ rootDT, writeToLocation }) {
           autoComplete="off"
         />
       </form>
+
+      <ClockRowActions dt={rootDT} timestampURL={timestampURL} />
     </div>
   );
 }
