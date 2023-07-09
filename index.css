@@ -250,6 +250,8 @@ nav a.about {
 
 .clock-row {
   margin: 1em 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .clock-row:first-of-type {
@@ -284,6 +286,29 @@ nav a.about {
   text-align: center;
   align-self: flex-end;
   font-size: 1.3rem;
+}
+
+.clock-row .actions {
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+  align-items: center;
+  align-self: flex-end;
+  max-width: 100%;
+  padding: 0 0 1rem;
+}
+
+.clock-row .actions .scrolly {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  width: max-content;
+}
+
+.clock-row .actions .scrolly > a,
+.clock-row .actions .scrolly > button {
+  white-space: nowrap;
 }
 
 @media (min-width: 30rem) {

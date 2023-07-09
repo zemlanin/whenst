@@ -4,7 +4,12 @@ import FALink from "./icons/arrow-up-right-from-square.svg.jsx";
 
 import { render } from "preact";
 import { useEffect } from "preact/hooks";
-import { useSignal, useComputed, useSignalEffect } from "@preact/signals";
+import {
+  useSignal,
+  useComputed,
+  useSignalEffect,
+  batch,
+} from "@preact/signals";
 
 // TODO: `addTimezone`
 import { loadSettings } from "./api";
@@ -167,6 +172,8 @@ function ClockRow({
     }
   };
 
+  const timestampURL = `${tzURL}/${timeInTZ}`;
+
   return (
     <div className="clock-row">
       {secondary ? (
@@ -192,7 +199,98 @@ function ClockRow({
         />
         {relative ? <div className="relative">{relative}</div> : null}
       </form>
+
+      {secondary ? null : (
+        <ClockRowActions timestampURL={timestampURL} dt={dt} />
+      )}
     </div>
+  );
+}
+
+function ClockRowActions({ timestampURL, dt }) {
+  const copyURL = navigator.clipboard
+    ? () => navigator.clipboard.writeText(timestampURL)
+    : null;
+  const shareURL = navigator.share
+    ? async () => {
+        try {
+          await navigator.share({ url: timestampURL });
+        } catch (e) {
+          //
+        }
+      }
+    : null;
+  const copyDiscordTimestamp = navigator.clipboard
+    ? () => navigator.clipboard.writeText(`<t:${dt.peek().epochSeconds}:f>`)
+    : null;
+
+  return (
+    <div className="actions">
+      <div className="scrolly">
+        <a href={timestampURL}>URL</a>
+        <div></div>
+        <ActionButton
+          label="Copy"
+          labelSuccess="Copied"
+          labelFailure="Failed"
+          action={copyURL}
+          primary
+        />
+        {shareURL ? (
+          <ActionButton
+            label="Share"
+            labelSuccess="Share"
+            labelFailure="Share"
+            action={shareURL}
+          />
+        ) : null}
+        <div></div>
+        <ActionButton
+          label="Copy Discord Timestamp"
+          labelSuccess="Copied"
+          labelFailure="Failed"
+          action={copyDiscordTimestamp}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ActionButton({ label, labelSuccess, labelFailure, action, primary }) {
+  const labelSignal = useSignal(label);
+  const timeoutIdSignal = useSignal(undefined);
+
+  const onClick = action
+    ? async () => {
+        clearTimeout(timeoutIdSignal.peek());
+
+        try {
+          await action();
+          batch(() => {
+            labelSignal.value = labelSuccess;
+            timeoutIdSignal.value = setTimeout(() => {
+              labelSignal.value = label;
+            }, 1000);
+          });
+        } catch (e) {
+          batch(() => {
+            labelSignal.value = labelFailure;
+            timeoutIdSignal.value = setTimeout(() => {
+              labelSignal.value = label;
+            }, 1000);
+          });
+        }
+      }
+    : null;
+
+  return (
+    <button
+      disabled={!action}
+      onClick={onClick}
+      className={primary ? "primary" : null}
+    >
+      {labelSignal}
+    </button>
   );
 }
 
