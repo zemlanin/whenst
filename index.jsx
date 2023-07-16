@@ -61,7 +61,7 @@ function IndexPage() {
     history.replaceState(null, "", canonicalPathname);
     updateTitle(
       urlDT === "now" ? undefined : dt.peek(),
-      isUnix ? "unix" : pageTZ
+      isUnix ? "unix" : pageTZ,
     );
   }, []);
 
@@ -71,7 +71,7 @@ function IndexPage() {
       "",
       `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${
         isUnix ? dt.epochSeconds : formatDTInput(dt.withTimeZone(pageTZ))
-      }`
+      }`,
     );
 
     updateTitle(dt, isUnix ? "unix" : pageTZ);
@@ -149,7 +149,7 @@ function ClockRow({
   const onTimeChange = (event) => {
     try {
       const newRootDT = Temporal.PlainDateTime.from(
-        event.target.value
+        event.target.value,
       ).toZonedDateTime(timeZone);
       writeToLocation(newRootDT);
       rootDT.value = newRootDT;
@@ -167,7 +167,7 @@ function ClockRow({
         Temporal.Now.zonedDateTime(browserCalendar, timeZone).with({
           second: 0,
           millisecond: 0,
-        })
+        }),
       );
 
       onTimeChange(event);
@@ -288,7 +288,7 @@ function ActionButton({ label, labelSuccess, labelFailure, action, primary }) {
 function UnixRow({ rootDT, writeToLocation }) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
   const timestampURL = useComputed(() =>
-    new URL(`/unix/${timeInUnix}`, location.href).toString()
+    new URL(`/unix/${timeInUnix}`, location.href).toString(),
   );
 
   const onTimeChange = (event) => {
@@ -298,7 +298,7 @@ function UnixRow({ rootDT, writeToLocation }) {
 
     try {
       const newRootDT = Temporal.PlainDateTime.from(
-        new Date(+event.target.value * 1000).toISOString().replace(/Z$/, "")
+        new Date(+event.target.value * 1000).toISOString().replace(/Z$/, ""),
       ).toZonedDateTime("UTC");
       writeToLocation(newRootDT, true);
       rootDT.value = newRootDT;
@@ -351,7 +351,7 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
       .toLocaleString(undefined, {
         day: "numeric",
         month: "short",
-      })
+      }),
   );
 
   const localDateString = useComputed(() =>
@@ -361,7 +361,7 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
       .toLocaleString(undefined, {
         day: "numeric",
         month: "short",
-      })
+      }),
   );
 
   useEffect(() => {
@@ -373,7 +373,7 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
   const filteredTimezones = useComputed(() => {
     return timezones.value.filter(
       ({ timezone, label }) =>
-        (timezone !== localTZ.id && timezone !== pageTZ.id) || label
+        (timezone !== localTZ.id && timezone !== pageTZ.id) || label,
     );
   });
 
@@ -460,7 +460,7 @@ function extractDataFromURL() {
     {
       pathname: "/unix{/:seconds(\\d*)}?",
     },
-    { ignoreCase: true }
+    { ignoreCase: true },
   );
   const matchesUnix = unixURLPattern.test(location.href);
   if (matchesUnix) {

@@ -34,7 +34,7 @@ async function addTimezone(context) {
 
   const account = await getAccount(context, sessionId);
   const timezonesStr = await context.env.KV.get(
-    `timezones:${account ? account.id : sessionId}`
+    `timezones:${account ? account.id : sessionId}`,
   );
   const timezones = JSON.parse(timezonesStr || "[]");
 
@@ -43,7 +43,7 @@ async function addTimezone(context) {
   if (timezones.every((v) => v.id !== newTimezone.id)) {
     await context.env.KV.put(
       `timezones:${(account ? account.id : sessionId) || newSessionId}`,
-      JSON.stringify([newTimezone, ...timezones])
+      JSON.stringify([newTimezone, ...timezones]),
     );
 
     cookieValue = await getSessionCookie(context, sessionId || newSessionId);
@@ -58,7 +58,7 @@ async function addTimezone(context) {
         maxAge: 60 * 60 * 24 * 365,
         path: "/",
         secure: !!context.env.CF_PAGES,
-      })
+      }),
     );
   }
 
@@ -86,7 +86,7 @@ async function deleteTimezone(context) {
 
   const timezonesStr = await context.env.KV.get(timezonesKey);
   const timezones = JSON.parse(timezonesStr || "[]").filter(
-    (v) => v.id !== deletedTimezone.id
+    (v) => v.id !== deletedTimezone.id,
   );
 
   if (timezones.length) {
@@ -129,7 +129,7 @@ async function reorderTimezone(context) {
   const movedTimezone = oldTimezones[oldIndex];
 
   let timezonesWithoutMovedItem = oldTimezones.filter(
-    (v) => v.id !== movedTimezone.id
+    (v) => v.id !== movedTimezone.id,
   );
 
   const timezones = [

@@ -76,7 +76,7 @@ self.addEventListener("fetch", (e) => {
       }
 
       return fetchAndCache(e.request);
-    })()
+    })(),
   );
 });
 

@@ -11,17 +11,17 @@ function LinkPage() {
   const receiverStarting = useSignal(false);
   const startError = useSignal(null);
   const disableStart = useComputed(
-    () => receiverStarting.value || !!code.value
+    () => receiverStarting.value || !!code.value,
   );
   const startButtonText = useComputed(() => (code.value ? "✔" : "Start"));
 
   const checkingStatus = useSignal(false);
   const statusError = useSignal(null);
   const disableStatusCheck = useComputed(
-    () => !!checkingStatus.value || !!statusError.value || !code.value
+    () => !!checkingStatus.value || !!statusError.value || !code.value,
   );
   const checkButtonText = useComputed(() =>
-    statusError.value ? "⚠" : "Receive"
+    statusError.value ? "⚠" : "Receive",
   );
 
   const checkingCode = useSignal(false);
@@ -56,7 +56,7 @@ function LinkPage() {
                     startError.value = error;
                     receiverStarting.value = false;
                   });
-                }
+                },
               );
             }}
             className="primary"
@@ -113,7 +113,7 @@ function LinkPage() {
                         statusError.value = error;
                         checkingStatus.value = false;
                       });
-                    }
+                    },
                   );
                 }}
                 disabled={disableStatusCheck}
@@ -165,7 +165,7 @@ function LinkPage() {
                 codeError.value = error;
                 checkingCode.value = false;
               });
-            }
+            },
           );
         }}
         disabled={checkingCode}

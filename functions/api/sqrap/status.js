@@ -15,13 +15,13 @@ export async function onRequest(context) {
       {
         status: 400,
         headers,
-      }
+      },
     );
   }
 
   const code = new URL(context.request.url).searchParams.get("code");
   const sessionIdForCodeRaw = await context.env.KV.get(
-    `sqrap:${code}:sessionId`
+    `sqrap:${code}:sessionId`,
   );
   if (!sessionIdForCodeRaw) {
     return new Response(JSON.stringify({ done: false, error: "Not found" }), {
@@ -39,7 +39,7 @@ export async function onRequest(context) {
   }
 
   const newAccountRaw = await context.env.KV.get(
-    `sqrap:${code}:${sessionId}:account`
+    `sqrap:${code}:${sessionId}:account`,
   );
   if (!newAccountRaw) {
     return new Response(JSON.stringify({ done: false, error: null }), {

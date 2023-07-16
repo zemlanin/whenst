@@ -3,7 +3,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/iAWriterQuattroS-Regular.woff2") format("woff2"),
+  src:
+    url("/fonts/iAWriterQuattroS-Regular.woff2") format("woff2"),
     url("/fonts/iAWriterQuattroS-Regular.woff") format("woff");
 }
 
@@ -12,7 +13,8 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/iAWriterQuattroS-Italic.woff2") format("woff2"),
+  src:
+    url("/fonts/iAWriterQuattroS-Italic.woff2") format("woff2"),
     url("/fonts/iAWriterQuattroS-Italic.woff") format("woff");
 }
 
@@ -21,7 +23,8 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/iAWriterQuattroS-Bold.woff2") format("woff2"),
+  src:
+    url("/fonts/iAWriterQuattroS-Bold.woff2") format("woff2"),
     url("/fonts/iAWriterQuattroS-Bold.woff") format("woff");
 }
 
@@ -30,7 +33,8 @@
   font-style: italic;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/iAWriterQuattroS-BoldItalic.woff2") format("woff2"),
+  src:
+    url("/fonts/iAWriterQuattroS-BoldItalic.woff2") format("woff2"),
     url("/fonts/iAWriterQuattroS-BoldItalic.woff") format("woff");
 }
 

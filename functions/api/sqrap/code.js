@@ -33,7 +33,7 @@ export async function onRequest(context) {
   }
 
   const sessionIdForCodeRaw = await context.env.KV.get(
-    `sqrap:${code}:sessionId`
+    `sqrap:${code}:sessionId`,
   );
   if (!sessionIdForCodeRaw) {
     return new Response(JSON.stringify({ error: "Not found" }), {
@@ -48,7 +48,7 @@ export async function onRequest(context) {
     await associateSessionWithAccount(
       context,
       sessionId || newSessionId,
-      account
+      account,
     );
 
     if (sessionId) {
@@ -60,12 +60,12 @@ export async function onRequest(context) {
   await context.env.KV.put(
     `sqrap:${code}:${sessionIdForCode}:account`,
     JSON.stringify(account),
-    { expirationTtl: 60 * 5 }
+    { expirationTtl: 60 * 5 },
   );
 
   const cookieValue = await getSessionCookie(
     context,
-    sessionId || newSessionId
+    sessionId || newSessionId,
   );
   if (cookieValue) {
     headers.set(
@@ -75,7 +75,7 @@ export async function onRequest(context) {
         maxAge: 60 * 60 * 24 * 365,
         path: "/",
         secure: !!context.env.CF_PAGES,
-      })
+      }),
     );
   }
 

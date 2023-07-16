@@ -17,13 +17,13 @@ export async function onRequest(context) {
   await context.env.KV.put(
     `sqrap:${code}:sessionId`,
     JSON.stringify(sessionId || newSessionId),
-    { expirationTtl: 60 * 5 }
+    { expirationTtl: 60 * 5 },
   );
 
   const headers = new Headers();
   const cookieValue = await getSessionCookie(
     context,
-    sessionId || newSessionId
+    sessionId || newSessionId,
   );
   if (cookieValue) {
     headers.set(
@@ -33,7 +33,7 @@ export async function onRequest(context) {
         maxAge: 60 * 60 * 24 * 365,
         path: "/",
         secure: !!context.env.CF_PAGES,
-      })
+      }),
     );
   }
 

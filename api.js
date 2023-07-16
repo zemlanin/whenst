@@ -84,7 +84,7 @@ export async function transferLocalTimezones() {
         })
         .filter(
           ({ id, timezone }) =>
-            id && timezone && knownTimezones.includes(timezone)
+            id && timezone && knownTimezones.includes(timezone),
         );
     }
   } catch (e) {
@@ -121,7 +121,7 @@ export async function sqrapStatus({ code }) {
       headers: {
         accept: "application/json",
       },
-    }
+    },
   );
 
   if (200 <= resp.status && resp.status < 300) {

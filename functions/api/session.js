@@ -30,7 +30,7 @@ export async function onRequest(context) {
         maxAge: 0,
         path: "/",
         secure: !!context.env.CF_PAGES,
-      })
+      }),
     );
   }
 

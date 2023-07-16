@@ -4,7 +4,7 @@ export const COOKIE_NAME = "__session";
 
 export async function extractSessionIdFromCookie(context) {
   const parsedCookie = cookie.parse(
-    context.request.headers.get("Cookie") || ""
+    context.request.headers.get("Cookie") || "",
   );
 
   const str = parsedCookie[COOKIE_NAME];
@@ -34,7 +34,7 @@ export async function extractSessionIdFromCookie(context) {
       "HMAC",
       key,
       sigBuf,
-      new TextEncoder().encode(sessionId)
+      new TextEncoder().encode(sessionId),
     ))
   ) {
     return null;
@@ -52,11 +52,11 @@ export async function getSessionCookie(context, sessionId) {
   const signature = await crypto.subtle.sign(
     "HMAC",
     key,
-    new TextEncoder().encode(sessionId)
+    new TextEncoder().encode(sessionId),
   );
 
   return `${sessionId}.${btoa(
-    String.fromCharCode(...new Uint8Array(signature))
+    String.fromCharCode(...new Uint8Array(signature)),
   )}`;
 }
 
@@ -66,6 +66,6 @@ async function importKey(secret) {
     new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign", "verify"]
+    ["sign", "verify"],
   );
 }

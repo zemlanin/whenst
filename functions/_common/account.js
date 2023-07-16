@@ -33,14 +33,14 @@ export async function associateSessionWithAccount(context, sessionId, account) {
 
   await context.env.KV.put(
     `session:${sessionId}:account`,
-    JSON.stringify(account)
+    JSON.stringify(account),
   );
 }
 
 export async function moveDataFromSessionToAccount(
   context,
   sessionId,
-  accountId
+  accountId,
 ) {
   const timezones = await context.env.KV.get(`timezones:${sessionId}`);
 

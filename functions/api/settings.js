@@ -27,7 +27,7 @@ export async function onRequest(context) {
   const account = await getAccount(context, sessionId);
 
   const timezones = await context.env.KV.get(
-    `timezones:${account ? account.id : sessionId}`
+    `timezones:${account ? account.id : sessionId}`,
   );
 
   if (!timezones) {
@@ -36,7 +36,7 @@ export async function onRequest(context) {
         timezones: [],
         signedIn: true,
       }),
-      { headers }
+      { headers },
     );
   }
 
@@ -47,12 +47,12 @@ export async function onRequest(context) {
       maxAge: 60 * 60 * 24 * 365,
       path: "/",
       secure: !!context.env.CF_PAGES,
-    })
+    }),
   );
   return new Response(
     JSON.stringify({ timezones: JSON.parse(timezones), signedIn: true }),
     {
       headers,
-    }
+    },
   );
 }
