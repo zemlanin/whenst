@@ -1,6 +1,5 @@
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
-import FALink from "./icons/arrow-up-right-from-square.svg.jsx";
 
 import { render } from "preact";
 import { useEffect } from "preact/hooks";
@@ -175,16 +174,7 @@ function ClockRow({
 
   return (
     <div className="clock-row">
-      {secondary ? (
-        <h2>
-          {tzName}{" "}
-          <a href={tzURL}>
-            <FALink width="0.7em" height="0.7em" fill="currentColor" />
-          </a>
-        </h2>
-      ) : (
-        <h1>{tzName}</h1>
-      )}
+      {secondary ? <h2>{tzName}</h2> : <h1>{tzName}</h1>}
 
       <form className="clock" action="/" method="GET">
         <input
