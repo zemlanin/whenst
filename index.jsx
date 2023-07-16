@@ -32,7 +32,7 @@ render(<IndexPage />, document.querySelector("main"));
 
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
-  const localTZ = Temporal.Now.timeZone();
+  const localTZ = Temporal.TimeZone.from(Temporal.Now.timeZoneId());
   const isUnix = urlTZ === "unix";
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
