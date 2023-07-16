@@ -50,6 +50,10 @@ optgroup {
   font-size: 16px;
 }
 
+body {
+  margin: 0.5rem;
+}
+
 div,
 span,
 input,
@@ -224,7 +228,6 @@ input::-webkit-datetime-edit-year-field:focus {
 #layout {
   width: 30rem;
   margin: 0rem auto;
-  padding: 0 0.25rem;
   box-sizing: border-box;
   max-width: 100%;
   display: flex;
@@ -232,7 +235,7 @@ input::-webkit-datetime-edit-year-field:focus {
 }
 
 nav {
-  padding: 0.5rem 0;
+  padding-bottom: 0.5rem;
   display: flex;
   flex-flow: row wrap;
   align-items: center;
@@ -343,8 +346,7 @@ nav a.about {
   flex-flow: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0.25rem;
-  margin: 0 -0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
   background-color: rgba(128, 128, 128, 0);
   transition: background-color ease-in-out 0.3s;
   min-height: 2.25em;
