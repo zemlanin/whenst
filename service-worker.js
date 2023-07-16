@@ -45,6 +45,13 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
+  if (
+    navigator.onLine &&
+    (pathname.endsWith(".woff") || pathname.endsWith(".woff2"))
+  ) {
+    return;
+  }
+
   e.respondWith(
     (async () => {
       if (!navigator.onLine) {
