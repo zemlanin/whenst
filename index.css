@@ -229,8 +229,6 @@ input::-webkit-datetime-edit-year-field:focus {
   max-width: 100%;
   display: flex;
   flex-flow: column;
-  min-height: calc(100vh - 1rem);
-  min-height: calc(100dvh - 1rem);
 }
 
 nav {
@@ -366,16 +364,6 @@ nav a.about {
 
 .spacer {
   flex-grow: 1;
-}
-
-.spacer2 {
-  flex-grow: 2;
-}
-
-#credits {
-  align-self: center;
-  margin-top: 2rem;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 #the-tweet img {
