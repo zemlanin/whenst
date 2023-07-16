@@ -108,6 +108,8 @@ function IndexPage() {
   );
 }
 
+const NBSP = "\xa0";
+
 function ClockRow({
   rootDT,
   timeZone,
@@ -121,7 +123,7 @@ function ClockRow({
   const tzURL = new URL(getPathnameFromTimezone(timeZone), location.href);
   const timeInTZ = useComputed(() => formatDTInput(dt.value));
   const timestampURL = useComputed(() => `${tzURL}/${timeInTZ}`);
-  const relative = useSignal(null);
+  const relative = useSignal(NBSP);
   useSignalEffect(() => {
     if (!withRelative) {
       return;
@@ -186,7 +188,7 @@ function ClockRow({
           onChange={onTimeChange}
           onBlur={onBlur}
         />
-        {relative ? <div className="relative">{relative}</div> : null}
+        {withRelative ? <div className="relative">{relative}</div> : null}
       </form>
 
       {secondary ? null : (
