@@ -24,7 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build",
-    "start": "wrangler pages dev dist --kv KV --persist",
+    "start": "wrangler pages dev dist --kv KV",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
     "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./functions/**/*.js\"",
@@ -57,6 +57,6 @@
     "prettier": "^3.0.0",
     "sortablejs": "^1.15.0",
     "urlpattern-polyfill": "^9.0.0",
-    "wrangler": "^2.20.0"
+    "wrangler": "^3.2.0"
   }
 }
