@@ -448,27 +448,28 @@ function UnixRow({ rootDT, writeToLocation }) {
   );
 }
 
+const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
+  day: "numeric",
+  month: "short",
+});
+
+const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "short",
+});
+
 function SavedTimezones({ rootDT, pageTZ, localTZ }) {
   const timezones = useSignal([]);
 
   const pageDateString = useComputed(() =>
-    rootDT.value
-      .withTimeZone(pageTZ)
-      .toPlainDateTime()
-      .toLocaleString(undefined, {
-        day: "numeric",
-        month: "short",
-      }),
+    shortDateFormatter.format(
+      rootDT.value.withTimeZone(pageTZ).toPlainDateTime(),
+    ),
   );
 
   const localDateString = useComputed(() =>
-    rootDT.value
-      .withTimeZone(localTZ)
-      .toPlainDateTime()
-      .toLocaleString(undefined, {
-        day: "numeric",
-        month: "short",
-      }),
+    shortDateFormatter.format(
+      rootDT.value.withTimeZone(pageTZ).toPlainDateTime(),
+    ),
   );
 
   useEffect(() => {
@@ -495,13 +496,8 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
           .withTimeZone(Temporal.TimeZone.from(timezone))
           .toPlainDateTime();
 
-        const dateString = plainDateTime.toLocaleString(undefined, {
-          day: "numeric",
-          month: "short",
-        });
-        const timeString = plainDateTime.toLocaleString(undefined, {
-          timeStyle: "short",
-        });
+        const dateString = shortDateFormatter.format(plainDateTime);
+        const timeString = shortTimeFormatter.format(plainDateTime);
 
         return (
           <div
@@ -618,6 +614,8 @@ function extractDataFromURL() {
   return [];
 }
 
+const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "long" });
+
 function getRelativeTime(dt) {
   const localDateTime = dt;
   const now = Temporal.Now.zonedDateTime(browserCalendar, dt.timeZone);
@@ -671,9 +669,9 @@ function getRelativeTime(dt) {
   }
 
   if (Math.abs(totalDays) < 7) {
-    return `${
-      totalDays < 0 ? "past" : "upcoming"
-    } ${localDateTime.toLocaleString("en", { weekday: "long" })}`;
+    return `${totalDays < 0 ? "past" : "upcoming"} ${weekdayFormatter.format(
+      localDateTime.toPlainDate(),
+    )}`;
   }
 
   if (Math.abs(totalMonths) < 1) {
@@ -700,11 +698,13 @@ function formatDTInput(dt) {
 //   });
 // }
 
+const titleFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "long",
+  timeStyle: "short",
+});
+
 function formatDTTitle(dt) {
-  return dt.toPlainDateTime().toLocaleString(undefined, {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  return titleFormatter.format(dt.toPlainDateTime());
 }
 
 function updateTitle(dt, tz) {
