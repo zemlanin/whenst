@@ -82,6 +82,7 @@ button {
   cursor: pointer;
   margin: 0;
   font-weight: 400;
+  touch-action: manipulation;
 }
 
 button:disabled,

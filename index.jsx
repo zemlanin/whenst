@@ -252,7 +252,7 @@ function ToggleDiscordFormats({ showDiscordFormats }) {
 
   return (
     <button
-      onClick={() => (showDiscordFormats.value = !showDiscordFormats.peek())}
+      onClick={() => { showDiscordFormats.value = !showDiscordFormats.peek() }}
       aria-expanded={expanded}
       aria-controls={DISCORD_FORMATS_ID}
     >
