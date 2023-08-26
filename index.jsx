@@ -263,12 +263,12 @@ function ToggleDiscordFormats({ showDiscordFormats }) {
 
 function DiscordActions({ dt, showDiscordFormats }) {
   const timestampStyles = [
-    ["t", "Short Time"],
-    ["T", "Long Time"],
-    ["d", "Short Date"],
-    ["D", "Long Date"],
-    ["f", "Short Date/Time"],
     ["F", "Long Date/Time"],
+    ["f", "Short Date/Time"],
+    // ["T", "Long Time"],
+    ["D", "Long Date"],
+    ["d", "Short Date"],
+    ["t", "Short Time"],
     // ['R', 'Relative'],
   ];
 
@@ -342,8 +342,8 @@ function DiscordFormat({ dt, style, name }) {
   }
 
   return (
-    <div key={style} className="discord-format">
-      <div className="discord-format_top">
+    <div key={style} className="discord-format" style={style === 'F' ? {flexBasis: '100%', flexShrink: 1} : null}>
+      <div className="discord-format_row">
         <span className="discord-format_label">{label}</span>
         {navigator.clipboard ? (
           <ActionButton
@@ -352,10 +352,13 @@ function DiscordFormat({ dt, style, name }) {
             labelFailure="Failed"
             action={() => navigator.clipboard.writeText(code.peek())}
             aria-label={`Copy code for ${name}`}
+            primary
           />
         ) : null}
       </div>
-      <span className="discord-format_code">{code}</span>
+      <div className="discord-format_row">
+        <span className="discord-format_code">{code}</span>
+      </div>
     </div>
   );
 }

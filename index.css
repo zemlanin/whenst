@@ -330,9 +330,17 @@ nav a.about {
   align-items: flex-start;
   flex: 1 1 160px;
   margin: 0.5rem;
+  background-color: #f0f0f0;
+  padding: 0.25rem;
 }
 
-.discord-format .discord-format_top {
+@media (prefers-color-scheme: dark) {
+  .discord-format {
+    background-color: #1a1a1a;
+  }
+}
+
+.discord-format .discord-format_row {
   display: flex;
   flex-flow: row;
   align-items: center;
@@ -355,6 +363,7 @@ nav a.about {
   color: gray;
   font-style: italic;
   flex: 0 0 100%;
+  align-self: flex-end;
 }
 
 @media (min-width: 30rem) {
