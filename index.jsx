@@ -223,6 +223,7 @@ function ClockRowActions({ timestampURL, dt }) {
             labelSuccess="Copied"
             labelFailure="Failed"
             action={copyURL}
+            aria-label="Copy Link"
             primary
           />
           {shareURL ? (
@@ -231,6 +232,7 @@ function ClockRowActions({ timestampURL, dt }) {
               labelSuccess="Share"
               labelFailure="Share"
               action={shareURL}
+              aria-label="Share Link"
             />
           ) : null}
           <div></div>
@@ -242,12 +244,19 @@ function ClockRowActions({ timestampURL, dt }) {
   );
 }
 
+const DISCORD_FORMATS_ID = 'discord-formats'
+
 function ToggleDiscordFormats({ showDiscordFormats }) {
+  const arrow = useComputed(() => showDiscordFormats.value ? "▲" : "▼")
+  const expanded = useComputed(() => showDiscordFormats.value.toString())
+
   return (
     <button
       onClick={() => (showDiscordFormats.value = !showDiscordFormats.peek())}
+      aria-expanded={expanded}
+      aria-controls={DISCORD_FORMATS_ID}
     >
-      {showDiscordFormats.value ? "▼" : "▶"} Discord codes
+      Discord codes {arrow}
     </button>
   );
 }
@@ -263,15 +272,11 @@ function DiscordActions({ dt, showDiscordFormats }) {
     // ['R', 'Relative'],
   ];
 
-  if (!showDiscordFormats.value) {
-    return null;
-  }
-
   return (
-    <div className="discord-other-formats">
-      {timestampStyles.map(([style, name]) => {
+    <div id={DISCORD_FORMATS_ID} className="discord-other-formats">
+      {showDiscordFormats.value ? timestampStyles.map(([style, name]) => {
         return <DiscordFormat key={style} dt={dt} style={style} name={name} />;
-      })}
+      }) : null}
     </div>
   );
 }
@@ -310,7 +315,7 @@ const discordFormatter_F = new Intl.DateTimeFormat(undefined, {
   minute: "2-digit",
 });
 
-function DiscordFormat({ dt, style }) {
+function DiscordFormat({ dt, style, name }) {
   const code = useComputed(() => `<t:${dt.value.epochSeconds}:${style}>`);
 
   const label = useComputed(() => {
@@ -346,6 +351,7 @@ function DiscordFormat({ dt, style }) {
             labelSuccess="Copied"
             labelFailure="Failed"
             action={() => navigator.clipboard.writeText(code.peek())}
+            aria-label={`Copy code for ${name}`}
           />
         ) : null}
       </div>
@@ -354,7 +360,7 @@ function DiscordFormat({ dt, style }) {
   );
 }
 
-function ActionButton({ label, labelSuccess, labelFailure, action, primary }) {
+function ActionButton({ label, labelSuccess, labelFailure, action, primary, 'aria-label': ariaLabel }) {
   const labelSignal = useSignal(label);
   const timeoutIdSignal = useSignal(undefined);
 
@@ -386,6 +392,7 @@ function ActionButton({ label, labelSuccess, labelFailure, action, primary }) {
       disabled={!action}
       onClick={onClick}
       className={primary ? "primary" : null}
+      aria-label={ariaLabel}
     >
       {labelSignal}
     </button>
