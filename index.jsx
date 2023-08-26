@@ -233,12 +233,8 @@ function ClockRowActions({ timestampURL, dt }) {
               action={shareURL}
             />
           ) : null}
-          {navigator.clipboard ? null : (
-            <>
-              <div></div>
-              <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
-            </>
-          )}
+          <div></div>
+          <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
         </div>
       </div>
       <DiscordActions showDiscordFormats={showDiscordFormats} dt={dt} />
@@ -267,36 +263,16 @@ function DiscordActions({ dt, showDiscordFormats }) {
     // ['R', 'Relative'],
   ];
 
-  return (
-    <>
-      {navigator.clipboard ? (
-        <div className="actions">
-          <div className="scrolly">
-            <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
-            <div></div>
-            <ActionButton
-              label="Copy Relative"
-              labelSuccess="Copied"
-              labelFailure="Failed"
-              action={() =>
-                navigator.clipboard.writeText(`<t:${dt.peek().epochSeconds}:R>`)
-              }
-              primary
-            />
-          </div>
-        </div>
-      ) : null}
+  if (!showDiscordFormats.value) {
+    return null;
+  }
 
-      {showDiscordFormats.value ? (
-        <div className="discord-other-formats">
-          {timestampStyles.map(([style, name]) => {
-            return (
-              <DiscordFormat key={style} dt={dt} style={style} name={name} />
-            );
-          })}
-        </div>
-      ) : null}
-    </>
+  return (
+    <div className="discord-other-formats">
+      {timestampStyles.map(([style, name]) => {
+        return <DiscordFormat key={style} dt={dt} style={style} name={name} />;
+      })}
+    </div>
   );
 }
 
