@@ -67,7 +67,7 @@ export async function reorderTimezone({ id, index }) {
 }
 
 export async function transferLocalTimezones() {
-  const knownTimezones = Intl.supportedValuesOf("timeZone");
+  const knownTimezones = window.Intl.supportedValuesOf("timeZone");
   let timezones = [];
 
   try {

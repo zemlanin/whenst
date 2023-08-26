@@ -34,7 +34,7 @@ const sortable = Sortable.create(document.getElementById("timezones-list"), {
   },
 });
 
-const timezones = Intl.supportedValuesOf("timeZone");
+const timezones = window.Intl.supportedValuesOf("timeZone");
 
 const datalist = document.getElementById("timezones-datalist");
 

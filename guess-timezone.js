@@ -2,7 +2,7 @@ import { Temporal } from "@js-temporal/polyfill";
 
 import { STRICT_RELATIVE_UTC_ID_REGEX } from "./saved-timezones";
 
-const timezones = Intl.supportedValuesOf("timeZone");
+const timezones = window.Intl.supportedValuesOf("timeZone");
 
 // https://github.com/eggert/tz/blob/main/etcetera
 const TZ_ETC = "Etc/GMT";

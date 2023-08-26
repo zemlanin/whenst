@@ -1,5 +1,5 @@
 import "urlpattern-polyfill";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal, Intl } from "@js-temporal/polyfill";
 
 import { render } from "preact";
 import { useEffect } from "preact/hooks";
@@ -18,15 +18,16 @@ import {
   getPathnameFromTimezone,
 } from "./saved-timezones";
 
+window.Temporal = Temporal;
+
 const browserCalendar = "iso8601";
-const rtfAlways = new Intl.RelativeTimeFormat("en", {
+const rtfAlways = new window.Intl.RelativeTimeFormat("en", {
   numeric: "always",
 });
-const rtfAuto = new Intl.RelativeTimeFormat("en", {
+const rtfAuto = new window.Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 
-window.Temporal = Temporal;
 
 render(<IndexPage />, document.querySelector("main"));
 
