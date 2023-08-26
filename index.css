@@ -316,6 +316,45 @@ nav a.about {
   white-space: nowrap;
 }
 
+.discord-other-formats {
+  display: flex;
+  flex-flow: row wrap;
+  margin: -0.5rem;
+}
+
+.discord-format {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  flex: 1 1 160px;
+  margin: 0.5rem;
+}
+
+.discord-format .discord-format_top {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  flex: 1 1 0;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.discord-format .discord-format_label {
+  flex: 1 1 0;
+}
+
+.discord-format button {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: 0.5rem;
+}
+
+.discord-format .discord-format_code {
+  color: gray;
+  font-style: italic;
+  flex: 0 0 100%;
+}
+
 @media (min-width: 30rem) {
   .clock-row form.clock input[type="datetime-local"],
   .clock-row form.clock input.unix-input {

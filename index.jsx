@@ -28,9 +28,6 @@ const rtfAuto = new window.Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 
-
-render(<IndexPage />, document.querySelector("main"));
-
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
   const localTZ = Temporal.TimeZone.from(Temporal.Now.timeZoneId());
@@ -200,6 +197,8 @@ function ClockRow({
 }
 
 function ClockRowActions({ timestampURL, dt }) {
+  const showDiscordFormats = useSignal(false);
+
   const copyURL = navigator.clipboard
     ? () => navigator.clipboard.writeText(timestampURL.peek())
     : null;
@@ -212,38 +211,169 @@ function ClockRowActions({ timestampURL, dt }) {
         }
       }
     : null;
-  const copyDiscordTimestamp = navigator.clipboard
-    ? () => navigator.clipboard.writeText(`<t:${dt.peek().epochSeconds}:f>`)
-    : null;
 
   return (
-    <div className="actions">
-      <div className="scrolly">
-        <a href={timestampURL}>URL</a>
-        <div></div>
-        <ActionButton
-          label="Copy"
-          labelSuccess="Copied"
-          labelFailure="Failed"
-          action={copyURL}
-          primary
-        />
-        {shareURL ? (
+    <>
+      <div className="actions">
+        <div className="scrolly">
+          <a href={timestampURL}>Link</a>
+          <div></div>
           <ActionButton
-            label="Share"
-            labelSuccess="Share"
-            labelFailure="Share"
-            action={shareURL}
+            label="Copy"
+            labelSuccess="Copied"
+            labelFailure="Failed"
+            action={copyURL}
+            primary
+          />
+          {shareURL ? (
+            <ActionButton
+              label="Share"
+              labelSuccess="Share"
+              labelFailure="Share"
+              action={shareURL}
+            />
+          ) : null}
+          {navigator.clipboard ? null : (
+            <>
+              <div></div>
+              <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
+            </>
+          )}
+        </div>
+      </div>
+      <DiscordActions showDiscordFormats={showDiscordFormats} dt={dt} />
+    </>
+  );
+}
+
+function ToggleDiscordFormats({ showDiscordFormats }) {
+  return (
+    <button
+      onClick={() => (showDiscordFormats.value = !showDiscordFormats.peek())}
+    >
+      {showDiscordFormats.value ? "▼" : "▶"} Discord codes
+    </button>
+  );
+}
+
+function DiscordActions({ dt, showDiscordFormats }) {
+  const timestampStyles = [
+    ["t", "Short Time"],
+    ["T", "Long Time"],
+    ["d", "Short Date"],
+    ["D", "Long Date"],
+    ["f", "Short Date/Time"],
+    ["F", "Long Date/Time"],
+    // ['R', 'Relative'],
+  ];
+
+  return (
+    <>
+      {navigator.clipboard ? (
+        <div className="actions">
+          <div className="scrolly">
+            <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
+            <div></div>
+            <ActionButton
+              label="Copy Relative"
+              labelSuccess="Copied"
+              labelFailure="Failed"
+              action={() =>
+                navigator.clipboard.writeText(`<t:${dt.peek().epochSeconds}:R>`)
+              }
+              primary
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {showDiscordFormats.value ? (
+        <div className="discord-other-formats">
+          {timestampStyles.map(([style, name]) => {
+            return (
+              <DiscordFormat key={style} dt={dt} style={style} name={name} />
+            );
+          })}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+const discordFormatter_t = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "short",
+});
+
+const discordFormatter_T = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "medium",
+  timeZoneName: undefined,
+});
+
+const discordFormatter_d = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "short",
+});
+
+const discordFormatter_D = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "long",
+});
+
+const discordFormatter_f = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const discordFormatter_F = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function DiscordFormat({ dt, style }) {
+  const code = useComputed(() => `<t:${dt.value.epochSeconds}:${style}>`);
+
+  const label = useComputed(() => {
+    const formatter =
+      style === "t"
+        ? discordFormatter_t
+        : style === "T"
+        ? discordFormatter_T
+        : style === "d"
+        ? discordFormatter_d
+        : style === "D"
+        ? discordFormatter_D
+        : style === "f"
+        ? discordFormatter_f
+        : style === "F"
+        ? discordFormatter_F
+        : null;
+
+    return formatter?.format(dt.value.toPlainDateTime());
+  });
+
+  if (!label) {
+    return null;
+  }
+
+  return (
+    <div key={style} className="discord-format">
+      <div className="discord-format_top">
+        <span className="discord-format_label">{label}</span>
+        {navigator.clipboard ? (
+          <ActionButton
+            label="Copy"
+            labelSuccess="Copied"
+            labelFailure="Failed"
+            action={() => navigator.clipboard.writeText(code.peek())}
           />
         ) : null}
-        <div></div>
-        <ActionButton
-          label="Copy Discord Timestamp"
-          labelSuccess="Copied"
-          labelFailure="Failed"
-          action={copyDiscordTimestamp}
-        />
       </div>
+      <span className="discord-format_code">{code}</span>
     </div>
   );
 }
@@ -622,3 +752,5 @@ function updateTitle(dt, tz) {
   const timeStr = formatDTTitle(dt);
   document.title = `${timeStr} in ${placeStr} | when.st`;
 }
+
+render(<IndexPage />, document.querySelector("main"));
