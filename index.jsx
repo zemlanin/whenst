@@ -216,7 +216,9 @@ function ClockRowActions({ timestampURL, dt }) {
     <>
       <div className="actions">
         <div className="scrolly">
-          <a href={timestampURL} aria-label="Link to this page">Link</a>
+          <a href={timestampURL} aria-label="Link to this page">
+            Link
+          </a>
           <div></div>
           <ActionButton
             label="Copy"
@@ -244,15 +246,17 @@ function ClockRowActions({ timestampURL, dt }) {
   );
 }
 
-const DISCORD_FORMATS_ID = 'discord-formats'
+const DISCORD_FORMATS_ID = "discord-formats";
 
 function ToggleDiscordFormats({ showDiscordFormats }) {
-  const arrow = useComputed(() => showDiscordFormats.value ? "▲" : "▼")
-  const expanded = useComputed(() => showDiscordFormats.value.toString())
+  const arrow = useComputed(() => (showDiscordFormats.value ? "▲" : "▼"));
+  const expanded = useComputed(() => showDiscordFormats.value.toString());
 
   return (
     <button
-      onClick={() => { showDiscordFormats.value = !showDiscordFormats.peek() }}
+      onClick={() => {
+        showDiscordFormats.value = !showDiscordFormats.peek();
+      }}
       aria-expanded={expanded}
       aria-controls={DISCORD_FORMATS_ID}
     >
@@ -273,10 +277,19 @@ function DiscordActions({ dt, showDiscordFormats }) {
   ];
 
   return (
-    <div id={DISCORD_FORMATS_ID} className="discord-other-formats" role="group" aria-label="Discord codes">
-      {showDiscordFormats.value ? timestampStyles.map(([style, name]) => {
-        return <DiscordFormat key={style} dt={dt} style={style} name={name} />;
-      }) : null}
+    <div
+      id={DISCORD_FORMATS_ID}
+      className="discord-other-formats"
+      role="group"
+      aria-label="Discord codes"
+    >
+      {showDiscordFormats.value
+        ? timestampStyles.map(([style, name]) => {
+            return (
+              <DiscordFormat key={style} dt={dt} style={style} name={name} />
+            );
+          })
+        : null}
     </div>
   );
 }
@@ -342,7 +355,11 @@ function DiscordFormat({ dt, style, name }) {
   }
 
   return (
-    <div key={style} className="discord-format" style={style === 'F' ? {flexBasis: '100%', flexShrink: 1} : null}>
+    <div
+      key={style}
+      className="discord-format"
+      style={style === "F" ? { flexBasis: "100%", flexShrink: 1 } : null}
+    >
       <div className="discord-format_row">
         <span className="discord-format_label">{label}</span>
         {navigator.clipboard ? (
@@ -363,7 +380,14 @@ function DiscordFormat({ dt, style, name }) {
   );
 }
 
-function ActionButton({ label, labelSuccess, labelFailure, action, primary, 'aria-label': ariaLabel }) {
+function ActionButton({
+  label,
+  labelSuccess,
+  labelFailure,
+  action,
+  primary,
+  "aria-label": ariaLabel,
+}) {
   const labelSignal = useSignal(label);
   const timeoutIdSignal = useSignal(undefined);
 

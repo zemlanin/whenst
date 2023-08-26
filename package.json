@@ -54,7 +54,7 @@
     "eslint-plugin-react": "^7.32.2",
     "parcel": "^2.9.3",
     "preact": "^10.16.0",
-    "prettier": "^3.0.0",
+    "prettier": "^3.0.2",
     "sortablejs": "^1.15.0",
     "urlpattern-polyfill": "^9.0.0",
     "wrangler": "^3.6.0"
