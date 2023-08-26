@@ -216,7 +216,7 @@ function ClockRowActions({ timestampURL, dt }) {
     <>
       <div className="actions">
         <div className="scrolly">
-          <a href={timestampURL}>Link</a>
+          <a href={timestampURL} aria-label="Link to this page">Link</a>
           <div></div>
           <ActionButton
             label="Copy"
@@ -256,7 +256,7 @@ function ToggleDiscordFormats({ showDiscordFormats }) {
       aria-expanded={expanded}
       aria-controls={DISCORD_FORMATS_ID}
     >
-      Discord codes {arrow}
+      Discord codes <span aria-hidden="true">{arrow}</span>
     </button>
   );
 }
@@ -273,7 +273,7 @@ function DiscordActions({ dt, showDiscordFormats }) {
   ];
 
   return (
-    <div id={DISCORD_FORMATS_ID} className="discord-other-formats">
+    <div id={DISCORD_FORMATS_ID} className="discord-other-formats" role="group" aria-label="Discord codes">
       {showDiscordFormats.value ? timestampStyles.map(([style, name]) => {
         return <DiscordFormat key={style} dt={dt} style={style} name={name} />;
       }) : null}
