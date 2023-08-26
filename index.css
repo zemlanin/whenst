@@ -300,7 +300,9 @@ nav a.about {
   align-items: center;
   align-self: flex-end;
   max-width: 100%;
-  padding: 0 0 1rem;
+  /* negative margin to leave the space for focus outline */
+  padding: 0.5rem 0.5rem 1rem;
+  margin: -0.5rem -0.5rem 0;
 }
 
 .clock-row .actions .scrolly {
