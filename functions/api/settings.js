@@ -30,25 +30,28 @@ export async function onRequest(context) {
     `timezones:${account ? account.id : sessionId}`,
   );
 
+  if (account || timezones?.length) {
+    headers.set(
+      "set-cookie",
+      cookie.serialize(COOKIE_NAME, await getSessionCookie(context, sessionId), {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        secure: !!context.env.CF_PAGES,
+      }),
+    );
+  }
+
   if (!timezones) {
     return new Response(
       JSON.stringify({
         timezones: [],
-        signedIn: true,
+        signedIn: !!account,
       }),
       { headers },
     );
   }
 
-  headers.set(
-    "set-cookie",
-    cookie.serialize(COOKIE_NAME, await getSessionCookie(context, sessionId), {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-      secure: !!context.env.CF_PAGES,
-    }),
-  );
   return new Response(
     JSON.stringify({ timezones: JSON.parse(timezones), signedIn: true }),
     {
