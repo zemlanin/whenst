@@ -33,12 +33,16 @@ export async function onRequest(context) {
   if (account || timezones?.length) {
     headers.set(
       "set-cookie",
-      cookie.serialize(COOKIE_NAME, await getSessionCookie(context, sessionId), {
-        httpOnly: true,
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
-        secure: !!context.env.CF_PAGES,
-      }),
+      cookie.serialize(
+        COOKIE_NAME,
+        await getSessionCookie(context, sessionId),
+        {
+          httpOnly: true,
+          maxAge: 60 * 60 * 24 * 365,
+          path: "/",
+          secure: !!context.env.CF_PAGES,
+        },
+      ),
     );
   }
 
