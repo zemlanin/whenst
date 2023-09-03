@@ -264,7 +264,8 @@ nav a.about {
   font-size: 1.3rem;
 }
 
-.clock-row .actions {
+.clock-row .actions,
+.tabs-row {
   display: flex;
   flex-direction: row;
   overflow-x: scroll;
@@ -276,7 +277,8 @@ nav a.about {
   margin: -0.5rem -0.5rem 0;
 }
 
-.clock-row .actions .scrolly {
+.clock-row .actions .scrolly,
+.tabs-row .scrolly {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
@@ -285,8 +287,18 @@ nav a.about {
 }
 
 .clock-row .actions .scrolly > a,
-.clock-row .actions .scrolly > button {
+.clock-row .actions .scrolly > button,
+.tabs-row .scrolly > a,
+.tabs-row .scrolly > button {
   white-space: nowrap;
+}
+
+.tabs-row button[role="tab"][aria-selected="true"] {
+  background-color: var(--background);
+}
+
+[role="tabpanel"][hidden] {
+  display: none;
 }
 
 .discord-other-formats {
@@ -353,7 +365,7 @@ nav a.about {
   margin-bottom: 1.5em;
 }
 
-#saved-timezones .header {
+#saved-timezones .footer {
   display: flex;
   flex-flow: row;
   justify-content: space-between;

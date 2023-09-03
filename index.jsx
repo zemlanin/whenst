@@ -8,6 +8,8 @@ import {
   useComputed,
   useSignalEffect,
   batch,
+  effect,
+  signal,
 } from "@preact/signals";
 
 // TODO: `addTimezone`
@@ -35,6 +37,7 @@ function IndexPage() {
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
   const dt = useSignal(parseTimeString(pageTZ, urlDT));
+  const activeTab = activeTabSignal;
 
   const pageForRemoteTimeZone = isUnix || pageTZ.id !== localTZ.id;
 
@@ -101,7 +104,12 @@ function IndexPage() {
         />
       ) : null}
 
-      <SavedTimezones rootDT={dt} pageTZ={pageTZ} localTZ={localTZ} />
+      <Tabs
+        rootDT={dt}
+        pageTZ={pageTZ}
+        localTZ={localTZ}
+        activeTab={activeTab}
+      />
     </>
   );
 }
@@ -189,16 +197,12 @@ function ClockRow({
         {withRelative ? <div className="relative">{relative}</div> : null}
       </form>
 
-      {secondary ? null : (
-        <ClockRowActions timestampURL={timestampURL} dt={dt} />
-      )}
+      {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}
     </div>
   );
 }
 
-function ClockRowActions({ timestampURL, dt }) {
-  const showDiscordFormats = useSignal(false);
-
+function ClockRowActions({ timestampURL }) {
   const copyURL = navigator.clipboard
     ? () => navigator.clipboard.writeText(timestampURL.peek())
     : null;
@@ -237,35 +241,72 @@ function ClockRowActions({ timestampURL, dt }) {
               aria-label="Share Link"
             />
           ) : null}
-          <div></div>
-          <ToggleDiscordFormats showDiscordFormats={showDiscordFormats} />
         </div>
       </div>
-      <DiscordActions showDiscordFormats={showDiscordFormats} dt={dt} />
+    </>
+  );
+}
+
+function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
+  const otherTimezonesActive = useComputed(
+    () => activeTab.value === SAVED_TIMEZONES_ID,
+  );
+  const otherTimezonesHidden = useComputed(() => !otherTimezonesActive.value);
+
+  const discordFormatsActive = useComputed(
+    () => activeTab.value === DISCORD_FORMATS_ID,
+  );
+  const discordFormatsHidden = useComputed(() => !discordFormatsActive.value);
+
+  return (
+    <>
+      <div className="tabs-row" role="tablist">
+        <div className="scrolly">
+          <button
+            role="tab"
+            aria-selected={otherTimezonesActive}
+            onClick={() => {
+              activeTab.value = SAVED_TIMEZONES_ID;
+            }}
+            aria-controls={SAVED_TIMEZONES_ID}
+          >
+            Other timezones
+          </button>
+
+          <button
+            role="tab"
+            aria-selected={discordFormatsActive}
+            onClick={() => {
+              activeTab.value = DISCORD_FORMATS_ID;
+            }}
+            aria-controls={DISCORD_FORMATS_ID}
+          >
+            Discord codes
+          </button>
+        </div>
+      </div>
+
+      <SavedTimezones
+        rootDT={rootDT}
+        pageTZ={pageTZ}
+        localTZ={localTZ}
+        hidden={otherTimezonesHidden}
+      />
+
+      <DiscordActions
+        rootDT={rootDT}
+        localTZ={localTZ}
+        hidden={discordFormatsHidden}
+      />
     </>
   );
 }
 
 const DISCORD_FORMATS_ID = "discord-formats";
 
-function ToggleDiscordFormats({ showDiscordFormats }) {
-  const arrow = useComputed(() => (showDiscordFormats.value ? "▲" : "▼"));
-  const expanded = useComputed(() => showDiscordFormats.value.toString());
+function DiscordActions({ rootDT, localTZ, hidden }) {
+  const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
 
-  return (
-    <button
-      onClick={() => {
-        showDiscordFormats.value = !showDiscordFormats.peek();
-      }}
-      aria-expanded={expanded}
-      aria-controls={DISCORD_FORMATS_ID}
-    >
-      Discord codes <span aria-hidden="true">{arrow}</span>
-    </button>
-  );
-}
-
-function DiscordActions({ dt, showDiscordFormats }) {
   const timestampStyles = [
     ["F", "Long Date/Time"],
     ["f", "Short Date/Time"],
@@ -280,16 +321,13 @@ function DiscordActions({ dt, showDiscordFormats }) {
     <div
       id={DISCORD_FORMATS_ID}
       className="discord-other-formats"
-      role="group"
+      role="tabpanel"
       aria-label="Discord codes"
+      hidden={hidden}
     >
-      {showDiscordFormats.value
-        ? timestampStyles.map(([style, name]) => {
-            return (
-              <DiscordFormat key={style} dt={dt} style={style} name={name} />
-            );
-          })
-        : null}
+      {timestampStyles.map(([style, name]) => {
+        return <DiscordFormat key={style} dt={dt} style={style} name={name} />;
+      })}
     </div>
   );
 }
@@ -477,7 +515,7 @@ function UnixRow({ rootDT, writeToLocation }) {
         />
       </form>
 
-      <ClockRowActions dt={rootDT} timestampURL={timestampURL} />
+      <ClockRowActions timestampURL={timestampURL} />
     </div>
   );
 }
@@ -491,7 +529,9 @@ const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-function SavedTimezones({ rootDT, pageTZ, localTZ }) {
+const SAVED_TIMEZONES_ID = "saved-timezones";
+
+function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
   const timezones = useSignal([]);
 
   const pageDateString = useComputed(() =>
@@ -519,12 +559,17 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
     );
   });
 
+  const settingsLabel = useComputed(() =>
+    filteredTimezones.value.length ? "Edit" : "Add a timezone",
+  );
+
   return (
-    <div id="saved-timezones">
-      <div className="header">
-        <b>Other timezones</b>
-        <a href="/settings.html">Edit</a>
-      </div>
+    <div
+      id={SAVED_TIMEZONES_ID}
+      role="tabpanel"
+      aria-label="Other timezones"
+      hidden={hidden}
+    >
       {filteredTimezones.value.map(({ timezone, label }) => {
         const plainDateTime = rootDT.value
           .withTimeZone(Temporal.TimeZone.from(timezone))
@@ -557,6 +602,10 @@ function SavedTimezones({ rootDT, pageTZ, localTZ }) {
           </div>
         );
       })}
+      <div className="footer">
+        <div />
+        <a href="/settings.html">{settingsLabel}</a>
+      </div>
     </div>
   );
 }
@@ -762,5 +811,21 @@ function updateTitle(dt, tz) {
   const timeStr = formatDTTitle(dt);
   document.title = `${timeStr} in ${placeStr} | when.st`;
 }
+
+const activeTabSignal = signal(
+  history.state?.activeTab === SAVED_TIMEZONES_ID ||
+    history.state?.activeTab === DISCORD_FORMATS_ID
+    ? history.state.activeTab
+    : SAVED_TIMEZONES_ID,
+);
+
+effect(() => {
+  if (activeTabSignal.value !== history.state?.activeTab) {
+    history.replaceState(
+      { ...history.state, activeTab: activeTabSignal.value },
+      undefined,
+    );
+  }
+});
 
 render(<IndexPage />, document.querySelector("main"));
