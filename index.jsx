@@ -23,7 +23,12 @@ import {
 import Discord from "./icons/discord.svg";
 import CalendarPlus from "./icons/calendar-plus.svg";
 
+import EarthAfrica from "./icons/earth-africa.svg";
+import EarthAmericas from "./icons/earth-americas.svg";
+import EarthAsia from "./icons/earth-asia.svg";
 import EarthEurope from "./icons/earth-europe.svg";
+import EarthOceania from "./icons/earth-oceania.svg";
+import Globe from "./icons/globe.svg";
 
 window.Temporal = Temporal;
 
@@ -283,7 +288,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
             aria-controls={SAVED_TIMEZONES_ID}
             aria-labelledby={SAVED_TIMEZONES_ID}
           >
-            <EarthEurope height="1rem" width="auto" aria-hidden="true" />
+            <RegionAwareIcon timezone={pageTZ} aria-hidden="true" />
             <span>Other timezones</span>
           </button>
 
@@ -296,7 +301,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
             aria-controls={DISCORD_FORMATS_ID}
             aria-labelledby={DISCORD_FORMATS_ID}
           >
-            <Discord height="1rem" width="auto" aria-hidden="true" />
+            <Discord aria-hidden="true" />
             <span>Discord codes</span>
           </button>
 
@@ -309,7 +314,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
             aria-controls={CALENDAR_LINKS_ID}
             aria-labelledby={CALENDAR_LINKS_ID}
           >
-            <CalendarPlus height="1rem" width="auto" aria-hidden="true" />
+            <CalendarPlus aria-hidden="true" />
             <span>Add to calendar</span>
           </button>
         </div>
@@ -335,6 +340,49 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
       />
     </>
   );
+}
+
+function RegionAwareIcon({ timezone, ...otherProps }) {
+  const [area] = timezone.id?.split("/") ?? [];
+
+  /*
+    > new Set(Intl.supportedValuesOf("timeZone").map(v => v.split('/')[0]))
+
+    "Africa"
+    "America"
+    "Antarctica"
+    "Arctic"
+    "Asia"
+    "Atlantic"
+    "Australia"
+    "Europe"
+    "Indian"
+    "Pacific"
+    "UTC"
+  */
+
+  if (area === "Europe" || area === "Atlantic") {
+    return <EarthEurope {...otherProps} />;
+  }
+
+  if (area === "America" || area === "Pacific") {
+    return <EarthAmericas {...otherProps} />;
+  }
+
+  if (area === "Africa") {
+    return <EarthAfrica {...otherProps} />;
+  }
+
+  if (area === "Australia") {
+    return <EarthOceania {...otherProps} />;
+  }
+
+  if (area === "Asia" || area === "Indian") {
+    return <EarthAsia {...otherProps} />;
+  }
+
+  // "Antarctica", "Arctic", "UTC"
+  return <Globe {...otherProps} />;
 }
 
 const DISCORD_FORMATS_ID = "discord-formats";

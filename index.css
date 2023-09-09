@@ -306,6 +306,11 @@ main {
   min-width: 2.5rem;
 }
 
+.tabs-row .scrolly > button svg {
+  width: auto;
+  height: 1rem;
+}
+
 .tabs-row .scrolly > button[aria-selected="true"] svg {
   display: none;
 }
