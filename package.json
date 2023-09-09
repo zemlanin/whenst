@@ -27,8 +27,8 @@
     "start": "wrangler pages dev dist --kv KV",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./functions/**/*.js\"",
-    "eslint": "eslint \"./*.{js,jsx}\" \"./functions/**/*.js\""
+    "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./functions/**/*.js\" \"./icons/**/*.jsx\"",
+    "eslint": "eslint \"./*.{js,jsx}\" \"./functions/**/*.js\" \"./icons/**/*.jsx\""
   },
   "repository": {
     "type": "git",

@@ -26,5 +26,13 @@
       }
     ],
     "require-atomic-updates": 0
-  }
+  },
+  "overrides": [
+    {
+      "files": "icons/*.svg.jsx",
+      "rules": {
+        "react/display-name": 0
+      }
+    }
+  ]
 }
