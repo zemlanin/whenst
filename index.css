@@ -293,7 +293,8 @@ nav a.about {
   white-space: nowrap;
 }
 
-.tabs-row button[role="tab"][aria-selected="true"] {
+.tabs-row button[role="tab"][aria-selected="true"],
+button[role="radio"][aria-checked="true"] {
   background-color: var(--background);
 }
 
@@ -343,6 +344,61 @@ nav a.about {
   font-style: italic;
   flex: 0 0 100%;
   align-self: flex-end;
+}
+
+.calendar-links-form {
+  margin-bottom: 1rem;
+}
+
+.calendar-links-form label {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  min-height: 2.25em;
+}
+
+.calendar-links-form label > span {
+  white-space: nowrap;
+}
+
+.calendar-links-form label input {
+  width: 300px;
+  min-width: 100px;
+  margin-left: 1rem;
+  flex-shrink: 1;
+}
+
+/* scrolly */
+.calendar-links-form label [role="radiogroup"] {
+  margin-left: 1rem;
+  display: flex;
+  flex-flow: row;
+  overflow-x: scroll;
+  align-items: center;
+
+  /* negative margin to leave the space for focus outline */
+  padding: 0.5rem 0.5rem;
+  margin: -0.5rem -0.5rem 0 0rem;
+}
+
+.calendar-links-form label button[role="radio"] {
+  margin-left: 0.25rem;
+}
+
+.calendar-links-rows {
+  display: flex;
+  flex-flow: row wrap;
+  margin: 0 -0.5rem -0.5rem 0;
+}
+
+.calendar-links-rows .calendar-links-row {
+  flex: 1 1 160px;
+  margin: 0 0.5rem 0.5rem 0;
+  padding: 0.25rem;
+  background-color: var(--section);
+  text-align: center;
 }
 
 @media (min-width: 30rem) {

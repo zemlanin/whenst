@@ -247,6 +247,8 @@ function ClockRowActions({ timestampURL }) {
   );
 }
 
+const CALENDAR_LINKS_ID = "calendar-links";
+
 function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
   const otherTimezonesActive = useComputed(
     () => activeTab.value === SAVED_TIMEZONES_ID,
@@ -257,6 +259,11 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
     () => activeTab.value === DISCORD_FORMATS_ID,
   );
   const discordFormatsHidden = useComputed(() => !discordFormatsActive.value);
+
+  const calendarLinksActive = useComputed(
+    () => activeTab.value === CALENDAR_LINKS_ID,
+  );
+  const calendarLinksHidden = useComputed(() => !calendarLinksActive.value);
 
   return (
     <>
@@ -283,6 +290,17 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
           >
             Discord codes
           </button>
+
+          <button
+            role="tab"
+            aria-selected={calendarLinksActive}
+            onClick={() => {
+              activeTab.value = CALENDAR_LINKS_ID;
+            }}
+            aria-controls={CALENDAR_LINKS_ID}
+          >
+            Add to calendar
+          </button>
         </div>
       </div>
 
@@ -297,6 +315,12 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
         rootDT={rootDT}
         localTZ={localTZ}
         hidden={discordFormatsHidden}
+      />
+
+      <CalendarLinks
+        rootDT={rootDT}
+        localTZ={localTZ}
+        hidden={calendarLinksHidden}
       />
     </>
   );
@@ -416,6 +440,158 @@ function DiscordFormat({ dt, style, name }) {
       </div>
     </div>
   );
+}
+
+function CalendarLinks({ rootDT, localTZ, hidden }) {
+  const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
+
+  const eventTitle = useSignal("");
+  const eventDurationMinutes = useSignal(0);
+
+  const durations = [
+    ["None", 0],
+    ["15m", 15],
+    ["30m", 30],
+    ["45m", 45],
+    ["1h", 60],
+    ["90m", 90],
+    ["2h", 120],
+    ["3h", 180],
+  ];
+
+  return (
+    <div
+      id={CALENDAR_LINKS_ID}
+      className="calendar-links"
+      role="tabpanel"
+      aria-label="Add to calendar"
+      hidden={hidden}
+    >
+      <form
+        className="calendar-links-form"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <label>
+          <span>Event name</span>
+          <input
+            placeholder="Event"
+            value={eventTitle}
+            onInput={(event) => (eventTitle.value = event.currentTarget.value)}
+          />
+        </label>
+
+        <label>
+          <span>Duration</span>
+
+          <div
+            className="calendar-links-durations"
+            role="radiogroup"
+            aria-label="Duration"
+          >
+            {durations.map(([label, duration]) => (
+              <DurationButton
+                key={label}
+                label={label}
+                duration={duration}
+                activeDuration={eventDurationMinutes}
+              />
+            ))}
+          </div>
+        </label>
+      </form>
+
+      <div className="calendar-links-rows">
+        <WebcalRow duration={eventDurationMinutes} title={eventTitle} dt={dt} />
+        <GoogleCalendarRow
+          duration={eventDurationMinutes}
+          title={eventTitle}
+          dt={dt}
+        />
+      </div>
+    </div>
+  );
+}
+
+function DurationButton({ label, duration, activeDuration }) {
+  const isActive = useComputed(() => duration === activeDuration.value);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        activeDuration.value = duration;
+      }}
+      role="radio"
+      aria-checked={isActive}
+    >
+      {label}
+    </button>
+  );
+}
+
+const pad2 = (v) => v.toString().padStart(2, "0");
+const pad4 = (v) => v.toString().padStart(4, "0");
+
+function WebcalRow({ duration, title, dt }) {
+  const href = useComputed(() => {
+    return (
+      "data:text/calendar;charset=utf8," +
+      [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `DTSTART;TZID="/${dt.value.timeZoneId}":${formatDTiCal(dt.value)}`,
+        duration.value ? `DURATION;PT${duration.value}M` : "",
+        `SUMMARY:${encodeURIComponent(title.value || "Event")}`,
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ]
+        .filter(Boolean)
+        .join(encodeURI("\n")) +
+      encodeURI("\n")
+    );
+  });
+
+  return (
+    <div className="calendar-links-row">
+      <a href={href}>.ics/Webcal</a>
+    </div>
+  );
+}
+
+function GoogleCalendarRow({ duration, title, dt }) {
+  const href = useComputed(() => {
+    const start = formatDTiCal(dt.value);
+    const end = duration.value
+      ? formatDTiCal(dt.value.add({ minutes: duration.value }))
+      : start;
+
+    return (
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&" +
+      new URLSearchParams({
+        text: title.value || "Event",
+        ctz: dt.value.timeZoneId,
+        dates: `${start}/${end}`,
+      }).toString()
+    );
+  });
+
+  return (
+    <div className="calendar-links-row">
+      <a href={href} target="_blank" rel="noreferrer">
+        Google Calendar
+      </a>
+    </div>
+  );
+}
+
+function formatDTiCal(dt) {
+  const { isoYear, isoMonth, isoDay, isoHour, isoMinute, isoSecond } =
+    dt.getISOFields();
+
+  return `${pad4(isoYear)}${pad2(isoMonth)}${pad2(isoDay)}T${pad2(
+    isoHour,
+  )}${pad2(isoMinute)}${pad2(isoSecond)}`;
 }
 
 function ActionButton({
@@ -814,7 +990,8 @@ function updateTitle(dt, tz) {
 
 const activeTabSignal = signal(
   history.state?.activeTab === SAVED_TIMEZONES_ID ||
-    history.state?.activeTab === DISCORD_FORMATS_ID
+    history.state?.activeTab === DISCORD_FORMATS_ID ||
+    history.state?.activeTab === CALENDAR_LINKS_ID
     ? history.state.activeTab
     : SAVED_TIMEZONES_ID,
 );
