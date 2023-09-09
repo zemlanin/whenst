@@ -20,6 +20,11 @@ import {
   getPathnameFromTimezone,
 } from "./saved-timezones";
 
+import Discord from "./icons/discord.svg";
+import CalendarPlus from "./icons/calendar-plus.svg";
+
+import EarthEurope from "./icons/earth-europe.svg";
+
 window.Temporal = Temporal;
 
 const browserCalendar = "iso8601";
@@ -276,8 +281,10 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
               activeTab.value = SAVED_TIMEZONES_ID;
             }}
             aria-controls={SAVED_TIMEZONES_ID}
+            aria-labelledby={SAVED_TIMEZONES_ID}
           >
-            Other timezones
+            <EarthEurope height="1rem" width="auto" aria-hidden="true" />
+            <span>Other timezones</span>
           </button>
 
           <button
@@ -287,8 +294,10 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
               activeTab.value = DISCORD_FORMATS_ID;
             }}
             aria-controls={DISCORD_FORMATS_ID}
+            aria-labelledby={DISCORD_FORMATS_ID}
           >
-            Discord codes
+            <Discord height="1rem" width="auto" aria-hidden="true" />
+            <span>Discord codes</span>
           </button>
 
           <button
@@ -298,8 +307,10 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
               activeTab.value = CALENDAR_LINKS_ID;
             }}
             aria-controls={CALENDAR_LINKS_ID}
+            aria-labelledby={CALENDAR_LINKS_ID}
           >
-            Add to calendar
+            <CalendarPlus height="1rem" width="auto" aria-hidden="true" />
+            <span>Add to calendar</span>
           </button>
         </div>
       </div>

@@ -230,6 +230,11 @@ nav a.logo {
 nav a.about {
 }
 
+main {
+  display: flex;
+  flex-flow: column;
+}
+
 .clock-row {
   margin: 1em 0;
   display: flex;
@@ -291,6 +296,34 @@ nav a.about {
 .tabs-row .scrolly > a,
 .tabs-row .scrolly > button {
   white-space: nowrap;
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs-row .scrolly > button {
+  min-width: 2.5rem;
+}
+
+.tabs-row .scrolly > button[aria-selected="true"] svg {
+  display: none;
+}
+
+@media (min-width: 30rem) {
+  .tabs-row .scrolly > button svg {
+    display: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .tabs-row .scrolly > button span {
+    display: none;
+  }
+
+  .tabs-row .scrolly > button[aria-selected="true"] span {
+    display: inline;
+  }
 }
 
 .tabs-row button[role="tab"][aria-selected="true"],
