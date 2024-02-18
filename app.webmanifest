@@ -2,7 +2,8 @@
   "name": "when.st",
   "short_name": "when.st",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/images/favicon-white.png",
