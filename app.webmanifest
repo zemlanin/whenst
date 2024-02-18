@@ -33,6 +33,12 @@
       "src": "/images/favicon-white-180.png",
       "sizes": "180x180",
       "type": "image/png"
+    },
+    {
+      "src": "/images/pwa-white-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
