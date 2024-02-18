@@ -49,7 +49,9 @@ self.addEventListener("fetch", (e) => {
 
   if (
     navigator.onLine &&
-    (pathname.endsWith(".woff") || pathname.endsWith(".woff2"))
+    (pathname.endsWith(".woff") ||
+      pathname.endsWith(".woff2") ||
+      pathname.endsWith(".webmanifest"))
   ) {
     return;
   }
