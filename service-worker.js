@@ -4,7 +4,9 @@ async function install() {
   const cache = await caches.open(version);
 
   await cache.addAll([
-    ...manifest.filter((p) => !p.endsWith(".html")),
+    ...manifest.filter(
+      (p) => !p.endsWith(".html") && !p.endsWith(".webmanifest"),
+    ),
     ...manifest
       .filter((p) => p.endsWith(".html"))
       .map((p) => p.replace(/\.html$/, "").replace(/^\/index$/, "/")),
