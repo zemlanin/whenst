@@ -33,6 +33,13 @@
       "rules": {
         "react/display-name": 0
       }
+    },
+    {
+      "files": "server/*",
+      "env": {
+        "browser": false,
+        "node": true
+      }
     }
   ]
 }

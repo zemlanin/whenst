@@ -11,8 +11,15 @@
         "about.html",
         "link.html"
       ],
-      "distDir": "./dist",
+      "distDir": "./dist/client",
       "includeNodeModules": true
+    },
+    "server": {
+      "context": "node",
+      "source": [
+        "server/index.ts"
+      ],
+      "distDir": "./dist/server"
     }
   },
   "alias": {
@@ -24,11 +31,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build",
-    "start": "wrangler pages dev dist --kv KV",
+    "start": "parcel serve --target default",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./functions/**/*.js\" \"./icons/**/*.jsx\"",
-    "eslint": "eslint \"./*.{js,jsx}\" \"./functions/**/*.js\" \"./icons/**/*.jsx\""
+    "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./server/**/*.ts\" \"./functions/**/*.js\" \"./icons/**/*.jsx\"",
+    "eslint": "eslint \"./*.{js,jsx}\" \"./server/**/*.ts\" \"./functions/**/*.js\" \"./icons/**/*.jsx\""
   },
   "repository": {
     "type": "git",
@@ -40,6 +47,10 @@
     "url": "https://github.com/zemlanin/whenst/issues"
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "fastify": "^5.2.0"
+  },
   "devDependencies": {
     "@cfworker/json-schema": "^1.12.5",
     "@fortawesome/fontawesome-free": "^6.4.0",
@@ -56,6 +67,7 @@
     "preact": "^10.17.1",
     "prettier": "^3.0.2",
     "sortablejs": "^1.15.0",
+    "typescript": "^5.7.2",
     "urlpattern-polyfill": "^9.0.0",
     "wrangler": "^3.6.0"
   }
