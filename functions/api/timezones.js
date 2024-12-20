@@ -9,6 +9,9 @@ import {
   extractSessionIdFromCookie,
 } from "../_common/session-id.js";
 
+// PUT /timezones
+// PATCH /timezones
+// DELETE /timezones
 export async function onRequest(context) {
   switch (context.request.method) {
     case "PUT":

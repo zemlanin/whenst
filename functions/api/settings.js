@@ -9,6 +9,7 @@ import {
 
 const EMPTY_RESPONSE = { timezones: [], signedIn: false };
 
+// GET /settings
 export async function onRequest(context) {
   const sessionId = await extractSessionIdFromCookie(context);
   const headers = new Headers();
