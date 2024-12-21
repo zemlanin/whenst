@@ -125,7 +125,7 @@ async function updateSavedTimezonesList() {
     try {
       Temporal.TimeZone.from(timezone);
       anchor.href = getPathnameFromTimezone(timezone);
-    } catch (e) {
+    } catch (_e) {
       anchor.className += " invalid";
     }
 
@@ -164,7 +164,7 @@ function deleteFormHandler(event) {
   });
 }
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function loadDataForNerds() {
   if (!("serviceWorker" in navigator)) {
     return;

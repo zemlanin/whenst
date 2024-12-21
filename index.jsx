@@ -178,7 +178,7 @@ function ClockRow({
   const onBlur = (event) => {
     try {
       Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(timeZone);
-    } catch (e) {
+    } catch (_e) {
       event.target.value = formatDTInput(
         Temporal.Now.zonedDateTime(browserCalendar, timeZone).with({
           second: 0,
@@ -220,7 +220,7 @@ function ClockRowActions({ timestampURL }) {
     ? async () => {
         try {
           await navigator.share({ url: timestampURL.peek() });
-        } catch (e) {
+        } catch (_e) {
           //
         }
       }
@@ -457,16 +457,16 @@ function DiscordFormat({ dt, style, name }) {
       style === "t"
         ? discordFormatter_t
         : style === "T"
-        ? discordFormatter_T
-        : style === "d"
-        ? discordFormatter_d
-        : style === "D"
-        ? discordFormatter_D
-        : style === "f"
-        ? discordFormatter_f
-        : style === "F"
-        ? discordFormatter_F
-        : null;
+          ? discordFormatter_T
+          : style === "d"
+            ? discordFormatter_d
+            : style === "D"
+              ? discordFormatter_D
+              : style === "f"
+                ? discordFormatter_f
+                : style === "F"
+                  ? discordFormatter_F
+                  : null;
 
     return formatter?.format(dt.value.toPlainDateTime());
   });
@@ -676,7 +676,7 @@ function ActionButton({
               labelSignal.value = label;
             }, 1000);
           });
-        } catch (e) {
+        } catch (_e) {
           batch(() => {
             labelSignal.value = labelFailure;
             timeoutIdSignal.value = setTimeout(() => {
@@ -853,14 +853,14 @@ function parseTimeString(timezone, timeString) {
   let date = undefined;
   try {
     date = Temporal.PlainDate.from(timeString);
-  } catch (e) {
+  } catch (_e) {
     date = Temporal.Now.plainDate(browserCalendar);
   }
 
   if (timeString && timeString !== "now") {
     try {
       Temporal.PlainTime.from(timeString);
-    } catch (e) {
+    } catch (_e) {
       timeString = "now";
     }
   }

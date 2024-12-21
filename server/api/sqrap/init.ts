@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import * as cookie from "cookie";
 
 import {
   COOKIE_NAME,
@@ -6,11 +6,19 @@ import {
   generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
+import { FastifyReply, FastifyRequest } from "fastify";
+
+// XXX
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const context: any = {};
 
 // POST /sqrap/init
-export async function onRequest(context) {
-  const sessionId = await extractSessionIdFromCookie(context);
-  const newSessionId = sessionId ? null : generateSessionId();
+export async function apiSqrapInitPost(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const sessionId = await extractSessionIdFromCookie(request);
+  const newSessionId = sessionId || generateSessionId();
 
   const code = generateCode();
 
@@ -20,27 +28,20 @@ export async function onRequest(context) {
     { expirationTtl: 60 * 5 },
   );
 
-  const headers = new Headers();
-  const cookieValue = await getSessionCookie(
-    context,
-    sessionId || newSessionId,
-  );
+  const cookieValue = await getSessionCookie(sessionId || newSessionId);
   if (cookieValue) {
-    headers.set(
+    reply.header(
       "set-cookie",
       cookie.serialize(COOKIE_NAME, cookieValue, {
         httpOnly: true,
         maxAge: 60 * 60 * 24 * 365,
         path: "/",
-        secure: !!context.env.CF_PAGES,
+        secure: !!process.env.WHENST_SECURE_COOKIE,
       }),
     );
   }
 
-  return new Response(JSON.stringify({ code }), {
-    status: 200,
-    headers,
-  });
+  reply.send({ code });
 }
 
 function generateCode() {

@@ -1,6 +1,7 @@
 {
   "name": "whenst",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "targets": {
     "default": {
@@ -16,6 +17,7 @@
     },
     "server": {
       "context": "node",
+      "outputFormat": "esmodule",
       "source": [
         "server/index.ts"
       ],
@@ -33,9 +35,9 @@
     "build": "parcel build",
     "start": "parcel serve --target default",
     "lint": "npm run eslint && npm run prettier -- -l",
-    "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx}\" \"./server/**/*.ts\" \"./functions/**/*.js\" \"./icons/**/*.jsx\"",
-    "eslint": "eslint \"./*.{js,jsx}\" \"./server/**/*.ts\" \"./functions/**/*.js\" \"./icons/**/*.jsx\""
+    "fmt": "tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
+    "prettier": "prettier \"./*.{html,css,js,jsx,cjs}\" \"./server/**/*.ts\" \"./icons/**/*.jsx\"",
+    "eslint": "eslint \"./*.{js,jsx,cjs}\" \"./server/**/*.ts\" \"./icons/**/*.jsx\""
   },
   "repository": {
     "type": "git",
@@ -49,26 +51,29 @@
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "dependencies": {
     "better-sqlite3": "^11.7.0",
+    "cookie": "^1.0.2",
     "fastify": "^5.2.0"
   },
   "devDependencies": {
-    "@cfworker/json-schema": "^1.12.5",
     "@fortawesome/fontawesome-free": "^6.4.0",
     "@js-temporal/polyfill": "^0.4.4",
-    "@parcel/packager-raw-url": "^2.9.3",
-    "@parcel/service-worker": "^2.9.3",
-    "@parcel/transformer-inline-string": "^2.9.3",
-    "@parcel/transformer-webmanifest": "^2.9.3",
+    "@parcel/packager-raw-url": "^2.13.3",
+    "@parcel/service-worker": "^2.13.3",
+    "@parcel/transformer-inline-string": "^2.13.3",
+    "@parcel/transformer-webmanifest": "^2.13.3",
     "@preact/signals": "^1.2.1",
-    "cookie": "^0.5.0",
-    "eslint": "^8.45.0",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^8.57.1",
     "eslint-plugin-react": "^7.32.2",
-    "parcel": "^2.9.3",
+    "parcel": "^2.13.3",
     "preact": "^10.17.1",
     "prettier": "^3.0.2",
     "sortablejs": "^1.15.0",
+    "svgo": "^3.3.2",
     "typescript": "^5.7.2",
-    "urlpattern-polyfill": "^9.0.0",
-    "wrangler": "^3.6.0"
+    "urlpattern-polyfill": "^9.0.0"
   }
 }

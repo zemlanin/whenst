@@ -1,5 +1,5 @@
 .DS_Store
-.wrangler/
+.data/
 .parcel-cache/
 node_modules/
 dist/

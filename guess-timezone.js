@@ -32,7 +32,7 @@ export function guessTimezone(input, { strict } = {}) {
     }
 
     return directMatch;
-  } catch (e) {
+  } catch (_e) {
     //
   }
 
@@ -66,7 +66,7 @@ export function guessTimezone(input, { strict } = {}) {
 
     try {
       return Temporal.TimeZone.from(strictOffset);
-    } catch (e) {
+    } catch (_e) {
       //
     }
   }

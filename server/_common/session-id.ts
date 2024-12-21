@@ -1,11 +1,12 @@
-import cookie from "cookie";
+import * as cookie from "cookie";
+
+import type { FastifyRequest } from "fastify";
 
 export const COOKIE_NAME = "__session";
+const SESSION_SECRET = process.env.WHENST_SESSION_SECRET ?? "secret";
 
-export async function extractSessionIdFromCookie(context) {
-  const parsedCookie = cookie.parse(
-    context.request.headers.get("Cookie") || "",
-  );
+export async function extractSessionIdFromCookie(request: FastifyRequest) {
+  const parsedCookie = cookie.parse(request.headers.cookie || "");
 
   const str = parsedCookie[COOKIE_NAME];
 
@@ -22,11 +23,11 @@ export async function extractSessionIdFromCookie(context) {
   let sigRaw;
   try {
     sigRaw = atob(signature);
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 
-  const key = await importKey(context.env.SESSION_SECRET);
+  const key = await importKey(SESSION_SECRET);
   const sigBuf = Uint8Array.from(sigRaw, (c) => c.charCodeAt(0));
 
   if (
@@ -47,8 +48,8 @@ export function generateSessionId() {
   return crypto.randomUUID();
 }
 
-export async function getSessionCookie(context, sessionId) {
-  const key = await importKey(context.env.SESSION_SECRET);
+export async function getSessionCookie(sessionId: string) {
+  const key = await importKey(SESSION_SECRET);
   const signature = await crypto.subtle.sign(
     "HMAC",
     key,
@@ -60,7 +61,7 @@ export async function getSessionCookie(context, sessionId) {
   )}`;
 }
 
-async function importKey(secret) {
+async function importKey(secret: string) {
   return await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
