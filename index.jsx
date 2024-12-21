@@ -839,7 +839,7 @@ function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
       })}
       <div className="footer">
         <div />
-        <a href="/settings.html">{settingsLabel}</a>
+        <a href="/settings">{settingsLabel}</a>
       </div>
     </div>
   );

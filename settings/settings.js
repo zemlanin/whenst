@@ -8,13 +8,13 @@ import {
   deleteTimezone,
   reorderTimezone,
   signOut,
-} from "./api";
+} from "../api";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
-} from "./saved-timezones";
+} from "../saved-timezones";
 
-import { guessTimezone } from "./guess-timezone";
+import { guessTimezone } from "../guess-timezone";
 
 const sortable = Sortable.create(document.getElementById("timezones-list"), {
   handle: ".dnd-handle",

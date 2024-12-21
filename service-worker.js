@@ -9,7 +9,12 @@ async function install() {
     ),
     ...manifest
       .filter((p) => p.endsWith(".html"))
-      .map((p) => p.replace(/\.html$/, "").replace(/^\/index$/, "/")),
+      .map((p) =>
+        p
+          .replace(/\.html$/, "")
+          .replace(/^\/index$/, "/")
+          .replace(/\/index$/, ""),
+      ),
   ]);
 
   const keys = await cache.keys();

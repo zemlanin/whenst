@@ -1,4 +1,6 @@
+import path from "node:path";
 import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
 
 import { apiSessionDelete } from "./api/session.js";
 import { apiSettingsGet } from "./api/settings.js";
@@ -13,6 +15,32 @@ import { apiSqrapStatusGet } from "./api/sqrap/status.js";
 
 const fastify = Fastify({
   logger: true,
+});
+
+fastify.register((childContext, _, done) => {
+  childContext.register(fastifyStatic, {
+    root:
+      process.env.WHENST_STATIC_ROOT ??
+      path.join(process.cwd(), "./dist/client/"),
+    prefix: "/",
+  });
+
+  childContext.setNotFoundHandler((request, reply) => {
+    if (request.url.startsWith("/api/")) {
+      return reply
+        .code(404)
+        .type("text/json")
+        .send({
+          message: `API endpoint ${request.url} not found`,
+          error: "Not Found",
+          statusCode: 404,
+        });
+    }
+
+    return reply.code(200).type("text/html").sendFile("index.html");
+  });
+
+  done();
 });
 
 fastify.delete("/api/session", apiSessionDelete);

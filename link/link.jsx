@@ -1,7 +1,7 @@
 import { render } from "preact";
 import { useSignal, useComputed, batch } from "@preact/signals";
 
-import { sqrapInit, sqrapStatus, sqrapCode, loadSettings } from "./api";
+import { sqrapInit, sqrapStatus, sqrapCode, loadSettings } from "../api";
 
 render(<LinkPage />, document.querySelector("main"));
 

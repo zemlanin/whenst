@@ -1,9 +1,9 @@
 <!doctype html>
 <head>
   <meta charset="utf-8" />
-  <title>About | when.st</title>
+  <title>Settings | when.st</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="app.webmanifest" />
+  <link rel="manifest" href="/app.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-touch-fullscreen" content="yes" />
@@ -72,17 +72,6 @@
     href="/images/favicon-white-180.png"
   />
   <link rel="apple-touch-icon" href="/images/favicon-white-180.png" />
-  <style>
-    h2 {
-      margin-top: 0.8em;
-      margin-bottom: 0.8em;
-    }
-
-    p,
-    ul {
-      margin-top: 0;
-    }
-  </style>
 </head>
 <body>
   <div id="layout">
@@ -98,70 +87,40 @@
           <img src="/images/logo-white-square.png" width="36" height="36" />
         </picture>
       </a>
-      <a href="/about.html" class="about">About</a>
+      <a href="/about" class="about">About</a>
     </nav>
 
-    <h1>About</h1>
+    <h1>Settings</h1>
 
-    <p>
-      Quickly generate and share permalinks to date and time without worrying
-      about timezones and calendar software
-    </p>
+    <h2>Timezones</h2>
 
-    <p>
-      Select date and time, copy the URL, and share it with your team or
-      community. They will see date and time in both your and <i>their</i>
-      timezones
-    </p>
+    <div id="timezones-edit">
+      <form id="add-timezone" action="javascript:void(0)">
+        <input
+          type="text"
+          name="timezone"
+          placeholder="timezone"
+          list="timezones-datalist"
+          required
+        />
+        <datalist id="timezones-datalist"></datalist>
+        <input type="text" name="label" placeholder="label" maxlength="80" />
+        <button type="submit" class="primary">Add</button>
+      </form>
+      <ul id="timezones-list"></ul>
+    </div>
 
-    <p>
-      For example, here are links for
-      <a href="/Europe/Kyiv/14:56">14:56 in Kyiv</a> and
-      <a href="/Europe/London/14:56">in London</a>
-    </p>
+    <h2 style="margin-top: 2rem">Account</h2>
 
-    <h2>Credits</h2>
-    <p>
-      Code and Design: <a href="https://anton.codes">Anton</a> /
-      <a href="https://devua.club/@zemlanin" rel="me">@zemlanin</a>
-    </p>
-    <span> Ideas</span>
-    <ul>
-      <li>Original idea: <a href="https://samwho.dev/">Sam Rose</a></li>
-      <li>
-        Discord timestamps:
-        <a href="https://tildy.dev/elsewhen/">Elsewhen</a>
+    <ul style="margin-top: 0; padding: 0; list-style: none">
+      <li style="padding: 0 0 0.5rem">
+        <a href="/link">Link with another device</a>
+      </li>
+      <li style="padding: 0.5rem 0" hidden>
+        <button id="sign-out-button">Sign out</button>
       </li>
     </ul>
-    <p>
-      Font:
-      <a
-        href="https://github.com/iaolo/iA-Fonts/tree/master/iA%20Writer%20Quattro"
-        >iA Writer Quattro</a
-      >
-      by <a href="https://ia.net">iA</a>
-    </p>
-    <p>
-      Icons: <a href="https://fontawesome.com/">Font Awesome</a> by Fonticons,
-      Inc.
-    </p>
-
-    <!-- <h2>Idea</h2>
-
-    <a href="https://twitter.com/samwhoo/status/1527231505822523392">
-      <picture id="the-tweet">
-        <source
-          srcset="/images/the-tweet-black.png"
-          media="(prefers-color-scheme: dark)"
-        />
-        <img
-          src="/images/the-tweet-white.png"
-          width="1196"
-          height="535"
-          alt="Tweet by Sam Rose: I'd like a website where I can give it an exact date and time, and it gives me back a shareable URL that, when opened, the recipient sees that time and date in their local timezone. I'm sure this exists but I can't find one. Halp?"
-        />
-      </picture>
-    </a> -->
   </div>
   <script src="/register-sw.js" type="module"></script>
+  <script src="/settings/settings.js" type="module"></script>
 </body>
