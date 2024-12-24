@@ -32,7 +32,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build",
+    "build": "parcel build --target default && parcel build --target server --config \"@parcel/config-default\"",
     "watch": "parcel watch --no-hmr",
     "start": "node dist/server",
     "lint": "npm run eslint && npm run prettier -- -l",
@@ -51,6 +51,7 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "dependencies": {
+    "@fastify/compress": "^8.0.1",
     "@fastify/static": "^8.0.3",
     "better-sqlite3": "^11.7.0",
     "cookie": "^1.0.2",
@@ -59,6 +60,8 @@
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",
     "@js-temporal/polyfill": "^0.4.4",
+    "@parcel/compressor-brotli": "^2.13.3",
+    "@parcel/compressor-gzip": "^2.13.3",
     "@parcel/packager-raw-url": "^2.13.3",
     "@parcel/service-worker": "^2.13.3",
     "@parcel/transformer-inline-string": "^2.13.3",

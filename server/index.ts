@@ -17,12 +17,15 @@ const fastify = Fastify({
   logger: true,
 });
 
+await fastify.register(import("@fastify/compress"));
+
 fastify.register((childContext, _, done) => {
   childContext.register(fastifyStatic, {
     root:
       process.env.WHENST_STATIC_ROOT ??
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
+    preCompressed: true,
   });
 
   childContext.setNotFoundHandler((request, reply) => {
