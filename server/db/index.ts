@@ -14,7 +14,7 @@ export function getSessionTimezones(sessionId: string) {
         .prepare<
           { account_id: string },
           { timezones: string }
-        >(`SELECT timezones FROM account_settings WHERE account_id = @account`)
+        >(`SELECT timezones FROM account_settings WHERE account_id = @account_id`)
         .get({ account_id: account.id })
     : db
         .prepare<

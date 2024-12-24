@@ -54,11 +54,11 @@ async function addTimezone(request: FastifyRequest, reply: FastifyReply) {
   const newSessionId = sessionId || generateSessionId();
 
   const account = sessionId ? getAccount(sessionId) : null;
-  const timezones = sessionId ? getSessionTimezones(sessionId) : [];
+  const timezones = sessionId ? (getSessionTimezones(sessionId) ?? []) : [];
 
   let cookieValue;
 
-  if (timezones?.every((v) => v.id !== newTimezone.id)) {
+  if (timezones.every((v) => v.id !== newTimezone.id)) {
     if (account) {
       db.prepare<{ account_id: string; timezones: string }>(
         `INSERT INTO account_settings (account_id, timezones) VALUES (@account_id, @timezones)

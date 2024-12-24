@@ -1,7 +1,7 @@
 import { db } from "../db/index.js";
 
 export function generateAccountId() {
-  return `account:${crypto.randomUUID()}`;
+  return crypto.randomUUID();
 }
 
 export function getAccount(sessionId: string) {
@@ -20,9 +20,14 @@ export function getAccount(sessionId: string) {
 }
 
 export function createAccount() {
-  return {
-    id: generateAccountId(),
-  };
+  const id = generateAccountId();
+
+  db.prepare<{ id: string }>(
+    `INSERT INTO accounts (id) VALUES (@id)
+      ON CONFLICT DO NOTHING`,
+  ).run({ id });
+
+  return { id };
 }
 
 export function associateSessionWithAccount(
@@ -46,19 +51,20 @@ export function moveDataFromSessionToAccount(
   sessionId: string,
   accountId: string,
 ) {
-  const timezones = db
+  const row = db
     .prepare<
       { session_id: string },
-      { timezones: unknown[] }
+      { timezones: string }
     >(`SELECT timezones FROM session_settings WHERE session_id = @session_id`)
     .get({ session_id: sessionId });
 
-  if (timezones) {
-    db.prepare<{ id: string; timezones: string }>(
-      `UPDATE account_settings SET timezones = @timezones WHERE id = @id`,
+  if (row) {
+    db.prepare<{ account_id: string; timezones: string }>(
+      `INSERT INTO account_settings (account_id, timezones) VALUES (@account_id, @timezones)
+        ON CONFLICT(account_id) DO UPDATE SET timezones = @timezones`,
     ).run({
-      id: accountId,
-      timezones: JSON.stringify(timezones),
+      account_id: accountId,
+      timezones: row.timezones,
     });
 
     db.prepare<{ session_id: string }>(
