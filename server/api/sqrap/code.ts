@@ -12,7 +12,9 @@ import {
   generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
-import { FastifyReply, FastifyRequest } from "fastify";
+import { db } from "../../db/index.js";
+
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 // POST /sqrap/code
 export const apiSqrapCodePost = {
@@ -32,10 +34,6 @@ export const apiSqrapCodePost = {
   },
 };
 
-// XXX
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const context: any = {};
-
 export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
   const sessionId = await extractSessionIdFromCookie(request);
   const newSessionId = sessionId || generateSessionId();
@@ -49,10 +47,15 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
     return reply.send(null);
   }
 
-  const sessionIdForCodeRaw = await context.env.KV.get(
-    `sqrap:${code}:sessionId`,
-  );
-  if (!sessionIdForCodeRaw) {
+  const { session_id: sessionIdForCode } =
+    db
+      .prepare<
+        { code: string },
+        { session_id: string }
+      >(`SELECT session_id FROM sqrap_states WHERE code = @code AND created_at > date('now', '-5 minutes')`)
+      .get({ code }) || {};
+
+  if (!sessionIdForCode) {
     reply.status(404);
     return reply.send({ error: "Not found" });
   }
@@ -67,12 +70,9 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
     }
   }
 
-  const sessionIdForCode = JSON.parse(sessionIdForCodeRaw);
-  await context.env.KV.put(
-    `sqrap:${code}:${sessionIdForCode}:account`,
-    JSON.stringify(account),
-    { expirationTtl: 60 * 5 },
-  );
+  db.prepare<{ code: string; session_id: string; account_id: string }>(
+    `UPDATE sqrap_states SET account_id = @account_id WHERE session_id = @session_id AND code = @code AND created_at > date('now', '-5 minutes')`,
+  ).run({ code, session_id: sessionIdForCode, account_id: account.id });
 
   const cookieValue = await getSessionCookie(sessionId || newSessionId);
   if (cookieValue) {

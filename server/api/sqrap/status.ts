@@ -1,10 +1,8 @@
-import { FastifyReply, FastifyRequest } from "fastify";
 import { associateSessionWithAccount } from "../../_common/account.js";
 import { extractSessionIdFromCookie } from "../../_common/session-id.js";
+import { db } from "../../db/index.js";
 
-// XXX
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const context: any = {};
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 // GET /sqrap/status
 export const apiSqrapStatusGet = {
@@ -33,36 +31,42 @@ async function sqrapStatus(request: FastifyRequest, reply: FastifyReply) {
 
   const { code } = request.query as { code: string };
 
-  const sessionIdForCodeRaw = await context.env.KV.get(
-    `sqrap:${code}:sessionId`,
-  );
-  if (!sessionIdForCodeRaw) {
+  const row = db
+    .prepare<
+      { code: string; session_id: string },
+      { account_id: string }
+    >(`SELECT account_id FROM sqrap_states WHERE code = @code AND session_id = session_id AND created_at > date('now', '-5 minutes')`)
+    .get({
+      code,
+      session_id: sessionId,
+    });
+
+  if (!row) {
     reply.status(404);
     reply.send({ done: false, error: "Not found" });
     return;
   }
 
-  const sessionIdForCode = JSON.parse(sessionIdForCodeRaw);
-  if (sessionIdForCode !== sessionId) {
-    reply.status(404);
-    reply.send({ done: false, error: "Not found" });
-    return;
-  }
+  const { account_id } = row;
 
-  const newAccountRaw = await context.env.KV.get(
-    `sqrap:${code}:${sessionId}:account`,
-  );
-  if (!newAccountRaw) {
+  if (!account_id) {
     reply.send({ done: false, error: null });
     return;
   }
 
-  const newAccount = JSON.parse(newAccountRaw);
-  associateSessionWithAccount(sessionId, newAccount);
+  associateSessionWithAccount(sessionId, account_id);
 
-  await context.env.KV.delete(`sqrap:${code}:sessionId`);
-  await context.env.KV.delete(`sqrap:${code}:${sessionId}:account`);
-  await context.env.KV.delete(`timezones:${sessionId}`);
+  db.prepare<{ session_id: string }>(
+    `DELETE FROM sqrap_states WHERE session_id = @session_id`,
+  ).run({
+    session_id: sessionId,
+  });
+
+  db.prepare<{ session_id: string }>(
+    `DELETE FROM session_settings WHERE session_id = @session_id`,
+  ).run({
+    session_id: sessionId,
+  });
 
   return reply.send({ done: true, error: null });
 }

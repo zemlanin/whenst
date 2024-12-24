@@ -6,11 +6,9 @@ import {
   generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
-import { FastifyReply, FastifyRequest } from "fastify";
+import { db } from "../../db/index.js";
 
-// XXX
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const context: any = {};
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 // POST /sqrap/init
 export async function apiSqrapInitPost(
@@ -22,11 +20,12 @@ export async function apiSqrapInitPost(
 
   const code = generateCode();
 
-  await context.env.KV.put(
-    `sqrap:${code}:sessionId`,
-    JSON.stringify(sessionId || newSessionId),
-    { expirationTtl: 60 * 5 },
-  );
+  db.prepare<{ code: string; session_id: string }>(
+    `INSERT INTO sqrap_states (code, session_id) VALUES (@code, @session_id)`,
+  ).run({
+    code,
+    session_id: newSessionId,
+  });
 
   const cookieValue = await getSessionCookie(sessionId || newSessionId);
   if (cookieValue) {
