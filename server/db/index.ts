@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { getAccount } from "../_common/account.js";
 
-const db = new Database(".data/foobar.db", {});
+const db = new Database(".data/whenst.db", {});
 db.pragma("journal_mode = WAL");
 
 export { db };
