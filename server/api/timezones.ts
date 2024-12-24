@@ -60,18 +60,26 @@ async function addTimezone(request: FastifyRequest, reply: FastifyReply) {
 
   if (timezones?.every((v) => v.id !== newTimezone.id)) {
     if (account) {
-      db.prepare(
-        `INSERT INTO accounts (id, timezones) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET timezones = ?2`,
+      db.prepare<{ account_id: string; timezones: string }>(
+        `INSERT INTO account_settings (account_id, timezones) VALUES (@account_id, @timezones)
+          ON CONFLICT(account_id) DO UPDATE SET timezones = @timezones`,
       ).run({
-        1: account.id,
-        2: [newTimezone, ...timezones],
+        account_id: account.id,
+        timezones: JSON.stringify([newTimezone, ...timezones]),
       });
     } else {
-      db.prepare(
-        `INSERT INTO accounts (id, timezones) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET timezones = ?2`,
+      if (!sessionId) {
+        db.prepare<{ id: string }>(
+          `INSERT INTO sessions (id) VALUES (@id) ON CONFLICT DO NOTHING`,
+        ).run({ id: newSessionId });
+      }
+
+      db.prepare<{ session_id: string; timezones: string }>(
+        `INSERT INTO session_settings (session_id, timezones) VALUES (@session_id, @timezones)
+          ON CONFLICT(session_id) DO UPDATE SET timezones = @timezones`,
       ).run({
-        1: newSessionId,
-        2: [newTimezone, ...timezones],
+        session_id: newSessionId,
+        timezones: JSON.stringify([newTimezone, ...timezones]),
       });
     }
 
@@ -132,14 +140,18 @@ async function deleteTimezone(request: FastifyRequest, reply: FastifyReply) {
     ) ?? [];
 
   if (account) {
-    db.prepare(`UPDATE accounts SET timezones = ?2 WHERE id = ?1`).run({
-      1: account.id,
-      2: timezones,
+    db.prepare(
+      `UPDATE account_settings SET timezones = @timezones WHERE account_id = @account_id`,
+    ).run({
+      account_id: account.id,
+      timezones: JSON.stringify(timezones),
     });
   } else {
-    db.prepare(`UPDATE sessions SET timezones = ?2 WHERE id = ?1`).run({
-      1: sessionId,
-      2: timezones,
+    db.prepare(
+      `UPDATE session_settings SET timezones = @timezones WHERE session_id = @session_id`,
+    ).run({
+      session_id: sessionId,
+      timezones: JSON.stringify(timezones),
     });
   }
 
@@ -203,14 +215,18 @@ async function reorderTimezone(request: FastifyRequest, reply: FastifyReply) {
   ];
 
   if (account) {
-    db.prepare(`UPDATE accounts SET timezones = ?2 WHERE id = ?1`).run({
-      1: account.id,
-      2: timezones,
+    db.prepare(
+      `UPDATE account_settings SET timezones = @timezones WHERE account_id = @account_id`,
+    ).run({
+      account_id: account.id,
+      timezones: JSON.stringify(timezones),
     });
   } else {
-    db.prepare(`UPDATE sessions SET timezones = ?2 WHERE id = ?1`).run({
-      1: sessionId,
-      2: timezones,
+    db.prepare(
+      `UPDATE session_settings SET timezones = @timezones WHERE session_id = @session_id`,
+    ).run({
+      session_id: sessionId,
+      timezones: JSON.stringify(timezones),
     });
   }
 

@@ -9,19 +9,31 @@ export { db };
 export function getSessionTimezones(sessionId: string) {
   const account = getAccount(sessionId);
 
-  const timezones = account
+  const row = account
     ? db
         .prepare<
-          string,
-          { id: string }[]
-        >(`SELECT timezones FROM accounts WHERE id = ?`)
-        .get(account.id)
+          { account_id: string },
+          { timezones: string }
+        >(`SELECT timezones FROM account_settings WHERE account_id = @account`)
+        .get({ account_id: account.id })
     : db
         .prepare<
-          string,
-          { id: string }[]
-        >(`SELECT timezones FROM sessions WHERE id = ?`)
-        .get(sessionId);
+          { session_id: string },
+          { timezones: string }
+        >(`SELECT timezones FROM session_settings WHERE session_id = @session_id`)
+        .get({ session_id: sessionId });
 
-  return timezones;
+  if (row?.timezones) {
+    try {
+      return JSON.parse(row.timezones) as {
+        id: string;
+        label: string;
+        timezone: string;
+      }[];
+    } catch (_e) {
+      return undefined;
+    }
+  }
+
+  return undefined;
 }
