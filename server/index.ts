@@ -23,12 +23,20 @@ if (process.env.NODE_ENV === "production") {
   fastify.addHook("onRequest", (request, reply, next) => {
     const { hostname, url } = request;
 
-    // TODO? move this to an env
+    // TODO? move `when.st` to an env
     if (hostname !== "when.st") {
-      const httpsUrl = `https://when.st${url}`;
+      if (url === "/service-worker.js") {
+        // if present, replace old domain's service worker with a dummy
+        // (SW URL redirects don't seem to work)
+        reply.header("content-type", "application/javascript").send(`
+          addEventListener("install", function () { self.skipWaiting() });
+        `);
+      } else {
+        const httpsUrl = `http://when.st${url}`;
 
-      // TODO change http code to 301 if redirect works
-      reply.redirect(httpsUrl, 302);
+        // TODO change http code to 301 if redirect works
+        reply.redirect(httpsUrl, 302);
+      }
     }
 
     next();
