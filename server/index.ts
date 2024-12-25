@@ -58,7 +58,7 @@ fastify.post("/api/sqrap/init", apiSqrapInitPost);
 fastify.get("/api/sqrap/status", apiSqrapStatusGet);
 
 // Run the server!
-fastify.listen({ port: 3000 }, function (err, _address) {
+fastify.listen({ port: 3000, host: "0.0.0.0" }, function (err, _address) {
   if (err) {
     fastify.log.error(err);
     process.exit(1);
