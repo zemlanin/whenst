@@ -15,7 +15,25 @@ import { apiSqrapStatusGet } from "./api/sqrap/status.js";
 
 const fastify = Fastify({
   logger: true,
+  trustProxy: true,
 });
+
+// redirect to the main domain
+if (process.env.NODE_ENV === "production") {
+  fastify.addHook("onRequest", (request, reply, next) => {
+    const { hostname, url } = request;
+
+    // TODO? move this to an env
+    if (hostname !== "when.st") {
+      const httpsUrl = `https://when.st${url}`;
+
+      // TODO change http code to 301 if redirect works
+      reply.redirect(httpsUrl, 302);
+    }
+
+    next();
+  });
+}
 
 await fastify.register(import("@fastify/compress"));
 
