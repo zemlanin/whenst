@@ -26,16 +26,15 @@ if (process.env.NODE_ENV === "production") {
     // TODO? move `when.st` to an env
     if (hostname !== "when.st") {
       if (url === "/service-worker.js") {
-        // if present, replace old domain's service worker with a dummy
-        // (SW URL redirects don't seem to work)
+        // if user has old domain's service worker, replace it with a dummy
+        // (to stop fetching cached everything; SW URL redirects don't seem to work)
         reply.header("content-type", "application/javascript").send(`
           addEventListener("install", function () { self.skipWaiting() });
         `);
       } else {
         const httpsUrl = `http://when.st${url}`;
 
-        // TODO change http code to 301 if redirect works
-        reply.redirect(httpsUrl, 302);
+        reply.redirect(httpsUrl, 301);
       }
     }
 
