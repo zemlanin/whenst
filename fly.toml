@@ -24,4 +24,4 @@ primary_region = 'ams'
 
 [mounts]
   source = "whenst_volume"
-  destination = "/app/.data"
+  destination = "/var/lib/litefs"

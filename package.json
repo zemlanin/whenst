@@ -19,7 +19,8 @@
       "context": "node",
       "outputFormat": "esmodule",
       "source": [
-        "server/index.ts"
+        "server/index.ts",
+        "server/migrations.ts"
       ],
       "distDir": "./dist/server"
     }
@@ -35,6 +36,7 @@
     "build": "parcel build --target default && parcel build --target server --config \"@parcel/config-default\"",
     "watch": "parcel watch --no-hmr",
     "start": "node dist/server",
+    "migrate": "node dist/server/migrations",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
     "prettier": "prettier \"./*.{html,css,js,jsx,cjs}\" \"./server/**/*.ts\" \"./icons/**/*.jsx\"",

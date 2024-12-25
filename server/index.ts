@@ -2,8 +2,6 @@ import path from "node:path";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 
-import "./migrations.js";
-
 import { apiSessionDelete } from "./api/session.js";
 import { apiSettingsGet } from "./api/settings.js";
 import {

@@ -37,9 +37,15 @@ RUN npm prune --omit=dev
 # Final stage for app image
 FROM base
 
+# LiteFS setup
+RUN apt-get update -y && apt-get install -y ca-certificates fuse3 sqlite3
+COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
+
 # Copy built application
 COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+
+# the server is started from `exec.cmd` in `litefs.yml`
+ENTRYPOINT litefs mount

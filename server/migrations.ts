@@ -3,30 +3,46 @@ import path from "node:path";
 
 import { db } from "./db/index.js";
 
-const user_version = db.pragma("user_version", { simple: true }) as number;
+// parcel doesn't support top-level await in entrypoint files
+// https://github.com/parcel-bundler/parcel/issues/4028
+migrate().then(
+  () => {
+    process.exit();
+  },
+  (error) => {
+    console.error(error);
+    process.exit(1);
+  },
+);
 
-const migrationsPath = path.resolve(process.cwd(), "migrations");
-const migrations = fs
-  .readdirSync(migrationsPath)
-  .filter((f) => f.match(/^\d+.+\.sql/))
-  .map((f) => ({ file: f, version: extractMigrationVersion(f) }))
-  .filter((m): m is typeof m & { version: number } => !!m.version)
-  .filter((m) => m.version > user_version)
-  .toSorted((a, b) => a.version - b.version);
+async function migrate() {
+  const user_version = db.pragma("user_version", { simple: true }) as number;
 
-if (migrations.length) {
-  if (user_version > 0 && !db.memory) {
-    const backupPath =
-      db.name + `.${new Date().toISOString().replace(/[^0-9TZ.]/g, "-")}.bkp`;
+  const migrationsPath = path.resolve(process.cwd(), "migrations");
+  const migrations = fs
+    .readdirSync(migrationsPath)
+    .filter((f) => f.match(/^\d+.+\.sql/))
+    .map((f) => ({ file: f, version: extractMigrationVersion(f) }))
+    .filter((m): m is typeof m & { version: number } => !!m.version)
+    .filter((m) => m.version > user_version)
+    .toSorted((a, b) => a.version - b.version);
 
-    await db.backup(backupPath);
-    console.log("database backup: %s", backupPath);
-  }
+  if (migrations.length) {
+    if (user_version > 0 && !db.memory) {
+      const backupPath =
+        db.name + `.${new Date().toISOString().replace(/[^0-9TZ.]/g, "-")}.bkp`;
 
-  for (const migration of migrations) {
-    console.log("running migration: %s", migration.file);
-    db.exec(fs.readFileSync(path.join(migrationsPath, migration.file), "utf8"));
-    db.pragma(`user_version = ${migration.version}`);
+      await db.backup(backupPath);
+      console.log("database backup: %s", backupPath);
+    }
+
+    for (const migration of migrations) {
+      console.log("running migration: %s", migration.file);
+      db.exec(
+        fs.readFileSync(path.join(migrationsPath, migration.file), "utf8"),
+      );
+      db.pragma(`user_version = ${migration.version}`);
+    }
   }
 }
 
