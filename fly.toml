@@ -25,3 +25,7 @@ primary_region = 'ams'
 [mounts]
   source = "whenst_volume"
   destination = "/var/lib/litefs"
+
+[env]
+  NODE_ENV = "production"
+  WHENST_SECURE_COOKIE = "true"
