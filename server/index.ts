@@ -26,6 +26,27 @@ fastify.register((childContext, _, done) => {
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
     preCompressed: true,
+    cacheControl: false,
+    // can be overwritten with `sendFile(..., { cacheControl: true, maxAge: ms })`
+    setHeaders(res, filepath, _stat) {
+      // strip unimportant for caching extensions
+      const basename = path.basename(
+        path.basename(path.basename(filepath, ".br"), ".gz"),
+        ".map",
+      );
+
+      if (basename === "app.webmanifest" || basename === "service-worker.js") {
+        res.setHeader("cache-control", `public, max-age=${5 * 60}`);
+        return;
+      }
+
+      if (basename === "index.html") {
+        res.setHeader("cache-control", `public, max-age=${60 * 60}`);
+        return;
+      }
+
+      res.setHeader("cache-control", `public, max-age=${365 * 24 * 60 * 60}`);
+    },
   });
 
   childContext.setNotFoundHandler((request, reply) => {
