@@ -56,6 +56,10 @@ fastify.register((childContext, _, done) => {
     cacheControl: false,
     // can be overwritten with `sendFile(..., { cacheControl: true, maxAge: ms })`
     setHeaders(res, filepath, _stat) {
+      if (res.getHeader("cache-control")) {
+        return;
+      }
+
       // strip unimportant for caching extensions
       const basename = path.basename(
         path.basename(path.basename(filepath, ".br"), ".gz"),
@@ -67,12 +71,7 @@ fastify.register((childContext, _, done) => {
         return;
       }
 
-      if (basename === "index.html") {
-        res.setHeader("cache-control", `public, max-age=${60 * 60}`);
-        return;
-      }
-
-      res.setHeader("cache-control", `public, max-age=${365 * 24 * 60 * 60}`);
+      res.setHeader("cache-control", `public, max-age=${60 * 60}`);
     },
   });
 
@@ -95,7 +94,11 @@ fastify.register((childContext, _, done) => {
       return reply.code(404).send();
     }
 
-    return reply.code(200).type("text/html").sendFile("index.html");
+    return reply
+      .code(200)
+      .type("text/html")
+      .header("cache-control", `public, max-age=${5 * 60}`)
+      .sendFile("index.html");
   });
 
   done();
