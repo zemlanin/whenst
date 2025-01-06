@@ -39,8 +39,8 @@
     "migrate": "node dist/server/migrations",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx,cjs}\" \"./server/**/*.ts\" \"./icons/**/*.jsx\"",
-    "eslint": "eslint \"./*.{js,jsx,cjs}\" \"./server/**/*.ts\" \"./icons/**/*.jsx\""
+    "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\"",
+    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
   },
   "repository": {
     "type": "git",
