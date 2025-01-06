@@ -36,3 +36,8 @@ primary_region = 'ams'
 [env]
   NODE_ENV = "production"
   WHENST_SECURE_COOKIE = "true"
+
+[[statics]]
+  guest_path = "/client/static"
+  url_prefix = "/static"
+  tigris_bucket = "whenst"

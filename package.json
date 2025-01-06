@@ -20,6 +20,7 @@
       "outputFormat": "esmodule",
       "source": [
         "server/index.ts",
+        "server/release.ts",
         "server/migrations.ts"
       ],
       "distDir": "./dist/server"
@@ -37,6 +38,7 @@
     "watch": "parcel watch --no-hmr",
     "start": "node dist/server",
     "migrate": "node dist/server/migrations",
+    "release": "node dist/server/release",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
     "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\"",
@@ -53,11 +55,14 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.722.0",
+    "@aws-sdk/lib-storage": "^3.722.0",
     "@fastify/compress": "^8.0.1",
     "@fastify/static": "^8.0.3",
     "better-sqlite3": "^11.7.0",
     "cookie": "^1.0.2",
-    "fastify": "^5.2.0"
+    "fastify": "^5.2.0",
+    "mime": "^4.0.6"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",

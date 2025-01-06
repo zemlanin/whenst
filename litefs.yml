@@ -11,7 +11,7 @@ fuse:
 data:
   dir: "/var/lib/litefs"
 
-# This flag ensure that LiteFS continues to run if there is an issue on starup.
+# This flag ensure that LiteFS continues to run if there is an issue on startup.
 # It makes it easy to ssh in and debug any issues you might be having rather
 # than continually restarting on initialization failure.
 exit-on-error: false
@@ -34,6 +34,9 @@ proxy:
 exec:
   # Only run migrations on candidate nodes.
   - cmd: "npm run migrate"
+    if-candidate: true
+
+  - cmd: "npm run release"
     if-candidate: true
 
   - cmd: "npm start"
