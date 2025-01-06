@@ -25,7 +25,9 @@ if (process.env.NODE_ENV === "production") {
 
     // TODO? move `when.st` to an env
     if (hostname !== "when.st") {
-      if (url === "/service-worker.js") {
+      if (url === "/.well-known/healthcheck") {
+        reply.send();
+      } else if (url === "/service-worker.js") {
         // if user has old domain's service worker, replace it with a dummy
         // (to stop fetching cached everything; SW URL redirects don't seem to work)
         reply.header("content-type", "application/javascript").send(`
@@ -86,6 +88,13 @@ fastify.register((childContext, _, done) => {
         });
     }
 
+    if (
+      request.url.startsWith("/.well-known/") ||
+      request.url.startsWith("/static/")
+    ) {
+      return reply.code(404).send();
+    }
+
     return reply.code(200).type("text/html").sendFile("index.html");
   });
 
@@ -100,6 +109,9 @@ fastify.patch("/api/timezones", apiTimezonesPatch);
 fastify.post("/api/sqrap/code", apiSqrapCodePost);
 fastify.post("/api/sqrap/init", apiSqrapInitPost);
 fastify.get("/api/sqrap/status", apiSqrapStatusGet);
+fastify.get("/.well-known/healthcheck", (_request, reply) => {
+  return reply.code(200).send();
+});
 
 // Run the server!
 fastify.listen({ port: 3000, host: "0.0.0.0" }, function (err, _address) {
