@@ -123,7 +123,8 @@ button {
 }
 
 button:disabled,
-form:invalid button[type="submit"] {
+form:invalid button[type="submit"],
+[role="button"][aria-disabled="true"] {
   cursor: not-allowed;
 }
 
@@ -150,7 +151,8 @@ button.primary {
 button:disabled,
 button.primary:disabled,
 form:invalid button,
-form:invalid button.primary {
+form:invalid button.primary,
+[role="button"][aria-disabled="true"] {
   background-color: var(--disabled);
   border-color: var(--disabled);
   color: var(--disabled-foreground);

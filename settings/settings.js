@@ -1,6 +1,10 @@
 import { Temporal } from "@js-temporal/polyfill";
+import L from "leaflet";
 import Sortable from "sortablejs";
 import bars from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/bars.svg";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 import {
   loadSettings,
@@ -15,6 +19,70 @@ import {
 } from "../saved-timezones";
 
 import { guessTimezone } from "../guess-timezone";
+
+const map = L.map(
+  document.getElementById("timezones-edit").querySelector(".timezones-map"),
+  {
+    minZoom: 1,
+    maxZoom: 8,
+    maxBounds: [
+      [-90, -210],
+      [90, 210],
+    ],
+    maxBoundsViscosity: 1,
+    worldCopyJump: true,
+  },
+).setView([40, 0], 1);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+}).addTo(map);
+
+/** @type AbortController | undefined */
+let mapClickRequestAbortController;
+
+/** @type L.marker | undefined */
+let mapMarker;
+
+map.on("click", async (e) => {
+  const { lat, lng } = e.latlng.wrap();
+
+  if (mapClickRequestAbortController) {
+    mapClickRequestAbortController.abort();
+    mapClickRequestAbortController = undefined;
+  }
+
+  mapClickRequestAbortController = new AbortController();
+  const { signal } = mapClickRequestAbortController;
+
+  const timezoneResp = await fetch(
+    `/api/geotz?` +
+      new URLSearchParams({
+        lat: lat.toPrecision(3),
+        lng: lng.toPrecision(3),
+      }),
+    { signal },
+  );
+
+  const { timezone } = await timezoneResp.json();
+
+  if (mapMarker) {
+    mapMarker.remove();
+    mapMarker = undefined;
+  }
+
+  mapMarker = L.marker(e.latlng, {
+    icon: new L.Icon.Default({
+      iconUrl: markerIcon,
+      iconRetinaUrl: markerIcon2x,
+      shadowUrl: markerShadow,
+    }),
+  }).addTo(map);
+
+  addTimezoneForm.timezone.value = timezone;
+
+  mapClickRequestAbortController = undefined;
+});
 
 const sortable = Sortable.create(document.getElementById("timezones-list"), {
   handle: ".dnd-handle",

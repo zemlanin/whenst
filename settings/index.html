@@ -36,7 +36,9 @@
     as="font"
     type="font/woff2"
   />
+  <link rel="stylesheet" type="text/css" href="npm:leaflet/dist/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="/index.css" />
+  <link rel="stylesheet" type="text/css" href="/settings/index.css" />
   <link rel="shortcut icon" type="image/png" href="/images/favicon-white.png" />
   <link
     rel="icon"
@@ -95,6 +97,7 @@
     <h2>Timezones</h2>
 
     <div id="timezones-edit">
+      <div class="timezones-map"></div>
       <form id="add-timezone" action="javascript:void(0)">
         <input
           type="text"
