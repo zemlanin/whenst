@@ -41,3 +41,7 @@ primary_region = 'ams'
   guest_path = "/client/static"
   url_prefix = "/static"
   tigris_bucket = "whenst"
+
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 1
