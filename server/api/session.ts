@@ -30,5 +30,5 @@ export async function apiSessionDelete(
     );
   }
 
-  reply.send({ done: true });
+  return reply.send({ done: true });
 }

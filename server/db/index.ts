@@ -4,7 +4,16 @@ import { getAccount } from "../_common/account.js";
 const db = new Database(".data/whenst.db", {});
 db.pragma("journal_mode = WAL");
 
-export { db };
+const timezonesDB = new Database(".data/timezones.db", {
+  readonly: true,
+});
+timezonesDB.loadExtension(
+  process.env.WHENST_SPATIALITE_MOD ||
+    // `brew install spatialite-tools`
+    "/opt/homebrew/lib/mod_spatialite.dylib",
+);
+
+export { db, timezonesDB };
 
 export function getSessionTimezones(sessionId: string) {
   const account = getAccount(sessionId);

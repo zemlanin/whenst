@@ -22,8 +22,7 @@ export async function apiSettingsGet(
 
   if (!sessionId) {
     reply.header("cache-control", "public, max-age=14400");
-    reply.send(EMPTY_RESPONSE);
-    return;
+    return reply.send(EMPTY_RESPONSE);
   }
 
   reply.header("cache-control", "private, no-cache");
@@ -49,5 +48,5 @@ export async function apiSettingsGet(
     });
   }
 
-  reply.send({ timezones: timezones, signedIn: true });
+  return reply.send({ timezones: timezones, signedIn: true });
 }

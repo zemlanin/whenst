@@ -25,8 +25,7 @@ async function sqrapStatus(request: FastifyRequest, reply: FastifyReply) {
 
   if (!sessionId) {
     reply.status(400);
-    reply.send({ error: "Session data is required" });
-    return;
+    return reply.send({ error: "Session data is required" });
   }
 
   const { code } = request.query as { code: string };
@@ -43,15 +42,13 @@ async function sqrapStatus(request: FastifyRequest, reply: FastifyReply) {
 
   if (!row) {
     reply.status(404);
-    reply.send({ done: false, error: "Not found" });
-    return;
+    return reply.send({ done: false, error: "Not found" });
   }
 
   const { account_id } = row;
 
   if (!account_id) {
-    reply.send({ done: false, error: null });
-    return;
+    return reply.send({ done: false, error: null });
   }
 
   associateSessionWithAccount(sessionId, account_id);

@@ -26,8 +26,8 @@ const map = L.map(
     minZoom: 1,
     maxZoom: 8,
     maxBounds: [
-      [-90, -210],
-      [90, 210],
+      [-90, -180],
+      [90, 180],
     ],
     maxBoundsViscosity: 1,
     worldCopyJump: true,
@@ -41,8 +41,10 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 /** @type AbortController | undefined */
 let mapClickRequestAbortController;
 
-/** @type L.marker | undefined */
+/** @type L.Marker | undefined */
 let mapMarker;
+/** @type L.GeoJSON | undefined */
+let mapArea;
 
 map.on("click", async (e) => {
   const { lat, lng } = e.latlng.wrap();
@@ -64,11 +66,16 @@ map.on("click", async (e) => {
     { signal },
   );
 
-  const { timezone } = await timezoneResp.json();
+  const { timezone, geometry } = await timezoneResp.json();
 
   if (mapMarker) {
     mapMarker.remove();
     mapMarker = undefined;
+  }
+
+  if (mapArea) {
+    mapArea.remove();
+    mapArea = undefined;
   }
 
   mapMarker = L.marker(e.latlng, {
@@ -78,6 +85,7 @@ map.on("click", async (e) => {
       shadowUrl: markerShadow,
     }),
   }).addTo(map);
+  mapArea = L.geoJSON(geometry).addTo(map);
 
   addTimezoneForm.timezone.value = timezone;
 

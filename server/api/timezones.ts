@@ -155,7 +155,7 @@ async function deleteTimezone(request: FastifyRequest, reply: FastifyReply) {
     });
   }
 
-  reply.send(null);
+  return reply.send(null);
 }
 
 // PATCH /timezones

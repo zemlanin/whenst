@@ -37,8 +37,14 @@ RUN npm prune --omit=dev
 # Final stage for app image
 FROM base
 
+RUN apt-get update -y && apt-get install -y \
+    # LiteFS setup
+    ca-certificates fuse3 sqlite3 \
+    libsqlite3-mod-spatialite
+
+ENV WHENST_SPATIALITE_MOD="/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
+
 # LiteFS setup
-RUN apt-get update -y && apt-get install -y ca-certificates fuse3 sqlite3
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 
 # Copy built application

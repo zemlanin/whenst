@@ -87,5 +87,5 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
     );
   }
 
-  reply.send({ code });
+  return reply.send({ code });
 }

@@ -40,7 +40,7 @@ export async function apiSqrapInitPost(
     );
   }
 
-  reply.send({ code });
+  return reply.send({ code });
 }
 
 function generateCode() {
