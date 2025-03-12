@@ -9,8 +9,7 @@
       "source": [
         "index.html",
         "settings/index.html",
-        "about/index.html",
-        "link/index.html"
+        "about/index.html"
       ],
       "distDir": "./dist/client",
       "includeNodeModules": true
