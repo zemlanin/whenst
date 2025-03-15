@@ -39,20 +39,15 @@ window.addEventListener("keyup", function handleArrowNavigation(event) {
         ? "ArrowDown"
         : null;
 
-  if (event.key === prevKey) {
-    event.preventDefault();
-    const focusTarget = children[Math.max(0, currentIndex - 1)];
-    focusTarget.tabIndex = 0;
-    focusTarget.focus();
-    if (target !== focusTarget) {
-      target.tabIndex = -1;
-    }
-  }
+  const focusTarget =
+    event.key === prevKey
+      ? children[Math.max(0, currentIndex - 1)]
+      : event.key === nextKey
+        ? children[Math.min(currentIndex + 1, children.length - 1)]
+        : null;
 
-  if (event.key === nextKey) {
+  if (focusTarget && focusTarget !== target) {
     event.preventDefault();
-    const focusTarget =
-      children[Math.min(currentIndex + 1, children.length - 1)];
     focusTarget.tabIndex = 0;
     focusTarget.focus();
     if (target !== focusTarget) {
