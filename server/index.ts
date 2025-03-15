@@ -29,10 +29,14 @@ if (process.env.NODE_ENV === "production") {
       if (url === "/.well-known/healthcheck") {
         reply.send();
       } else if (url === "/service-worker.js") {
-        // if user has old domain's service worker, replace it with a dummy
+        // if user has old domain's service worker, replace it with a self-destructing dummy
         // (to stop fetching cached everything; SW URL redirects don't seem to work)
         reply.header("content-type", "application/javascript").send(`
           addEventListener("install", function () { self.skipWaiting() });
+          caches.keys()
+          .then(function (keys) { return Promise.all(keys.map(function (key) { return caches.delete(key) } )) })
+          .then(function () { return registration.unregister() })
+          .catch(console.error);
         `);
       } else {
         const httpsUrl = `http://when.st${url}`;
