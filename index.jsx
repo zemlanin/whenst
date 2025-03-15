@@ -12,6 +12,8 @@ import {
   signal,
 } from "@preact/signals";
 
+import "./keyboard";
+
 // TODO: `addTimezone`
 import { loadSettings } from "./api";
 import { guessTimezone } from "./guess-timezone";
@@ -228,9 +230,14 @@ function ClockRowActions({ timestampURL }) {
 
   return (
     <>
-      <div className="actions">
+      <div className="actions" role="menubar">
         <div className="scrolly">
-          <a href={timestampURL} aria-label="Link to this page">
+          <a
+            href={timestampURL}
+            aria-label="Link to this page"
+            role="menuitem"
+            tabIndex={0}
+          >
             Link
           </a>
           <div></div>
@@ -240,6 +247,8 @@ function ClockRowActions({ timestampURL }) {
             labelFailure="Failed"
             action={copyURL}
             aria-label="Copy Link"
+            role="menuitem"
+            tabIndex={-1}
             primary
           />
           {shareURL ? (
@@ -249,6 +258,8 @@ function ClockRowActions({ timestampURL }) {
               labelFailure="Share"
               action={shareURL}
               aria-label="Share Link"
+              role="menuitem"
+              tabIndex={-1}
             />
           ) : null}
         </div>
@@ -264,16 +275,25 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
     () => activeTab.value === SAVED_TIMEZONES_ID,
   );
   const otherTimezonesHidden = useComputed(() => !otherTimezonesActive.value);
+  const timezonesTabIndex = useComputed(() =>
+    otherTimezonesActive.value ? 0 : -1,
+  );
 
   const discordFormatsActive = useComputed(
     () => activeTab.value === DISCORD_FORMATS_ID,
   );
   const discordFormatsHidden = useComputed(() => !discordFormatsActive.value);
+  const discordTabIndex = useComputed(() =>
+    discordFormatsActive.value ? 0 : -1,
+  );
 
   const calendarLinksActive = useComputed(
     () => activeTab.value === CALENDAR_LINKS_ID,
   );
   const calendarLinksHidden = useComputed(() => !calendarLinksActive.value);
+  const calendarTabIndex = useComputed(() =>
+    calendarLinksActive.value ? 0 : -1,
+  );
 
   return (
     <>
@@ -282,6 +302,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
           <button
             role="tab"
             aria-selected={otherTimezonesActive}
+            tabIndex={timezonesTabIndex}
             onClick={() => {
               activeTab.value = SAVED_TIMEZONES_ID;
             }}
@@ -295,6 +316,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
           <button
             role="tab"
             aria-selected={discordFormatsActive}
+            tabIndex={discordTabIndex}
             onClick={() => {
               activeTab.value = DISCORD_FORMATS_ID;
             }}
@@ -308,6 +330,7 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
           <button
             role="tab"
             aria-selected={calendarLinksActive}
+            tabIndex={calendarTabIndex}
             onClick={() => {
               activeTab.value = CALENDAR_LINKS_ID;
             }}
@@ -545,14 +568,16 @@ function CalendarLinks({ rootDT, localTZ, hidden }) {
           <div
             className="calendar-links-durations"
             role="radiogroup"
+            aria-orientation="horizontal"
             aria-label="Duration"
           >
-            {durations.map(([label, duration]) => (
+            {durations.map(([label, duration], index) => (
               <DurationButton
                 key={label}
                 label={label}
                 duration={duration}
                 activeDuration={eventDurationMinutes}
+                tabIndex={index === 0 ? 0 : -1}
               />
             ))}
           </div>
@@ -571,7 +596,7 @@ function CalendarLinks({ rootDT, localTZ, hidden }) {
   );
 }
 
-function DurationButton({ label, duration, activeDuration }) {
+function DurationButton({ label, duration, activeDuration, tabIndex }) {
   const isActive = useComputed(() => duration === activeDuration.value);
 
   return (
@@ -582,6 +607,7 @@ function DurationButton({ label, duration, activeDuration }) {
       }}
       role="radio"
       aria-checked={isActive}
+      tabIndex={tabIndex}
     >
       {label}
     </button>
@@ -660,6 +686,8 @@ function ActionButton({
   action,
   primary,
   "aria-label": ariaLabel,
+  role,
+  tabIndex,
 }) {
   const labelSignal = useSignal(label);
   const timeoutIdSignal = useSignal(undefined);
@@ -693,6 +721,8 @@ function ActionButton({
       onClick={onClick}
       className={primary ? "primary" : null}
       aria-label={ariaLabel}
+      role={role}
+      tabIndex={tabIndex}
     >
       {labelSignal}
     </button>
@@ -805,38 +835,43 @@ function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
       aria-label="Other timezones"
       hidden={hidden}
     >
-      {filteredTimezones.value.map(({ timezone, label }) => {
-        const plainDateTime = rootDT.value
-          .withTimeZone(Temporal.TimeZone.from(timezone))
-          .toPlainDateTime();
+      <div role="table">
+        {filteredTimezones.value.map(({ timezone, label }, index) => {
+          const plainDateTime = rootDT.value
+            .withTimeZone(Temporal.TimeZone.from(timezone))
+            .toPlainDateTime();
 
-        const dateString = shortDateFormatter.format(plainDateTime);
-        const timeString = shortTimeFormatter.format(plainDateTime);
+          const dateString = shortDateFormatter.format(plainDateTime);
+          const timeString = shortTimeFormatter.format(plainDateTime);
 
-        return (
-          <div
-            role="listitem"
-            className="timezone-row"
-            key={timezone + ":" + label}
-          >
-            <a
-              className="timezone-label"
-              href={new URL(getPathnameFromTimezone(timezone), location.href)}
+          return (
+            <div
+              role="row"
+              className="timezone-row"
+              key={timezone + ":" + label}
+              tabIndex={index === 0 ? 0 : -1}
             >
-              {label
-                ? `${label} (${getLocationFromTimezone(timezone)})`
-                : getLocationFromTimezone(timezone)}
-            </a>
+              <a
+                className="timezone-label"
+                href={new URL(getPathnameFromTimezone(timezone), location.href)}
+                tabIndex={-1}
+                role="cell"
+              >
+                {label
+                  ? `${label} (${getLocationFromTimezone(timezone)})`
+                  : getLocationFromTimezone(timezone)}
+              </a>
 
-            <div>
-              {localDateString.value === dateString &&
-              pageDateString.value === dateString
-                ? timeString
-                : `${dateString}, ${timeString}`}
+              <div role="cell">
+                {localDateString.value === dateString &&
+                pageDateString.value === dateString
+                  ? timeString
+                  : `${dateString}, ${timeString}`}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
       <div className="footer">
         <div />
         <a href="/settings">{settingsLabel}</a>
