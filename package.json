@@ -43,8 +43,8 @@
     "release": "node dist/server/release",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "tsc && tsc -p service-worker && tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\"",
-    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
+    "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\"",
+    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
   },
   "repository": {
     "type": "git",

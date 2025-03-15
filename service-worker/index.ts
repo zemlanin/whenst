@@ -4,12 +4,13 @@ import { manifest, version } from "@parcel/service-worker";
 
 async function install() {
   const cache = await caches.open(version);
+  const uniqManifest = [...new Set(manifest)];
 
   await cache.addAll([
-    ...manifest.filter(
+    ...uniqManifest.filter(
       (p) => !p.endsWith(".html") && !p.endsWith(".webmanifest"),
     ),
-    ...manifest
+    ...uniqManifest
       .filter((p) => p.endsWith(".html"))
       .map((p) =>
         p
