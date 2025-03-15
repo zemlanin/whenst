@@ -236,7 +236,7 @@ function ClockRowActions({ timestampURL }) {
             href={timestampURL}
             aria-label="Link to this page"
             role="menuitem"
-            tabIndex={0}
+            tabIndex={-1}
           >
             Link
           </a>
@@ -248,7 +248,7 @@ function ClockRowActions({ timestampURL }) {
             action={copyURL}
             aria-label="Copy Link"
             role="menuitem"
-            tabIndex={-1}
+            tabIndex={0}
             primary
           />
           {shareURL ? (
