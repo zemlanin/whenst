@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "target": "es2023",
     "jsx": "react-jsx",
@@ -8,8 +10,5 @@
     "strict": true
   },
   "include": ["**/*"],
-  "exclude": ["server"],
-  "types": [
-    "browser"
-  ]
+  "exclude": ["server", "service-worker"],
 }

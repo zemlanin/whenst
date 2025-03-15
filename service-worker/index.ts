@@ -1,3 +1,5 @@
+declare const self: ServiceWorkerGlobalScope;
+
 import { manifest, version } from "@parcel/service-worker";
 
 async function install() {
@@ -27,13 +29,13 @@ async function install() {
 
   self.skipWaiting();
 }
-addEventListener("install", (e) => e.waitUntil(install()));
+self.addEventListener("install", (e) => e.waitUntil(install()));
 
 async function activate() {
   const keys = await caches.keys();
   await Promise.all(keys.map((key) => key !== version && caches.delete(key)));
 }
-addEventListener("activate", (e) => e.waitUntil(activate()));
+self.addEventListener("activate", (e) => e.waitUntil(activate()));
 
 let staleAPICache = false;
 
@@ -89,7 +91,7 @@ self.addEventListener("fetch", (e) => {
   );
 });
 
-async function getResponseWithIndexFallback(request) {
+async function getResponseWithIndexFallback(request: Request) {
   const { pathname } = new URL(request.url);
 
   const r = await caches.match(request);
@@ -106,7 +108,7 @@ async function getResponseWithIndexFallback(request) {
   }
 }
 
-async function fetchAndCache(request) {
+async function fetchAndCache(request: Request) {
   let response;
   try {
     response = await fetch(request);

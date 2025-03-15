@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "node16",
+    "noEmit": true,
+    "target": "es2023",
+    "strict": true,
+    "lib": [
+      "es2023",
+      "webworker"
+    ],
+    "types": []
+  },
+  "include": ["**/*"]
+}
