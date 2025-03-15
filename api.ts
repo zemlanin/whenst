@@ -13,7 +13,15 @@ export async function loadSettings() {
   return settings;
 }
 
-export async function addTimezone({ id, timezone, label }) {
+export async function addTimezone({
+  id,
+  timezone,
+  label,
+}: {
+  id: string | undefined;
+  timezone: string | Temporal.TimeZone;
+  label: string;
+}) {
   if (timezone instanceof Temporal.TimeZone) {
     timezone = timezone.toString();
   }
@@ -36,7 +44,7 @@ export async function addTimezone({ id, timezone, label }) {
   }
 }
 
-export async function deleteTimezone({ id }) {
+export async function deleteTimezone({ id }: { id: string }) {
   const resp = await fetch("/api/timezones", {
     method: "DELETE",
     headers: {
@@ -51,7 +59,13 @@ export async function deleteTimezone({ id }) {
   }
 }
 
-export async function reorderTimezone({ id, index }) {
+export async function reorderTimezone({
+  id,
+  index,
+}: {
+  id: string;
+  index: number;
+}) {
   const resp = await fetch("/api/timezones", {
     method: "PATCH",
     headers: {
@@ -68,13 +82,19 @@ export async function reorderTimezone({ id, index }) {
 
 export async function transferLocalTimezones() {
   const knownTimezones = window.Intl.supportedValuesOf("timeZone");
-  let timezones = [];
+  let timezones: { id: string; label: string; timezone: string }[] = [];
 
   try {
     const raw = localStorage.getItem("whenst.saved-timezones");
 
     if (raw) {
-      timezones = JSON.parse(raw)
+      timezones = (
+        JSON.parse(raw) as {
+          id: string;
+          label: string | undefined;
+          timezone: string;
+        }[]
+      )
         .map((d) => {
           return {
             id: d.id,
@@ -114,7 +134,7 @@ export async function sqrapInit() {
   return { code };
 }
 
-export async function sqrapStatus({ code }) {
+export async function sqrapStatus({ code }: { code: string }) {
   const resp = await fetch(
     "/api/sqrap/status?" + new URLSearchParams({ code }),
     {
@@ -132,7 +152,7 @@ export async function sqrapStatus({ code }) {
   throw resp;
 }
 
-export async function sqrapCode({ code }) {
+export async function sqrapCode({ code }: { code: string }) {
   const resp = await fetch("/api/sqrap/code", {
     method: "POST",
     headers: {

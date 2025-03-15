@@ -1,7 +1,9 @@
+import { Temporal } from "@js-temporal/polyfill";
+
 export const RELATIVE_UTC_ID_REGEX = /^[+-][0-1]?[0-9](:[0-5][0-9])?$/;
 export const STRICT_RELATIVE_UTC_ID_REGEX = /^[+-][0-1][0-9](:[0-5][0-9])?$/;
 
-export function getLocationFromTimezone(tz) {
+export function getLocationFromTimezone(tz: Temporal.TimeZone | string) {
   if (tz.toString() === "UTC") {
     return "UTC";
   }
@@ -28,7 +30,7 @@ export function getLocationFromTimezone(tz) {
   return location.replace(/^St_/, "St. ").replace(/_/g, " ");
 }
 
-export function getPathnameFromTimezone(tz) {
+export function getPathnameFromTimezone(tz: Temporal.TimeZone | string) {
   if (tz.toString() === "unix") {
     return "/unix";
   }

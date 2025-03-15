@@ -1,13 +1,16 @@
 import { Temporal } from "@js-temporal/polyfill";
 
-import { STRICT_RELATIVE_UTC_ID_REGEX } from "./saved-timezones";
+import { STRICT_RELATIVE_UTC_ID_REGEX } from "./saved-timezones.js";
 
 const timezones = window.Intl.supportedValuesOf("timeZone");
 
 // https://github.com/eggert/tz/blob/main/etcetera
 const TZ_ETC = "Etc/GMT";
 
-export function guessTimezone(input, { strict } = {}) {
+export function guessTimezone(
+  input: string,
+  { strict }: { strict?: boolean } = {},
+) {
   const inputLowerCase = input.toLowerCase();
 
   if (inputLowerCase === "factory") {
