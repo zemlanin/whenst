@@ -198,7 +198,9 @@ input::-webkit-datetime-edit-year-field:focus {
   border-radius: 0;
 }
 
-:focus-visible {
+:focus-visible,
+/* Safari 17-18 doesn't set `:focus-visible` pseudoclass on datetime inputs */
+input[type="datetime-local"]:focus {
   outline: solid 2px var(--primary);
   outline-offset: 0.1em;
 }
