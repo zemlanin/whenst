@@ -10,7 +10,7 @@ const TZ_ETC = "Etc/GMT";
 export function guessTimezone(
   input: string,
   { strict }: { strict?: boolean } = {},
-) {
+): Temporal.TimeZone | null {
   const inputLowerCase = input.toLowerCase();
 
   if (inputLowerCase === "factory") {
@@ -19,10 +19,10 @@ export function guessTimezone(
   }
 
   try {
-    const directMatch = Temporal.TimeZone.from(input);
+    const directMatch = Temporal.TimeZone.from(input) as Temporal.TimeZone;
 
     if (directMatch.id === TZ_ETC) {
-      return Temporal.TimeZone.from("UTC");
+      return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
     }
 
     if (directMatch.id.startsWith(TZ_ETC)) {
@@ -31,7 +31,7 @@ export function guessTimezone(
         ? `+${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`
         : `-${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`;
 
-      return Temporal.TimeZone.from(offset);
+      return Temporal.TimeZone.from(offset) as Temporal.TimeZone;
     }
 
     return directMatch;
@@ -40,11 +40,11 @@ export function guessTimezone(
   }
 
   if (inputLowerCase === "europe/kyiv" || inputLowerCase === "kyiv") {
-    return Temporal.TimeZone.from("Europe/Kiev");
+    return Temporal.TimeZone.from("Europe/Kiev") as Temporal.TimeZone;
   }
 
   if (inputLowerCase === "utc" || inputLowerCase === "gmt") {
-    return Temporal.TimeZone.from("UTC");
+    return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
   }
 
   if (inputLowerCase.match(/^(utc|gmt)?[+-][0-1]?[0-9](:[0-5][0-9])?$/)) {
@@ -64,11 +64,11 @@ export function guessTimezone(
       strictOffset === "-00" ||
       strictOffset === "-00:00"
     ) {
-      return Temporal.TimeZone.from("UTC");
+      return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
     }
 
     try {
-      return Temporal.TimeZone.from(strictOffset);
+      return Temporal.TimeZone.from(strictOffset) as Temporal.TimeZone;
     } catch (_e) {
       //
     }
@@ -89,7 +89,7 @@ export function guessTimezone(
     : timezones.filter((v) => v.toLowerCase().includes(inputLowerCase));
 
   if (guessTimezones.length === 1) {
-    return Temporal.TimeZone.from(guessTimezones[0]);
+    return Temporal.TimeZone.from(guessTimezones[0]) as Temporal.TimeZone;
   }
 
   return null;

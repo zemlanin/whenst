@@ -1,7 +1,7 @@
 import "urlpattern-polyfill";
 import { Temporal, Intl } from "@js-temporal/polyfill";
 
-import { render } from "preact";
+import { JSX, render } from "preact";
 import { useEffect } from "preact/hooks";
 import {
   useSignal,
@@ -10,29 +10,36 @@ import {
   batch,
   effect,
   signal,
+  Signal,
 } from "@preact/signals";
 
 import "./keyboard";
 
 // TODO: `addTimezone`
-import { loadSettings } from "./api";
-import { guessTimezone } from "./guess-timezone";
+import { loadSettings } from "./api.js";
+import { guessTimezone } from "./guess-timezone.js";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
-} from "./saved-timezones";
+} from "./saved-timezones.js";
 
-import Discord from "./icons/discord.svg";
-import CalendarPlus from "./icons/calendar-plus.svg";
+import Discord from "./icons/discord.svg.js";
+import CalendarPlus from "./icons/calendar-plus.svg.js";
 
-import EarthAfrica from "./icons/earth-africa.svg";
-import EarthAmericas from "./icons/earth-americas.svg";
-import EarthAsia from "./icons/earth-asia.svg";
-import EarthEurope from "./icons/earth-europe.svg";
-import EarthOceania from "./icons/earth-oceania.svg";
-import Globe from "./icons/globe.svg";
+import EarthAfrica from "./icons/earth-africa.svg.js";
+import EarthAmericas from "./icons/earth-americas.svg.js";
+import EarthAsia from "./icons/earth-asia.svg.js";
+import EarthEurope from "./icons/earth-europe.svg.js";
+import EarthOceania from "./icons/earth-oceania.svg.js";
+import Globe from "./icons/globe.svg.js";
 
+const _T = Temporal;
 window.Temporal = Temporal;
+declare global {
+  interface Window {
+    Temporal: typeof _T;
+  }
+}
 
 const browserCalendar = "iso8601";
 const rtfAlways = new window.Intl.RelativeTimeFormat("en", {
@@ -44,14 +51,17 @@ const rtfAuto = new window.Intl.RelativeTimeFormat("en", {
 
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
-  const localTZ = Temporal.TimeZone.from(Temporal.Now.timeZoneId());
+  const localTZ = Temporal.TimeZone.from(
+    Temporal.Now.timeZoneId(),
+  ) as Temporal.TimeZone;
   const isUnix = urlTZ === "unix";
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
   const dt = useSignal(parseTimeString(pageTZ, urlDT));
   const activeTab = activeTabSignal;
 
-  const pageForRemoteTimeZone = isUnix || pageTZ.id !== localTZ.id;
+  const pageForRemoteTimeZone =
+    isUnix || typeof pageTZ === "string" || pageTZ.id !== localTZ.id;
 
   useEffect(() => {
     if (!urlTZ && location.pathname !== "/" && location.pathname !== "") {
@@ -78,7 +88,7 @@ function IndexPage() {
     );
   }, []);
 
-  const writeToLocation = (dt) => {
+  const writeToLocation = (dt: Temporal.ZonedDateTime) => {
     history.replaceState(
       null,
       "",
@@ -93,11 +103,7 @@ function IndexPage() {
   return (
     <>
       {isUnix ? (
-        <UnixRow
-          rootDT={dt}
-          timeZone={pageTZ}
-          writeToLocation={writeToLocation}
-        />
+        <UnixRow rootDT={dt} writeToLocation={writeToLocation} />
       ) : (
         <ClockRow
           rootDT={dt}
@@ -134,6 +140,12 @@ function ClockRow({
   withRelative,
   secondary,
   writeToLocation,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  timeZone: Temporal.TimeZone | string;
+  withRelative: boolean;
+  secondary?: boolean;
+  writeToLocation(dt: Temporal.ZonedDateTime): void;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
 
@@ -142,12 +154,13 @@ function ClockRow({
   const timeInTZ = useComputed(() => formatDTInput(dt.value));
   const timestampURL = useComputed(() => `${tzURL}/${timeInTZ}`);
   const relative = useSignal(NBSP);
+  const withRelativeSignal = useSignal(withRelative);
   useSignalEffect(() => {
-    if (!withRelative) {
+    if (!withRelativeSignal.value) {
       return;
     }
 
-    let timeoutId;
+    let timeoutId: undefined | ReturnType<typeof setTimeout>;
 
     function scheduleUpdateRelative() {
       timeoutId = setTimeout(() => {
@@ -162,9 +175,13 @@ function ClockRow({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [withRelative]);
+  });
 
-  const onTimeChange = (event) => {
+  const onTimeChange = (event: { target: EventTarget | null }) => {
+    if (!event.target || !(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+
     try {
       const newRootDT = Temporal.PlainDateTime.from(
         event.target.value,
@@ -177,7 +194,11 @@ function ClockRow({
     }
   };
 
-  const onBlur = (event) => {
+  const onBlur = (event: FocusEvent) => {
+    if (!event.target || !(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+
     try {
       Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(timeZone);
     } catch (_e) {
@@ -188,7 +209,7 @@ function ClockRow({
         }),
       );
 
-      onTimeChange(event);
+      onTimeChange({ target: event.target });
     }
   };
 
@@ -214,7 +235,7 @@ function ClockRow({
   );
 }
 
-function ClockRowActions({ timestampURL }) {
+function ClockRowActions({ timestampURL }: { timestampURL: Signal<string> }) {
   const copyURL = navigator.clipboard
     ? () => navigator.clipboard.writeText(timestampURL.peek())
     : null;
@@ -270,7 +291,21 @@ function ClockRowActions({ timestampURL }) {
 
 const CALENDAR_LINKS_ID = "calendar-links";
 
-function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
+function Tabs({
+  activeTab,
+  rootDT,
+  pageTZ,
+  localTZ,
+}: {
+  activeTab: Signal<
+    | typeof SAVED_TIMEZONES_ID
+    | typeof DISCORD_FORMATS_ID
+    | typeof CALENDAR_LINKS_ID
+  >;
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  pageTZ: string | Temporal.TimeZone;
+  localTZ: Temporal.TimeZone;
+}) {
   const otherTimezonesActive = useComputed(
     () => activeTab.value === SAVED_TIMEZONES_ID,
   );
@@ -365,8 +400,14 @@ function Tabs({ activeTab, rootDT, pageTZ, localTZ }) {
   );
 }
 
-function RegionAwareIcon({ timezone, ...otherProps }) {
-  const [area] = timezone.id?.split("/") ?? [];
+function RegionAwareIcon({
+  timezone,
+  ...otherProps
+}: {
+  timezone: Temporal.TimeZone | string;
+} & JSX.SVGAttributes<SVGSVGElement>) {
+  const [area] =
+    typeof timezone === "string" ? [] : (timezone.id?.split("/") ?? []);
 
   /*
     > new Set(Intl.supportedValuesOf("timeZone").map(v => v.split('/')[0]))
@@ -410,7 +451,15 @@ function RegionAwareIcon({ timezone, ...otherProps }) {
 
 const DISCORD_FORMATS_ID = "discord-formats";
 
-function DiscordActions({ rootDT, localTZ, hidden }) {
+function DiscordActions({
+  rootDT,
+  localTZ,
+  hidden,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  localTZ: Temporal.TimeZone;
+  hidden: Signal<boolean>;
+}) {
   const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
 
   const timestampStyles = [
@@ -472,7 +521,15 @@ const discordFormatter_F = new Intl.DateTimeFormat(undefined, {
   minute: "2-digit",
 });
 
-function DiscordFormat({ dt, style, name }) {
+function DiscordFormat({
+  dt,
+  style,
+  name,
+}: {
+  dt: Signal<Temporal.ZonedDateTime>;
+  style: string;
+  name: string;
+}) {
   const code = useComputed(() => `<t:${dt.value.epochSeconds}:${style}>`);
 
   const label = useComputed(() => {
@@ -502,7 +559,7 @@ function DiscordFormat({ dt, style, name }) {
     <div
       key={style}
       className="discord-format"
-      style={style === "F" ? { flexBasis: "100%", flexShrink: 1 } : null}
+      style={style === "F" ? { flexBasis: "100%", flexShrink: 1 } : undefined}
     >
       <div className="discord-format_row">
         <span className="discord-format_label">{label}</span>
@@ -524,7 +581,15 @@ function DiscordFormat({ dt, style, name }) {
   );
 }
 
-function CalendarLinks({ rootDT, localTZ, hidden }) {
+function CalendarLinks({
+  rootDT,
+  localTZ,
+  hidden,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  localTZ: Temporal.TimeZone;
+  hidden: Signal<boolean>;
+}) {
   const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
 
   const eventTitle = useSignal("");
@@ -539,7 +604,7 @@ function CalendarLinks({ rootDT, localTZ, hidden }) {
     ["90m", 90],
     ["2h", 120],
     ["3h", 180],
-  ];
+  ] as const;
 
   return (
     <div
@@ -596,7 +661,17 @@ function CalendarLinks({ rootDT, localTZ, hidden }) {
   );
 }
 
-function DurationButton({ label, duration, activeDuration, tabIndex }) {
+function DurationButton({
+  label,
+  duration,
+  activeDuration,
+  tabIndex,
+}: {
+  label: string;
+  duration: number;
+  activeDuration: Signal<number>;
+  tabIndex?: number;
+}) {
   const isActive = useComputed(() => duration === activeDuration.value);
 
   return (
@@ -614,10 +689,18 @@ function DurationButton({ label, duration, activeDuration, tabIndex }) {
   );
 }
 
-const pad2 = (v) => v.toString().padStart(2, "0");
-const pad4 = (v) => v.toString().padStart(4, "0");
+const pad2 = (v: number) => v.toString().padStart(2, "0");
+const pad4 = (v: number) => v.toString().padStart(4, "0");
 
-function WebcalRow({ duration, title, dt }) {
+function WebcalRow({
+  duration,
+  title,
+  dt,
+}: {
+  duration: Signal<number>;
+  title: Signal<string>;
+  dt: Signal<Temporal.ZonedDateTime>;
+}) {
   const href = useComputed(() => {
     return (
       "data:text/calendar;charset=utf8," +
@@ -644,7 +727,15 @@ function WebcalRow({ duration, title, dt }) {
   );
 }
 
-function GoogleCalendarRow({ duration, title, dt }) {
+function GoogleCalendarRow({
+  duration,
+  title,
+  dt,
+}: {
+  duration: Signal<number>;
+  title: Signal<string>;
+  dt: Signal<Temporal.ZonedDateTime>;
+}) {
   const href = useComputed(() => {
     const start = formatDTiCal(dt.value);
     const end = duration.value
@@ -670,7 +761,7 @@ function GoogleCalendarRow({ duration, title, dt }) {
   );
 }
 
-function formatDTiCal(dt) {
+function formatDTiCal(dt: Temporal.ZonedDateTime) {
   const { isoYear, isoMonth, isoDay, isoHour, isoMinute, isoSecond } =
     dt.getISOFields();
 
@@ -688,9 +779,20 @@ function ActionButton({
   "aria-label": ariaLabel,
   role,
   tabIndex,
+}: {
+  label: string;
+  labelSuccess: string;
+  labelFailure: string;
+  action?: null | (() => void);
+  primary?: boolean;
+  "aria-label"?: string;
+  role?: JSX.HTMLAttributes["role"];
+  tabIndex?: number;
 }) {
   const labelSignal = useSignal(label);
-  const timeoutIdSignal = useSignal(undefined);
+  const timeoutIdSignal = useSignal<undefined | ReturnType<typeof setTimeout>>(
+    undefined,
+  );
 
   const onClick = action
     ? async () => {
@@ -713,13 +815,13 @@ function ActionButton({
           });
         }
       }
-    : null;
+    : undefined;
 
   return (
     <button
       disabled={!action}
       onClick={onClick}
-      className={primary ? "primary" : null}
+      className={primary ? "primary" : undefined}
       aria-label={ariaLabel}
       role={role}
       tabIndex={tabIndex}
@@ -729,14 +831,25 @@ function ActionButton({
   );
 }
 
-function UnixRow({ rootDT, writeToLocation }) {
+function UnixRow({
+  rootDT,
+  writeToLocation,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  writeToLocation(dt: Temporal.ZonedDateTime): void;
+}) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
   const timestampURL = useComputed(() =>
     new URL(`/unix/${timeInUnix}`, location.href).toString(),
   );
 
-  const onTimeChange = (event) => {
-    if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
+  const onTimeChange = (event: { target: EventTarget | null }) => {
+    if (
+      !event.target ||
+      !(event.target instanceof HTMLInputElement) ||
+      !event.target.value ||
+      !event.target.value.match(/^[0-9]{1,10}$/)
+    ) {
       return;
     }
 
@@ -744,7 +857,7 @@ function UnixRow({ rootDT, writeToLocation }) {
       const newRootDT = Temporal.PlainDateTime.from(
         new Date(+event.target.value * 1000).toISOString().replace(/Z$/, ""),
       ).toZonedDateTime("UTC");
-      writeToLocation(newRootDT, true);
+      writeToLocation(newRootDT);
       rootDT.value = newRootDT;
     } catch (e) {
       console.error(e);
@@ -752,11 +865,17 @@ function UnixRow({ rootDT, writeToLocation }) {
     }
   };
 
-  const onBlur = (event) => {
+  const onBlur = (event: FocusEvent) => {
+    const target = event.target;
+
+    if (!target || !(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+
     if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
       event.target.value = Math.floor(+new Date() / 1000).toString();
 
-      onTimeChange(event);
+      onTimeChange({ target: event.target });
     }
   };
 
@@ -769,7 +888,7 @@ function UnixRow({ rootDT, writeToLocation }) {
           className="unix-input"
           name="t"
           type="text"
-          maxLength="10"
+          maxLength={10}
           pattern="^[0-9]+$"
           value={timeInUnix}
           required
@@ -796,7 +915,17 @@ const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
 
 const SAVED_TIMEZONES_ID = "saved-timezones";
 
-function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
+function SavedTimezones({
+  rootDT,
+  pageTZ,
+  localTZ,
+  hidden,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  pageTZ: Temporal.TimeZone | string;
+  localTZ: Temporal.TimeZone;
+  hidden?: Signal<boolean>;
+}) {
   const timezones = useSignal([]);
 
   const pageDateString = useComputed(() =>
@@ -820,7 +949,9 @@ function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
   const filteredTimezones = useComputed(() => {
     return timezones.value.filter(
       ({ timezone, label }) =>
-        (timezone !== localTZ.id && timezone !== pageTZ.id) || label,
+        (timezone !== localTZ.id &&
+          (typeof pageTZ === "string" || timezone !== pageTZ.id)) ||
+        label,
     );
   });
 
@@ -853,7 +984,10 @@ function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
             >
               <a
                 className="timezone-label"
-                href={new URL(getPathnameFromTimezone(timezone), location.href)}
+                href={new URL(
+                  getPathnameFromTimezone(timezone),
+                  location.href,
+                ).toString()}
                 tabIndex={-1}
                 role="cell"
               >
@@ -880,15 +1014,24 @@ function SavedTimezones({ rootDT, pageTZ, localTZ, hidden }) {
   );
 }
 
-function parseTimeString(timezone, timeString) {
+function parseTimeString(
+  timezone: string | Temporal.TimeZone,
+  timeString: string | undefined,
+) {
   if (timezone === "unix") {
     timezone = "UTC";
   }
 
   let date = undefined;
-  try {
-    date = Temporal.PlainDate.from(timeString);
-  } catch (_e) {
+  if (timeString) {
+    try {
+      date = Temporal.PlainDate.from(timeString);
+    } catch (_e) {
+      //
+    }
+  }
+
+  if (!date) {
     date = Temporal.Now.plainDate(browserCalendar);
   }
 
@@ -911,16 +1054,18 @@ function parseTimeString(timezone, timeString) {
       });
 }
 
-function extractDataFromURL() {
+function extractDataFromURL(): [] | [string | Temporal.TimeZone, string] {
   const unixURLPattern = new URLPattern(
     {
       pathname: "/unix{/:seconds(\\d*)}?",
     },
-    { ignoreCase: true },
+    // https://github.com/kenchris/urlpattern-polyfill/issues/127
+    { ignoreCase: true } as unknown as string,
   );
   const matchesUnix = unixURLPattern.test(location.href);
   if (matchesUnix) {
-    const { seconds } = unixURLPattern.exec(location.href).pathname.groups;
+    const { seconds } =
+      unixURLPattern.exec(location.href)?.pathname.groups ?? {};
 
     if (!seconds || !seconds.match(/^[0-9]{1,10}$/)) {
       return ["unix", "now"];
@@ -938,8 +1083,8 @@ function extractDataFromURL() {
     return [];
   }
 
-  const { zeroth, 0: extra } = geoURLPattern.exec(location.href).pathname
-    .groups;
+  const { zeroth, 0: extra } = geoURLPattern.exec(location.href)?.pathname
+    .groups || { zeroth: "" };
 
   if (zeroth === "") {
     return [];
@@ -969,9 +1114,9 @@ function extractDataFromURL() {
 
 const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "long" });
 
-function getRelativeTime(dt) {
+function getRelativeTime(dt: Temporal.ZonedDateTime) {
   const localDateTime = dt;
-  const now = Temporal.Now.zonedDateTime(browserCalendar, dt.timeZone);
+  const now = Temporal.Now.zonedDateTime(browserCalendar, dt.timeZoneId);
   const today = now.startOfDay();
   const durationSinceNow = localDateTime.since(now);
   const durationSinceToday = localDateTime.startOfDay().since(today);
@@ -1038,7 +1183,7 @@ function getRelativeTime(dt) {
   return rtfAlways.format(Math.trunc(totalYears), "year");
 }
 
-function formatDTInput(dt) {
+function formatDTInput(dt: Temporal.ZonedDateTime) {
   return dt
     .toPlainDateTime()
     .toString({ smallestUnit: "minute", calendarName: "never" });
@@ -1056,11 +1201,14 @@ const titleFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-function formatDTTitle(dt) {
+function formatDTTitle(dt: Temporal.ZonedDateTime) {
   return titleFormatter.format(dt.toPlainDateTime());
 }
 
-function updateTitle(dt, tz) {
+function updateTitle(
+  dt: Temporal.ZonedDateTime | undefined,
+  tz: string | Temporal.TimeZone,
+) {
   if (!dt && !tz) {
     document.title = `when.st`;
     return;
@@ -1094,9 +1242,12 @@ effect(() => {
   if (activeTabSignal.value !== history.state?.activeTab) {
     history.replaceState(
       { ...history.state, activeTab: activeTabSignal.value },
-      undefined,
+      undefined as unknown as string, // ???
     );
   }
 });
 
-render(<IndexPage />, document.querySelector("main"));
+const main = document.querySelector("main");
+if (main) {
+  render(<IndexPage />, main);
+}
