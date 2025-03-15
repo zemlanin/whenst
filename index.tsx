@@ -926,7 +926,9 @@ function SavedTimezones({
   localTZ: Temporal.TimeZone;
   hidden?: Signal<boolean>;
 }) {
-  const timezones = useSignal([]);
+  const timezones = useSignal<
+    { id: string; label: string; timezone: string }[]
+  >([]);
 
   const pageDateString = useComputed(() =>
     shortDateFormatter.format(

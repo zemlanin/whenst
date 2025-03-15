@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { timezonesDB } from "../db/index.js";
 
-// GET /settings
+// GET /api/geotz
 export const apiGeotzGet = {
   handler: getGeotz,
   schema: {

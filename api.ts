@@ -8,7 +8,10 @@ export async function loadSettings() {
       accept: "application/json",
     },
   });
-  const settings = await resp.json();
+  const settings: {
+    timezones: { id: string; label: string; timezone: string }[];
+    signedIn: boolean;
+  } = await resp.json();
 
   return settings;
 }
@@ -129,7 +132,7 @@ export async function sqrapInit() {
       accept: "application/json",
     },
   });
-  const { code } = await resp.json();
+  const { code } = (await resp.json()) as { code: string };
 
   return { code };
 }
@@ -145,8 +148,7 @@ export async function sqrapStatus({ code }: { code: string }) {
   );
 
   if (200 <= resp.status && resp.status < 300) {
-    // { "done": boolean }
-    return await resp.json();
+    return (await resp.json()) as { done: boolean };
   }
 
   throw resp;
@@ -163,8 +165,7 @@ export async function sqrapCode({ code }: { code: string }) {
   });
 
   if (200 <= resp.status && resp.status < 300) {
-    // { "done": true }
-    return await resp.json();
+    return (await resp.json()) as { done: true };
   }
 
   throw resp;
@@ -179,8 +180,7 @@ export async function signOut() {
   });
 
   if (200 <= resp.status && resp.status < 300) {
-    // { "done": true }
-    return await resp.json();
+    return (await resp.json()) as { done: true };
   }
 
   throw resp;
