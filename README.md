@@ -12,6 +12,8 @@ Depends on [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index):
 - `npm start` starts the server on [localhost:3000](http://localhost:3000)
 - `npm run fmt` lints and formats code
 
+For easier local dev, do `npm run watch` in one Terminal tab and `npm run build:server && npm start` in another
+
 ## Generating `.data/timezones.db`
 _based on [datasette.io/tutorials/spatialite](https://datasette.io/tutorials/spatialite)_
 

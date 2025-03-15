@@ -34,8 +34,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build --target default && parcel build --target server --config \"@parcel/config-default\"",
-    "watch": "parcel watch --no-hmr",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "parcel build --target default",
+    "build:server": "parcel build --target server --config \"@parcel/config-default\"",
+    "watch": "parcel watch --no-hmr --target default",
     "start": "node dist/server",
     "migrate": "node dist/server/migrations",
     "release": "node dist/server/release",
