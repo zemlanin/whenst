@@ -1,4 +1,6 @@
-export default (props) => (
+import { JSX } from "preact/jsx-runtime";
+
+export default (props: JSX.SVGAttributes<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
     {/*<!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc. -->*/}
     <path

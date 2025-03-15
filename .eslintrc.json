@@ -37,7 +37,7 @@
   },
   "overrides": [
     {
-      "files": "icons/*.svg.jsx",
+      "files": "icons/*.svg.tsx",
       "rules": {
         "react/display-name": 0
       }
