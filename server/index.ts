@@ -53,7 +53,8 @@ fastify.register((childContext, _, done) => {
       process.env.WHENST_STATIC_ROOT ??
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
-    preCompressed: true,
+    // `parcel` doesn't compress while `watch`ing
+    preCompressed: !!process.env.WHENST_SERVE_PRECOMPRESSED,
     cacheControl: false,
     // can be overwritten with `sendFile(..., { cacheControl: true, maxAge: ms })`
     setHeaders(res, filepath, _stat) {
