@@ -78,18 +78,23 @@
 <body>
   <div id="layout">
     <nav>
-      <a href="/" class="logo">
-        <picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="/images/logo-black-square.png"
-            width="36"
-            height="36"
-          />
-          <img src="/images/logo-white-square.png" width="36" height="36" />
-        </picture>
-      </a>
-      <a href="/about" class="about">About</a>
+      <div class="left-half">
+        <a href="/" class="logo">
+          <picture>
+            <source
+              media="(prefers-color-scheme: dark)"
+              srcset="/images/logo-black-square.png"
+              width="36"
+              height="36"
+            />
+            <img src="/images/logo-white-square.png" width="36" height="36" />
+          </picture>
+        </a>
+      </div>
+      <div id="cmd-root" hidden></div>
+      <div class="right-half">
+        <a href="/about" class="about">About</a>
+      </div>
     </nav>
 
     <h1>Settings</h1>

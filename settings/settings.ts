@@ -21,6 +21,7 @@ import {
 } from "../saved-timezones.js";
 
 import { guessTimezone } from "../guess-timezone.js";
+import { mountCommandPalette } from "../command-palette";
 
 const mapEl: HTMLElement | null =
   document.getElementById("timezones-edit")?.querySelector(".timezones-map") ??
@@ -338,4 +339,9 @@ async function postSWMessage(data: { type: string }) {
   registration.active?.postMessage(data, [channel.port2]);
 
   return response;
+}
+
+const cmdRoot = document.getElementById("cmd-root");
+if (cmdRoot) {
+  mountCommandPalette(cmdRoot);
 }

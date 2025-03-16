@@ -10,5 +10,5 @@
     "strict": true
   },
   "include": ["**/*"],
-  "exclude": ["server", "service-worker"],
+  "exclude": ["server", "service-worker"]
 }

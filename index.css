@@ -200,7 +200,9 @@ input::-webkit-datetime-edit-year-field:focus {
 
 :focus-visible,
 /* Safari 17-18 doesn't set `:focus-visible` pseudoclass on datetime inputs */
-input[type="datetime-local"]:focus {
+input[type="datetime-local"]:focus,
+/* …and doesn't _always_ set it on listbox options */
+[role="option"]:focus {
   outline: solid 2px var(--primary);
   outline-offset: 0.1em;
 }
@@ -223,13 +225,33 @@ input[type="datetime-local"]:focus {
 nav {
   padding-bottom: 0.5rem;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: row;
   align-items: center;
   justify-content: space-between;
 }
 
+nav .left-half,
+nav .right-half {
+  display: flex;
+  flex-direction: row;
+  flex-basis: 52px;
+}
+
+nav .right-half {
+  align-items: flex-end;
+}
+
 nav a.logo {
   line-height: 0;
+}
+
+nav #cmd-root {
+  flex-basis: 100%;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0 1em;
 }
 
 nav a.about {

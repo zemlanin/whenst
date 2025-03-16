@@ -4,16 +4,49 @@ window.addEventListener("keyup", function handleArrowNavigation(event) {
     return;
   }
 
+  if (
+    event.key === "ArrowDown" &&
+    target.getAttribute("role") === "combobox" &&
+    target.hasAttribute("aria-controls")
+  ) {
+    const controlsId = target.getAttribute("aria-controls");
+    const controlsElement = controlsId
+      ? document.getElementById(controlsId)
+      : null;
+    const firstFocusableOption =
+      controlsElement?.querySelector<HTMLElement>(
+        '[role="option"]:not([tabindex="-1"])',
+      ) ??
+      controlsElement?.querySelector<HTMLElement>('[role="option"]') ??
+      null;
+
+    if (firstFocusableOption) {
+      event.preventDefault();
+      firstFocusableOption.tabIndex = 0;
+      firstFocusableOption.focus();
+      return;
+    }
+  }
+
   const parentRadiogroup = target.closest('[role="radiogroup"]');
   const parentTablist = target.closest('[role="tablist"]');
   const parentMenubar = target.closest('[role="menubar"]');
   const parentTable = target.closest('[role="table"]');
+  const parentListbox = target.closest('[role="listbox"]');
+
+  const parentWhatever =
+    parentRadiogroup ??
+    parentTablist ??
+    parentMenubar ??
+    parentTable ??
+    parentListbox;
 
   const children =
     parentRadiogroup?.querySelectorAll<HTMLElement>('[role="radio"]') ??
     parentTablist?.querySelectorAll<HTMLElement>('[role="tab"]') ??
     parentMenubar?.querySelectorAll<HTMLElement>('[role="menuitem"]') ??
     parentTable?.querySelectorAll<HTMLElement>('[role="row"]') ??
+    parentListbox?.querySelectorAll<HTMLElement>('[role="option"]') ??
     null;
 
   if (!children || !children.length) {
@@ -22,9 +55,7 @@ window.addEventListener("keyup", function handleArrowNavigation(event) {
 
   const currentIndex = [...children].findIndex((c) => c === target);
 
-  const orientation = getOrientation(
-    parentRadiogroup ?? parentTablist ?? parentMenubar ?? parentTable,
-  );
+  const orientation = getOrientation(parentWhatever);
   const prevKey =
     orientation === "horizontal"
       ? "ArrowLeft"
@@ -39,19 +70,41 @@ window.addEventListener("keyup", function handleArrowNavigation(event) {
         ? "ArrowDown"
         : null;
 
-  const focusTarget =
-    event.key === prevKey
-      ? children[Math.max(0, currentIndex - 1)]
-      : event.key === nextKey
-        ? children[Math.min(currentIndex + 1, children.length - 1)]
-        : null;
+  const focusTarget = (() => {
+    if (event.key === prevKey && currentIndex === 0) {
+      if (parentWhatever && parentWhatever.id) {
+        const controlledBy = document.querySelector<HTMLElement>(
+          `[aria-controls="${parentWhatever.id}"]`,
+        );
+
+        if (controlledBy) {
+          return controlledBy;
+        }
+      }
+    }
+
+    if (event.key === prevKey) {
+      return children[Math.max(0, currentIndex - 1)];
+    }
+
+    if (event.key === nextKey) {
+      return children[Math.min(currentIndex + 1, children.length - 1)];
+    }
+
+    return null;
+  })();
 
   if (focusTarget && focusTarget !== target) {
     event.preventDefault();
     focusTarget.tabIndex = 0;
     focusTarget.focus();
-    if (target !== focusTarget) {
-      target.tabIndex = -1;
+
+    for (const c of children) {
+      if (c === focusTarget) {
+        continue;
+      }
+
+      c.tabIndex = -1;
     }
   }
 });
@@ -67,7 +120,7 @@ window.addEventListener("keyup", function handleTableRowEnter(event) {
   }
 
   const role = target.getAttribute("role");
-  if (role !== "row") {
+  if (role !== "row" && role !== "option") {
     return;
   }
 
@@ -97,6 +150,7 @@ function getOrientation(el: Element | null) {
     case "menubar":
       return "horizontal";
     case "table":
+    case "listbox":
       return "vertical";
   }
 
