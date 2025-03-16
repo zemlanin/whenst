@@ -175,6 +175,7 @@ async function loadOptions(query: string) {
         },
       ],
       threshold: 0.2,
+      ignoreLocation: true,
     });
   }
 
