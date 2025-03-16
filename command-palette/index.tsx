@@ -57,6 +57,7 @@ function CommandPalette() {
       }}
       onFocusOut={(event) => {
         if (!event.relatedTarget) {
+          collapsedSignal.value = true;
           return;
         }
 
