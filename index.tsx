@@ -32,7 +32,7 @@ import EarthAsia from "./icons/earth-asia.svg.js";
 import EarthEurope from "./icons/earth-europe.svg.js";
 import EarthOceania from "./icons/earth-oceania.svg.js";
 import Globe from "./icons/globe.svg.js";
-import { mountCommandPalette } from "./command-palette";
+import { mountCommandPalette } from "./command-palette/index.js";
 
 const _T = Temporal;
 window.Temporal = Temporal;

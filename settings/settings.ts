@@ -21,7 +21,7 @@ import {
 } from "../saved-timezones.js";
 
 import { guessTimezone } from "../guess-timezone.js";
-import { mountCommandPalette } from "../command-palette";
+import { mountCommandPalette } from "../command-palette/index.js";
 
 const mapEl: HTMLElement | null =
   document.getElementById("timezones-edit")?.querySelector(".timezones-map") ??

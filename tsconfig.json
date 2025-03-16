@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "nodenext",
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "target": "es2023",

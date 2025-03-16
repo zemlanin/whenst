@@ -1,10 +1,9 @@
 import { signal, useComputed } from "@preact/signals";
-import { Temporal } from "@js-temporal/polyfill";
+import Fuse from "fuse.js/basic";
 import { ContainerNode, render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
 
 import "./index.css";
-import { getLocationFromTimezone } from "../saved-timezones";
 
 export function mountCommandPalette(parent: ContainerNode) {
   render(<CommandPalette />, parent);
@@ -114,7 +113,7 @@ function CommandPaletteFields() {
             return;
           }
 
-          loadOptions(event.target.value);
+          void loadOptions(event.target.value);
         }}
         onFocus={() => {
           collapsedSignal.value = false;
@@ -141,79 +140,36 @@ function CommandPaletteFields() {
   );
 }
 
-const ZWSP = "\u200B";
-const [localTimezoneRegion] = Temporal.Now.timeZoneId().split("/");
-const timezones = window.Intl.supportedValuesOf("timeZone").toSorted((a, b) => {
-  if (!localTimezoneRegion) {
-    return 0;
+let fuse:
+  | Fuse<{
+      timezoneId: string;
+      region: string | undefined;
+      place: string;
+    }>
+  | undefined;
+
+async function loadOptions(query: string) {
+  if (!fuse) {
+    const { timezones } = (await (
+      await fetch("/api/timezones-index")
+    ).json()) as {
+      timezones: {
+        timezoneId: string;
+        region: string | undefined;
+        place: string;
+      }[];
+    };
+
+    fuse = new Fuse(timezones, {
+      ignoreDiacritics: true,
+      keys: [{ name: "place", weight: 2 }, { name: "timezoneId" }],
+    });
   }
 
-  const sameRegionA = a.startsWith(`${localTimezoneRegion}/`);
-  const sameRegionB = b.startsWith(`${localTimezoneRegion}/`);
+  const results = fuse.search(query, { limit: 6 });
 
-  if ((sameRegionA && sameRegionB) || (!sameRegionA && !sameRegionB)) {
-    return 0;
-  }
-
-  if (sameRegionA) {
-    return -1;
-  }
-
-  if (sameRegionB) {
-    return 1;
-  }
-
-  return 0;
-});
-timezones.push("unix");
-
-function loadOptions(query: string) {
-  const normalizedQuery = normalize(query);
-
-  if (!normalize(query)) {
-    optionsSignal.value = [];
-    return;
-  }
-
-  const queryRewrites: string[] = [];
-
-  if (normalizedQuery.startsWith("kyiv".slice(0, normalizedQuery.length))) {
-    queryRewrites.push("kiev".slice(0, normalizedQuery.length));
-  }
-
-  if (normalizedQuery.startsWith("saint".slice(0, normalizedQuery.length))) {
-    queryRewrites.push(
-      normalizedQuery.replace("saint".slice(0, normalizedQuery.length), "st."),
-    );
-  }
-
-  optionsSignal.value = timezones
-    .filter((tz) => {
-      return (
-        timezoneMatchesQuery(tz, normalizedQuery) ||
-        queryRewrites.some((r) => timezoneMatchesQuery(tz, r))
-      );
-    })
-    .map((tz) => ({
-      url: `/${tz}`,
-      title:
-        tz === "unix"
-          ? "Unix Epoch"
-          : getLocationFromTimezone(tz).replace(/\//g, `/${ZWSP}`),
-    }))
-    .slice(0, 6);
-}
-
-function timezoneMatchesQuery(tz: string, normalizedQuery: string) {
-  const normalizedTZ = normalize(tz);
-  const normalizedLocation = normalize(getLocationFromTimezone(tz));
-
-  return (
-    normalizedTZ.includes(normalizedQuery) ||
-    normalizedLocation.includes(normalizedQuery)
-  );
-}
-
-function normalize(str: string) {
-  return str.toLowerCase().trim().replace(/\s+/g, " ");
+  optionsSignal.value = results.map((r) => ({
+    url: `/${r.item.timezoneId}`,
+    title: r.item.place,
+  }));
 }

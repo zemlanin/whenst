@@ -1,6 +1,7 @@
 declare const self: ServiceWorkerGlobalScope;
 
 import { manifest, version } from "@parcel/service-worker";
+import { generateIntlTimezones } from "../shared/generateIntlTimezones.js";
 
 async function install() {
   const cache = await caches.open(version);
@@ -85,6 +86,17 @@ self.addEventListener("fetch", (e) => {
         fetchAndCache(e.request);
 
         return cachedResponse;
+      }
+
+      if (pathname.startsWith("/api/timezones-index")) {
+        const timezones = generateIntlTimezones();
+
+        fetchAndCache(e.request);
+
+        const resp = new Response(JSON.stringify({ timezones }));
+        resp.headers.set("content-type", "application/json");
+
+        return resp;
       }
 
       return fetchAndCache(e.request);
