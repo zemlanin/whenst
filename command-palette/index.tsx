@@ -113,7 +113,7 @@ function CommandPaletteFields() {
             return;
           }
 
-          void loadOptions(event.target.value);
+          void loadOptions(event.target.value.trim().replace(/\s+/, " "));
         }}
         onFocus={() => {
           collapsedSignal.value = false;
@@ -162,7 +162,19 @@ async function loadOptions(query: string) {
 
     fuse = new Fuse(timezones, {
       ignoreDiacritics: true,
-      keys: [{ name: "place", weight: 2 }, { name: "timezoneId" }],
+      keys: [
+        { name: "place", weight: 2 },
+        { name: "timezoneId", weight: 1.5 },
+        {
+          name: "timezoneParts",
+          getFn({ timezoneId }) {
+            const parts = timezoneId.replace(/_/g, " ").split(/\//g);
+
+            return [...parts, parts.join(" ")];
+          },
+        },
+      ],
+      threshold: 0.2,
     });
   }
 

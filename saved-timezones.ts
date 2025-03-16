@@ -14,7 +14,7 @@ export function getLocationFromTimezone(tz: Temporal.TimeZone | string) {
 
   const parts = tz.toString().split("/");
 
-  const location = parts.length === 3 ? `${parts[1]}/${parts[2]}` : parts[1];
+  const location = parts[parts.length - 1];
 
   if (!location) {
     // fallback for invalidly saved timezones
