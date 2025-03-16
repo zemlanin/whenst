@@ -182,7 +182,10 @@ async function loadOptions(query: string) {
   const results = fuse.search(query, { limit: 6 });
 
   optionsSignal.value = results.map((r) => ({
-    url: `/${r.item.timezoneId}`,
+    url:
+      r.item.timezoneId === "Europe/Kiev"
+        ? "/Europe/Kyiv"
+        : `/${r.item.timezoneId}`,
     title: r.item.place,
   }));
 }
