@@ -239,10 +239,11 @@ nav .right-half {
   display: flex;
   flex-direction: row;
   flex-basis: 52px;
+  flex-shrink: 0;
 }
 
 nav .right-half {
-  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 nav a.logo {
