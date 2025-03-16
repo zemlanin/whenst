@@ -211,6 +211,11 @@ input[type="datetime-local"]:focus,
   outline-offset: 0.1em;
 }
 
+input[type="datetime-local"]:focus,
+input:focus-visible {
+  outline-offset: -1px;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
@@ -372,6 +377,11 @@ main {
 .tabs-row button[role="tab"][aria-selected="true"],
 button[role="radio"][aria-checked="true"] {
   background-color: var(--background);
+}
+
+.tabs-row button[role="tab"][aria-selected="true"]:focus-visible,
+button[role="radio"][aria-checked="true"]:focus-visible {
+  outline-offset: -1px;
 }
 
 [role="tabpanel"][hidden] {
