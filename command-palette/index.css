@@ -35,4 +35,5 @@
   display: flex;
   flex-direction: column;
   word-break: break-word;
+  outline-offset: -1px;
 }
