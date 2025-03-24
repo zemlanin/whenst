@@ -978,6 +978,8 @@ function SavedTimezones({
           const dateString = shortDateFormatter.format(plainDateTime);
           const timeString = shortTimeFormatter.format(plainDateTime);
 
+          const tzLocation = getLocationFromTimezone(timezone);
+
           return (
             <div
               role="row"
@@ -985,19 +987,24 @@ function SavedTimezones({
               key={timezone + ":" + label}
               tabIndex={index === 0 ? 0 : -1}
             >
-              <a
-                className="timezone-label"
-                href={new URL(
-                  getPathnameFromTimezone(timezone),
-                  location.href,
-                ).toString()}
-                tabIndex={-1}
-                role="cell"
-              >
-                {label
-                  ? `${label} (${getLocationFromTimezone(timezone)})`
-                  : getLocationFromTimezone(timezone)}
-              </a>
+              <div className="timezone-label-wrapper">
+                <a
+                  className="timezone-label"
+                  href={new URL(
+                    getPathnameFromTimezone(timezone),
+                    location.href,
+                  ).toString()}
+                  tabIndex={-1}
+                  role="cell"
+                >
+                  {label || tzLocation}
+                </a>
+                {label && label !== tzLocation ? (
+                  <span className="subtitle">
+                    {timezone === "Europe/Kiev" ? "Europe/Kyiv" : timezone}
+                  </span>
+                ) : null}
+              </div>
 
               <div role="cell">
                 {localDateString.value === dateString &&

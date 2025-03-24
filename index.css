@@ -527,7 +527,20 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   margin-bottom: 0.5rem;
   background-color: rgba(128, 128, 128, 0);
   transition: background-color ease-in-out 0.3s;
-  min-height: 2.25em;
+}
+
+#saved-timezones .timezone-row .timezone-label-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 3rem;
+  justify-content: center;
+}
+
+#saved-timezones .timezone-row .timezone-label-wrapper .subtitle {
+  color: var(--deemphasis);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
 }
 
 .spacer {
