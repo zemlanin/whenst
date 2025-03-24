@@ -6,7 +6,6 @@ import bars from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/bars.svg"
 
 import {
   loadSettings,
-  addTimezone,
   deleteTimezone,
   reorderTimezone,
   signOut,
@@ -16,7 +15,6 @@ import {
   getPathnameFromTimezone,
 } from "../saved-timezones.js";
 
-import { guessTimezone } from "../guess-timezone.js";
 import { mountCommandPalette } from "../command-palette/index.js";
 
 const timezonesList = document.getElementById("timezones-list");
@@ -42,77 +40,6 @@ if (timezonesList) {
         sortable.option("disabled", false);
       });
     },
-  });
-}
-
-const timezones = window.Intl.supportedValuesOf("timeZone");
-
-const datalist = document.getElementById("timezones-datalist");
-if (datalist) {
-  for (const tz of timezones) {
-    const option = document.createElement("option");
-    option.value = tz === "Europe/Kiev" ? "Europe/Kyiv" : tz;
-    datalist.appendChild(option);
-  }
-}
-
-const addTimezoneForm = document.getElementById(
-  "add-timezone",
-) as HTMLFormElement | null;
-if (addTimezoneForm) {
-  addTimezoneForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const form = event.target as HTMLFormElement | null;
-    if (!form) {
-      return;
-    }
-
-    const timezoneInput = form.querySelector<HTMLInputElement>(
-      'input[name="timezone"]',
-    );
-    if (!timezoneInput) {
-      return;
-    }
-
-    const timezone = guessTimezone(timezoneInput.value);
-
-    if (!timezone || !timezone.toString) {
-      form.timezone.setCustomValidity("Unknown timezone");
-      return;
-    }
-
-    const label = form.label.value || "";
-    addTimezone({ id: undefined, timezone: timezone.toString(), label }).then(
-      () => {
-        form.timezone.value = "";
-        form.label.value = "";
-
-        updateSavedTimezonesList();
-      },
-    );
-  });
-
-  addTimezoneForm.addEventListener("input", (event) => {
-    const input = event.target as HTMLInputElement | null;
-    if (!input) {
-      return;
-    }
-
-    const value = input.value;
-
-    if (input.name === "label") {
-      return;
-    }
-
-    if (!value) {
-      input.setCustomValidity("");
-      return;
-    }
-
-    const timezone = guessTimezone(value);
-
-    input.setCustomValidity(timezone ? "" : "Unknown timezone");
   });
 }
 

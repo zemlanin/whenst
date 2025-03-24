@@ -28,18 +28,3 @@
   flex-grow: 1;
   margin: 0 0.5rem;
 }
-
-#add-timezone {
-  display: flex;
-  flex-flow: row;
-  justify-content: space-between;
-  align-items: stretch;
-}
-
-#add-timezone input {
-  width: 100px;
-  flex-grow: 1;
-  flex-basis: 0;
-  margin: 0 0.25rem 0 0;
-  padding: 0 0.25rem;
-}
