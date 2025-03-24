@@ -9,11 +9,31 @@
   transition: background-color ease-in-out 0s;
 }
 
+#timezones-edit .timezone-row {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  background-color: rgba(128, 128, 128, 0);
+  transition: background-color ease-in-out 0.3s;
+  min-height: 2.25em;
+}
+
+#timezones-edit .timezone-row .timezone-label {
+  flex-shrink: 1;
+  padding: 0.25rem;
+}
+
 #timezones-edit .timezone-row .dnd-handle {
   width: 1rem;
   line-height: 0;
   cursor: grab;
   padding: 0.25rem 0.5rem 0.25rem 0;
+  height: 1.35em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #timezones-edit .timezone-row .dnd-handle svg {
@@ -27,4 +47,13 @@
 #timezones-edit .timezone-row .timezone-label-wrapper {
   flex-grow: 1;
   margin: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#timezones-edit .timezone-row .timezone-label-wrapper .subtitle {
+  color: var(--deemphasis);
+  font-size: 0.9rem;
+  margin-left: calc(1px + 0.25rem); /* input's border + left padding */
+  margin-right: calc(1px + 0.25rem); /* input's border + left padding */
 }

@@ -1,6 +1,5 @@
 import "../parcel.d.ts";
 
-import { Temporal } from "@js-temporal/polyfill";
 import { useComputed, Signal } from "@preact/signals";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
@@ -11,12 +10,10 @@ import {
   loadSettings,
   deleteTimezone,
   reorderTimezone,
+  changeTimezoneLabel,
   signOut,
 } from "../api.js";
-import {
-  getLocationFromTimezone,
-  getPathnameFromTimezone,
-} from "../saved-timezones.js";
+import { getLocationFromTimezone } from "../saved-timezones.js";
 
 import { mountCommandPalette } from "../command-palette/index.js";
 
@@ -85,15 +82,6 @@ function TimezonesEdit({
   return (
     <ul id="timezones-list" ref={timezonesListRef}>
       {timezones.value.map(({ id, timezone, label }) => {
-        const timezonePathname = (() => {
-          try {
-            Temporal.TimeZone.from(timezone);
-            return getPathnameFromTimezone(timezone);
-          } catch (_e) {
-            //
-          }
-        })();
-
         return (
           <li key={id} className="timezone-row">
             <div
@@ -101,20 +89,13 @@ function TimezonesEdit({
               dangerouslySetInnerHTML={{ __html: bars }}
             ></div>
 
-            <div className="timezone-label-wrapper">
-              <a
-                className={
-                  "timezone-label" + timezonePathname ? "" : " invalid"
-                }
-                href={timezonePathname}
-              >
-                {label
-                  ? `${label} (${getLocationFromTimezone(timezone)})`
-                  : getLocationFromTimezone(timezone)}
-              </a>
-            </div>
+            <TimezoneLabelForm id={id} timezone={timezone} label={label} />
 
-            <form action="javascript:void(0)" onSubmit={deleteFormHandler}>
+            <form
+              action="javascript:void(0)"
+              onSubmit={deleteFormHandler}
+              className="delete-form"
+            >
               <input type="hidden" name="id" value={id} />
               <button type="submit">Delete</button>
             </form>
@@ -122,6 +103,59 @@ function TimezonesEdit({
         );
       })}
     </ul>
+  );
+}
+
+function TimezoneLabelForm({
+  id,
+  timezone,
+  label,
+}: {
+  id: string;
+  timezone: string;
+  label: string;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const location = (() => {
+    try {
+      return getLocationFromTimezone(timezone);
+    } catch (_e) {
+      return undefined;
+    }
+  })();
+
+  return (
+    <form
+      action=""
+      className="timezone-label-wrapper"
+      onSubmit={patchFormHandler}
+      ref={formRef}
+    >
+      <input type="hidden" name="id" value={id} />
+      <input
+        type="text"
+        maxLength={80}
+        placeholder={location}
+        value={label || location}
+        className="timezone-label"
+        onChange={(event) => {
+          const input = event.target as HTMLInputElement | null;
+
+          if (!input) {
+            return;
+          }
+
+          changeTimezoneLabel({ id, label: input.value }).then(() => {
+            updateSavedTimezonesList();
+          });
+        }}
+      />
+      {label && label !== location ? (
+        <span className="subtitle">
+          {timezone === "Europe/Kiev" ? "Europe/Kyiv" : timezone}
+        </span>
+      ) : null}
+    </form>
   );
 }
 
@@ -151,16 +185,40 @@ function deleteFormHandler(event: SubmitEvent) {
     return;
   }
 
+  event.preventDefault();
+
   const idInput = form.querySelector<HTMLInputElement>('input[name="id"]');
   if (!idInput) {
     return;
   }
 
-  event.preventDefault();
-
   deleteTimezone({ id: idInput.value }).then(() => {
     updateSavedTimezonesList();
   });
+}
+
+function patchFormHandler(event: SubmitEvent) {
+  const form = event.target as HTMLFormElement | null;
+
+  if (!form) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const idInput = form.querySelector<HTMLInputElement>('input[name="id"]');
+  const labelInput = form.querySelector<HTMLInputElement>(
+    'input[name="label"]',
+  );
+  if (!idInput || !labelInput) {
+    return;
+  }
+
+  changeTimezoneLabel({ id: idInput.value, label: labelInput.value }).then(
+    () => {
+      updateSavedTimezonesList();
+    },
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

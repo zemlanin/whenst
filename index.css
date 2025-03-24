@@ -519,8 +519,7 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   margin-bottom: 1rem;
 }
 
-#saved-timezones .timezone-row,
-#timezones-edit .timezone-row {
+#saved-timezones .timezone-row {
   display: flex;
   flex-flow: row;
   justify-content: space-between;
@@ -529,18 +528,6 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   background-color: rgba(128, 128, 128, 0);
   transition: background-color ease-in-out 0.3s;
   min-height: 2.25em;
-}
-
-#saved-timezones .timezone-row div[data-tz] {
-  text-align: center;
-  margin-right: 0;
-}
-
-#saved-timezones .timezone-row .timezone-label {
-  flex-shrink: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .spacer {

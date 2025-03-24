@@ -160,7 +160,7 @@ async function deleteTimezone(request: FastifyRequest, reply: FastifyReply) {
 
 // PATCH /timezones
 export const apiTimezonesPatch = {
-  handler: reorderTimezone,
+  handler: patchTimezone,
   schema: {
     body: {
       type: "object",
@@ -174,23 +174,36 @@ export const apiTimezonesPatch = {
           type: "integer",
           minimum: 0,
         },
+        label: {
+          type: "string",
+          minLength: 0,
+          maxLength: 80,
+        },
       },
-      required: ["id", "index"],
+      required: ["id"],
     },
   },
 };
 
-async function reorderTimezone(request: FastifyRequest, reply: FastifyReply) {
+async function patchTimezone(request: FastifyRequest, reply: FastifyReply) {
   const sessionId = await extractSessionIdFromCookie(request);
 
   if (!sessionId) {
     return reply.send(null);
   }
 
-  const { id, index } = request.body as { id: string; index: number };
+  const { id, index, label } = request.body as {
+    id: string;
+    index?: number;
+    label?: string;
+  };
 
   if (!id) {
     reply.status(401);
+    return reply.send(null);
+  }
+
+  if (index === undefined && label === undefined) {
     return reply.send(null);
   }
 
@@ -202,17 +215,24 @@ async function reorderTimezone(request: FastifyRequest, reply: FastifyReply) {
     return reply.send(null);
   }
 
-  const movedTimezone = oldTimezones[oldIndex];
+  const targetTimezone = { ...oldTimezones[oldIndex] };
 
-  const timezonesWithoutMovedItem = oldTimezones.filter(
-    (v) => v.id !== movedTimezone.id,
-  );
+  if (label !== undefined) {
+    targetTimezone.label = label;
+  }
 
-  const timezones = [
-    ...timezonesWithoutMovedItem.slice(0, index),
-    movedTimezone,
-    ...timezonesWithoutMovedItem.slice(index),
-  ];
+  const timezones = (() => {
+    const cutIndex = index === undefined ? oldIndex : index;
+    const timezonesWithoutTargetItem = oldTimezones.filter(
+      (v) => v.id !== targetTimezone.id,
+    );
+
+    return [
+      ...timezonesWithoutTargetItem.slice(0, cutIndex),
+      targetTimezone,
+      ...timezonesWithoutTargetItem.slice(cutIndex),
+    ];
+  })();
 
   if (account) {
     db.prepare(

@@ -83,6 +83,27 @@ export async function reorderTimezone({
   }
 }
 
+export async function changeTimezoneLabel({
+  id,
+  label,
+}: {
+  id: string;
+  label: string;
+}) {
+  const resp = await fetch("/api/timezones", {
+    method: "PATCH",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ id, label }),
+  });
+
+  if (resp.status >= 400) {
+    throw resp;
+  }
+}
+
 export async function transferLocalTimezones() {
   const knownTimezones = window.Intl.supportedValuesOf("timeZone");
   let timezones: { id: string; label: string; timezone: string }[] = [];
