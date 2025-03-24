@@ -273,13 +273,9 @@ main {
 }
 
 .clock-row {
-  margin: 1em 0;
+  margin-bottom: 2em;
   display: flex;
   flex-direction: column;
-}
-
-.clock-row:first-of-type {
-  margin-top: 0;
 }
 
 .clock-row form.clock {
