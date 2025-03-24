@@ -1,6 +1,9 @@
 import "../parcel.d.ts";
 
 import { Temporal } from "@js-temporal/polyfill";
+import { useComputed, Signal } from "@preact/signals";
+import { render } from "preact";
+import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
 import bars from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/bars.svg";
 
@@ -17,32 +20,6 @@ import {
 
 import { mountCommandPalette } from "../command-palette/index.js";
 
-const timezonesList = document.getElementById("timezones-list");
-if (timezonesList) {
-  const sortable = Sortable.create(timezonesList, {
-    handle: ".dnd-handle",
-    ghostClass: "sortable-ghost",
-    onEnd(event) {
-      const { item, newDraggableIndex } = event;
-      const id =
-        item.querySelector<HTMLInputElement>('input[name="id"]')?.value;
-
-      if (!id || newDraggableIndex === undefined) {
-        return;
-      }
-
-      item.classList.add("saving");
-      sortable.option("disabled", true);
-
-      reorderTimezone({ id, index: newDraggableIndex }).then(() => {
-        updateSavedTimezonesList();
-        item.classList.remove("saving");
-        sortable.option("disabled", false);
-      });
-    },
-  });
-}
-
 document.getElementById("sign-out-button")?.addEventListener("click", () => {
   signOut().then(async () => {
     // request new settings to invalidate SW cache
@@ -50,6 +27,103 @@ document.getElementById("sign-out-button")?.addEventListener("click", () => {
     location.href = "/";
   });
 });
+
+type UnpackPromise<T extends PromiseLike<unknown>> =
+  T extends PromiseLike<infer R> ? R : never;
+
+type SettingsPayload = UnpackPromise<ReturnType<typeof loadSettings>>;
+
+const settingsSignal = new Signal<SettingsPayload>({
+  timezones: [],
+  signedIn: false,
+});
+
+const timezonesEdit = document.getElementById("timezones-edit");
+if (timezonesEdit) {
+  render(<TimezonesEdit settingsSignal={settingsSignal} />, timezonesEdit);
+}
+
+function TimezonesEdit({
+  settingsSignal,
+}: {
+  settingsSignal: Signal<SettingsPayload>;
+}) {
+  const timezones = useComputed(() => settingsSignal.value.timezones);
+  const timezonesListRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const timezonesList = timezonesListRef.current;
+
+    if (!timezonesList) {
+      return;
+    }
+
+    const sortable = Sortable.create(timezonesList, {
+      handle: ".dnd-handle",
+      ghostClass: "sortable-ghost",
+      onEnd(event) {
+        const { item, newDraggableIndex } = event;
+        const id =
+          item.querySelector<HTMLInputElement>('input[name="id"]')?.value;
+
+        if (!id || newDraggableIndex === undefined) {
+          return;
+        }
+
+        item.classList.add("saving");
+        sortable.option("disabled", true);
+
+        reorderTimezone({ id, index: newDraggableIndex }).then(() => {
+          updateSavedTimezonesList();
+          item.classList.remove("saving");
+          sortable.option("disabled", false);
+        });
+      },
+    });
+  }, []);
+
+  return (
+    <ul id="timezones-list" ref={timezonesListRef}>
+      {timezones.value.map(({ id, timezone, label }) => {
+        const timezonePathname = (() => {
+          try {
+            Temporal.TimeZone.from(timezone);
+            return getPathnameFromTimezone(timezone);
+          } catch (_e) {
+            //
+          }
+        })();
+
+        return (
+          <li key={id} className="timezone-row">
+            <div
+              className="dnd-handle"
+              dangerouslySetInnerHTML={{ __html: bars }}
+            ></div>
+
+            <div className="timezone-label-wrapper">
+              <a
+                className={
+                  "timezone-label" + timezonePathname ? "" : " invalid"
+                }
+                href={timezonePathname}
+              >
+                {label
+                  ? `${label} (${getLocationFromTimezone(timezone)})`
+                  : getLocationFromTimezone(timezone)}
+              </a>
+            </div>
+
+            <form action="javascript:void(0)" onSubmit={deleteFormHandler}>
+              <input type="hidden" name="id" value={id} />
+              <button type="submit">Delete</button>
+            </form>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 updateSavedTimezonesList();
 
@@ -67,62 +141,7 @@ async function updateSavedTimezonesList() {
     }
   }
 
-  const list = document.getElementById("timezones-list");
-  if (!list) {
-    return;
-  }
-
-  for (const item of list.querySelectorAll("li")) {
-    list.removeChild(item);
-  }
-
-  for (const { id, timezone, label } of timezones) {
-    const item = document.createElement("li");
-    item.className = "timezone-row";
-
-    const dndBars = document.createElement("div");
-    dndBars.className = "dnd-handle";
-    dndBars.innerHTML = bars;
-
-    const labelWrapper = document.createElement("div");
-    labelWrapper.className = "timezone-label-wrapper";
-
-    const anchor = document.createElement("a");
-    anchor.className = "timezone-label";
-    anchor.innerText = label
-      ? `${label} (${getLocationFromTimezone(timezone)})`
-      : getLocationFromTimezone(timezone);
-
-    try {
-      Temporal.TimeZone.from(timezone);
-      anchor.href = getPathnameFromTimezone(timezone);
-    } catch (_e) {
-      anchor.className += " invalid";
-    }
-
-    labelWrapper.appendChild(anchor);
-
-    const form = document.createElement("form");
-    form.action = "javascript:void(0)";
-    const idInput = document.createElement("input");
-    idInput.name = "id";
-    idInput.type = "hidden";
-    idInput.value = id;
-    form.appendChild(idInput);
-
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "submit";
-    deleteButton.textContent = "Delete";
-    form.appendChild(deleteButton);
-
-    form.addEventListener("submit", deleteFormHandler);
-
-    item.appendChild(dndBars);
-    item.appendChild(labelWrapper);
-    item.appendChild(form);
-
-    list.appendChild(item);
-  }
+  settingsSignal.value = { timezones, signedIn };
 }
 
 function deleteFormHandler(event: SubmitEvent) {
