@@ -1,0 +1,45 @@
+#timezones-edit ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 0;
+}
+
+#timezones-edit .timezone-row.sortable-ghost {
+  background-color: rgba(128, 128, 128, 0.25);
+  transition: background-color ease-in-out 0s;
+}
+
+#timezones-edit .timezone-row .dnd-handle {
+  width: 1rem;
+  line-height: 0;
+  cursor: grab;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+}
+
+#timezones-edit .timezone-row .dnd-handle svg {
+  fill: #888;
+}
+
+#timezones-edit .timezone-row.saving .dnd-handle svg {
+  fill: red;
+}
+
+#timezones-edit .timezone-row .timezone-label-wrapper {
+  flex-grow: 1;
+  margin: 0 0.5rem;
+}
+
+#add-timezone {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+#add-timezone input {
+  width: 100px;
+  flex-grow: 1;
+  flex-basis: 0;
+  margin: 0 0.25rem 0 0;
+  padding: 0 0.25rem;
+}
