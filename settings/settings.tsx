@@ -116,7 +116,7 @@ function TimezoneLabelForm({
   label: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const location = (() => {
+  const tzLocation = (() => {
     try {
       return getLocationFromTimezone(timezone);
     } catch (_e) {
@@ -135,8 +135,8 @@ function TimezoneLabelForm({
       <input
         type="text"
         maxLength={80}
-        placeholder={location}
-        value={label || location}
+        placeholder={tzLocation}
+        value={label || tzLocation}
         className="timezone-label"
         onChange={(event) => {
           const input = event.target as HTMLInputElement | null;
@@ -150,7 +150,7 @@ function TimezoneLabelForm({
           });
         }}
       />
-      {label && label !== location ? (
+      {label && label !== tzLocation ? (
         <span className="subtitle">
           {timezone === "Europe/Kiev" ? "Europe/Kyiv" : timezone}
         </span>
