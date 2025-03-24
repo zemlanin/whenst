@@ -110,7 +110,7 @@ window.addEventListener("keyup", function handleArrowNavigation(event) {
 });
 
 window.addEventListener("keyup", function handleTableRowEnter(event) {
-  if (event.key !== "Enter") {
+  if (event.key !== "Enter" && event.key !== "Escape") {
     return;
   }
 
@@ -124,13 +124,34 @@ window.addEventListener("keyup", function handleTableRowEnter(event) {
     return;
   }
 
-  const childAnchor = target.querySelector<HTMLAnchorElement>("a[href]");
-  if (!childAnchor) {
+  if (event.key === "Enter") {
+    const childAnchor = target.querySelector<HTMLAnchorElement>("a[href]");
+    if (childAnchor) {
+      if (!event.altKey && !event.ctrlKey && !event.metaKey) {
+        window.location.href = childAnchor.href;
+      }
+    }
+
     return;
   }
 
-  if (!event.altKey && !event.ctrlKey && !event.metaKey) {
-    window.location.href = childAnchor.href;
+  if (event.key === "Escape") {
+    // focus on controller element
+    if (role === "option") {
+      const parentListbox = target.closest('[role="listbox"]');
+
+      if (parentListbox && parentListbox.id) {
+        const controlledBy = document.querySelector<HTMLElement>(
+          `[aria-controls="${parentListbox.id}"]`,
+        );
+
+        if (controlledBy) {
+          controlledBy.focus();
+        }
+      }
+    }
+
+    return;
   }
 });
 

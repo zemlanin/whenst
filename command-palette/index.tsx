@@ -113,6 +113,8 @@ function CommandPaletteFields() {
             return;
           }
 
+          collapsedSignal.value = false;
+
           void loadOptions(event.target.value.trim().replace(/\s+/, " "));
         }}
         onFocus={() => {
