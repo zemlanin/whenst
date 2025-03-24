@@ -535,12 +535,35 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   flex-direction: column;
   min-height: 3rem;
   justify-content: center;
+  word-break: break-word;
+  min-width: 0;
 }
 
-#saved-timezones .timezone-row .timezone-label-wrapper .subtitle {
+#saved-timezones .timezone-row .timezone-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 3rem;
+  justify-content: center;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+#saved-timezones .timezone-row .timezone-label-wrapper .subtitle,
+#saved-timezones .timezone-row .timezone-time-wrapper .subtitle {
   color: var(--deemphasis);
   font-size: 0.9rem;
   margin-top: 0.25rem;
+}
+
+#saved-timezones .timezone-row .timezone-label-wrapper .subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* putting ellipsis in the beginning of the string */
+  direction: rtl;
+  text-align: left;
 }
 
 .spacer {

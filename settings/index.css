@@ -34,6 +34,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 #timezones-edit .timezone-row .dnd-handle svg {
@@ -49,6 +50,8 @@
   margin: 0 0.5rem;
   display: flex;
   flex-direction: column;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 #timezones-edit .timezone-row .timezone-label-wrapper .subtitle {
@@ -56,4 +59,12 @@
   font-size: 0.9rem;
   margin-left: calc(1px + 0.25rem); /* input's border + left padding */
   margin-right: calc(1px + 0.25rem); /* input's border + left padding */
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* putting ellipsis in the beginning of the string */
+  direction: rtl;
+  text-align: left;
 }

@@ -1006,11 +1006,12 @@ function SavedTimezones({
                 ) : null}
               </div>
 
-              <div role="cell">
-                {localDateString.value === dateString &&
-                pageDateString.value === dateString
-                  ? timeString
-                  : `${dateString}, ${timeString}`}
+              <div role="cell" className="timezone-time-wrapper">
+                <div>{timeString}</div>
+                {localDateString.value !== dateString ||
+                pageDateString.value !== dateString ? (
+                  <span className="subtitle">{dateString}</span>
+                ) : null}
               </div>
             </div>
           );
