@@ -12,7 +12,6 @@ import {
 import { apiSqrapCodePost } from "./api/sqrap/code.js";
 import { apiSqrapInitPost } from "./api/sqrap/init.js";
 import { apiSqrapStatusGet } from "./api/sqrap/status.js";
-import { apiGeotzGet } from "./api/geotz.js";
 import { apiTimezonesIndex } from "./api/timezones-index.js";
 
 const fastify = Fastify({
@@ -119,7 +118,6 @@ fastify.patch("/api/timezones", apiTimezonesPatch);
 fastify.post("/api/sqrap/code", apiSqrapCodePost);
 fastify.post("/api/sqrap/init", apiSqrapInitPost);
 fastify.get("/api/sqrap/status", apiSqrapStatusGet);
-fastify.get("/api/geotz", apiGeotzGet);
 fastify.get("/api/timezones-index", apiTimezonesIndex);
 fastify.get("/.well-known/healthcheck", (_request, reply) => {
   return reply.code(200).send();

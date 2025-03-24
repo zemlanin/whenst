@@ -1,12 +1,8 @@
 import "../parcel.d.ts";
 
 import { Temporal } from "@js-temporal/polyfill";
-import L from "leaflet";
 import Sortable from "sortablejs";
 import bars from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/bars.svg";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 import {
   loadSettings,
@@ -22,79 +18,6 @@ import {
 
 import { guessTimezone } from "../guess-timezone.js";
 import { mountCommandPalette } from "../command-palette/index.js";
-
-const mapEl: HTMLElement | null =
-  document.getElementById("timezones-edit")?.querySelector(".timezones-map") ??
-  null;
-if (mapEl) {
-  const map = L.map(mapEl, {
-    minZoom: 1,
-    maxZoom: 8,
-    maxBounds: [
-      [-90, -180],
-      [90, 180],
-    ],
-    maxBoundsViscosity: 1,
-    worldCopyJump: true,
-  }).setView([40, 0], 1);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
-
-  let mapClickRequestAbortController: AbortController | undefined;
-
-  let mapMarker: L.Marker | undefined;
-  let mapArea: L.GeoJSON | undefined;
-
-  map.on("click", async (e) => {
-    const { lat, lng } = e.latlng.wrap();
-
-    if (mapClickRequestAbortController) {
-      mapClickRequestAbortController.abort();
-      mapClickRequestAbortController = undefined;
-    }
-
-    mapClickRequestAbortController = new AbortController();
-    const { signal } = mapClickRequestAbortController;
-
-    const timezoneResp = await fetch(
-      `/api/geotz?` +
-        new URLSearchParams({
-          lat: lat.toPrecision(3),
-          lng: lng.toPrecision(3),
-        }),
-      { signal },
-    );
-
-    const { timezone, geometry } = await timezoneResp.json();
-
-    if (mapMarker) {
-      mapMarker.remove();
-      mapMarker = undefined;
-    }
-
-    if (mapArea) {
-      mapArea.remove();
-      mapArea = undefined;
-    }
-
-    mapMarker = L.marker(e.latlng, {
-      icon: new L.Icon.Default({
-        iconUrl: markerIcon,
-        iconRetinaUrl: markerIcon2x,
-        shadowUrl: markerShadow,
-      }),
-    }).addTo(map);
-    mapArea = L.geoJSON(geometry).addTo(map);
-
-    if (addTimezoneForm?.timezone) {
-      addTimezoneForm.timezone.value = timezone;
-    }
-
-    mapClickRequestAbortController = undefined;
-  });
-}
 
 const timezonesList = document.getElementById("timezones-list");
 if (timezonesList) {
