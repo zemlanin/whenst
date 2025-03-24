@@ -278,6 +278,11 @@ main {
   flex-direction: column;
 }
 
+/* clock row followed by another clock row */
+.clock-row:has(+ .clock-row) {
+  margin-bottom: 1em;
+}
+
 .clock-row form.clock {
   display: flex;
   flex-flow: column;
