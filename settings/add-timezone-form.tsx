@@ -145,14 +145,16 @@ function AddTimezoneFormMainInput() {
 
           collapsedSignal.value = false;
 
-          void loadOptions(event.target.value.trim().replace(/\s+/, " "));
-
-          const firstOption = optionsSignal.peek()[0];
-          if (firstOption?.timezoneId) {
-            activeValueSignal.value = firstOption.timezoneId;
-          } else {
-            activeValueSignal.value = "";
-          }
+          loadOptions(event.target.value.trim().replace(/\s+/, " ")).then(
+            () => {
+              const firstOption = optionsSignal.peek()[0];
+              if (firstOption?.timezoneId) {
+                activeValueSignal.value = firstOption.timezoneId;
+              } else {
+                activeValueSignal.value = "";
+              }
+            },
+          );
         }}
         onFocus={() => {
           collapsedSignal.value = false;
