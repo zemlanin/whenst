@@ -17,6 +17,7 @@ import { getLocationFromTimezone } from "../saved-timezones.js";
 import "../keyboard";
 
 import { mountCommandPalette } from "../command-palette/index.js";
+import { AddTimezoneForm } from "./add-timezone-form.js";
 
 document.getElementById("sign-out-button")?.addEventListener("click", () => {
   signOut().then(async () => {
@@ -81,29 +82,34 @@ function TimezonesEdit({
   }, []);
 
   return (
-    <ul id="timezones-list" ref={timezonesListRef}>
-      {timezones.value.map(({ id, timezone, label }) => {
-        return (
-          <li key={id} className="timezone-row">
-            <div
-              className="dnd-handle"
-              dangerouslySetInnerHTML={{ __html: bars }}
-            ></div>
+    <>
+      <div className="timezone-row">
+        <AddTimezoneForm updateSavedTimezonesList={updateSavedTimezonesList} />
+      </div>
+      <ul id="timezones-list" ref={timezonesListRef}>
+        {timezones.value.map(({ id, timezone, label }) => {
+          return (
+            <li key={id} className="timezone-row">
+              <div
+                className="dnd-handle"
+                dangerouslySetInnerHTML={{ __html: bars }}
+              ></div>
 
-            <TimezoneLabelForm id={id} timezone={timezone} label={label} />
+              <TimezoneLabelForm id={id} timezone={timezone} label={label} />
 
-            <form
-              action="javascript:void(0)"
-              onSubmit={deleteFormHandler}
-              className="delete-form"
-            >
-              <input type="hidden" name="id" value={id} />
-              <button type="submit">Delete</button>
-            </form>
-          </li>
-        );
-      })}
-    </ul>
+              <form
+                action="javascript:void(0)"
+                onSubmit={deleteFormHandler}
+                className="delete-form"
+              >
+                <input type="hidden" name="id" value={id} />
+                <button type="submit">Delete</button>
+              </form>
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 }
 

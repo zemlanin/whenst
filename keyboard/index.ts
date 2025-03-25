@@ -125,14 +125,17 @@ window.addEventListener("keyup", function handleTableRowEnter(event) {
   }
 
   if (event.key === "Enter") {
-    const childAnchor = target.querySelector<HTMLAnchorElement>("a[href]");
-    if (childAnchor) {
-      if (!event.altKey && !event.ctrlKey && !event.metaKey) {
-        window.location.href = childAnchor.href;
-      }
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
     }
 
-    return;
+    const childAnchor = target.querySelector<HTMLAnchorElement>("a[href]");
+    if (childAnchor) {
+      window.location.href = childAnchor.href;
+      return;
+    }
+
+    target.click();
   }
 
   if (event.key === "Escape") {
