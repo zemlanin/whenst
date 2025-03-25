@@ -5,18 +5,13 @@
 }
 
 .add-timezone-form .plus-icon {
-  width: 1rem;
   line-height: 0;
-  padding: 0.25rem 0.5rem 0.25rem 0;
-  height: 1.35em;
+  height: 2em;
   display: flex;
   flex-direction: row;
   align-items: center;
   flex: 0 0 auto;
-}
-
-.add-timezone-form .plus-icon svg {
-  fill: #888;
+  color: #888;
 }
 
 .add-timezone-form .main-input {

@@ -4,7 +4,8 @@ import { useComputed, Signal } from "@preact/signals";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
-import bars from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/bars.svg";
+
+import Bars from "../icons/bars.svg.js";
 
 import {
   loadSettings,
@@ -90,10 +91,9 @@ function TimezonesEdit({
         {timezones.value.map(({ id, timezone, label }) => {
           return (
             <li key={id} className="timezone-row">
-              <div
-                className="dnd-handle"
-                dangerouslySetInnerHTML={{ __html: bars }}
-              ></div>
+              <div className="dnd-handle">
+                <Bars height="1em" />
+              </div>
 
               <TimezoneLabelForm id={id} timezone={timezone} label={label} />
 

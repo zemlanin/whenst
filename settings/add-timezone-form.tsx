@@ -2,7 +2,7 @@ import { signal, useComputed } from "@preact/signals";
 import Fuse from "fuse.js/basic";
 import { useEffect, useId, useRef } from "preact/hooks";
 
-import plus from "bundle-text:@fortawesome/fontawesome-free/svgs/solid/plus.svg";
+import Plus from "../icons/plus.svg.js";
 
 import "./add-timezone-form.css";
 import { addTimezone } from "../api.js";
@@ -87,10 +87,9 @@ export function AddTimezoneForm({
       }}
       className="add-timezone-form"
     >
-      <div
-        className="plus-icon"
-        dangerouslySetInnerHTML={{ __html: plus }}
-      ></div>
+      <div className="plus-icon">
+        <Plus height="1em" />
+      </div>
       <AddTimezoneFormMainInput />
       <button type="submit" disabled={disabledSignal} className="primary">
         Add

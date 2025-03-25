@@ -26,23 +26,18 @@
 }
 
 #timezones-edit .timezone-row .dnd-handle {
-  width: 1rem;
-  line-height: 0;
   cursor: grab;
-  padding: 0.25rem 0.5rem 0.25rem 0;
-  height: 1.35em;
+  line-height: 0;
+  height: 2em;
   display: flex;
   flex-direction: row;
   align-items: center;
   flex: 0 0 auto;
+  color: #888;
 }
 
-#timezones-edit .timezone-row .dnd-handle svg {
-  fill: #888;
-}
-
-#timezones-edit .timezone-row.saving .dnd-handle svg {
-  fill: red;
+#timezones-edit .timezone-row.saving .dnd-handle {
+  color: red;
 }
 
 #timezones-edit .timezone-row .timezone-label-wrapper {
