@@ -87,7 +87,7 @@
     "eslint-plugin-react": "^7.32.2",
     "fuse.js": "^7.1.0",
     "parcel": "^2.13.3",
-    "preact": "^10.17.1",
+    "preact": "^10.26.4",
     "prettier": "^3.0.2",
     "sortablejs": "^1.15.0",
     "svgo": "^3.3.2",
