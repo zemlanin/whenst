@@ -92,7 +92,7 @@ export function AddTimezoneForm({
         dangerouslySetInnerHTML={{ __html: plus }}
       ></div>
       <AddTimezoneFormMainInput />
-      <button type="submit" disabled={disabledSignal}>
+      <button type="submit" disabled={disabledSignal} className="primary">
         Add
       </button>
     </form>
