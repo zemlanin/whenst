@@ -346,7 +346,7 @@ function Tabs({
             aria-labelledby={SAVED_TIMEZONES_ID}
           >
             <RegionAwareIcon timezone={pageTZ} aria-hidden="true" />
-            <span>Other timezones</span>
+            <span>World clock</span>
           </button>
 
           <button
@@ -966,7 +966,7 @@ function SavedTimezones({
     <div
       id={SAVED_TIMEZONES_ID}
       role="tabpanel"
-      aria-label="Other timezones"
+      aria-label="World clock"
       hidden={hidden}
     >
       <div role="table">
