@@ -16,7 +16,7 @@ import {
   changeTimezoneLabel,
   signOut,
 } from "../api.js";
-import { getLocationFromTimezone } from "../saved-timezones.js";
+import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
 
 import { mountCommandPalette } from "../command-palette/index.js";

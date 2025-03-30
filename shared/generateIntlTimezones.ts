@@ -1,35 +1,19 @@
+import { getLocationFromTimezone } from "./from-timezone.js";
+
 export function generateIntlTimezones() {
   const timezones = globalThis.Intl.supportedValuesOf("timeZone").map(
     (timezoneId) => {
-      const [region, ...rest] = timezoneId.split(/\//g);
+      const place = getLocationFromTimezone(timezoneId);
 
-      if (rest.length === 0) {
+      if (place === timezoneId) {
         return {
           timezoneId,
           region: undefined,
-          place: timezoneId,
+          place,
         };
       }
 
-      const originalPlace = rest[rest.length - 1];
-      const place = (() => {
-        if (originalPlace === "Kiev") {
-          return "Kyiv";
-        }
-
-        if (originalPlace.startsWith("St.")) {
-          return originalPlace.replace(/^St\./, "Saint");
-        }
-
-        if (originalPlace.startsWith("Sao_")) {
-          return originalPlace.replace(/^Sao/, "São");
-        }
-
-        return originalPlace;
-      })()
-        .replace(/_/g, " ")
-        .trim();
-
+      const [region] = timezoneId.split(/\//g);
       return {
         timezoneId,
         region,

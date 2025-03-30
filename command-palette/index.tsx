@@ -4,6 +4,7 @@ import { ContainerNode, render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
 
 import "./index.css";
+import { getPathnameFromTimezone } from "../shared/from-timezone.js";
 
 export function mountCommandPalette(parent: ContainerNode) {
   render(<CommandPalette />, parent);
@@ -184,10 +185,7 @@ async function loadOptions(query: string) {
   const results = fuse.search(query, { limit: 6 });
 
   optionsSignal.value = results.map((r) => ({
-    url:
-      r.item.timezoneId === "Europe/Kiev"
-        ? "/Europe/Kyiv"
-        : `/${r.item.timezoneId}`,
+    url: getPathnameFromTimezone(r.item.timezoneId),
     title: r.item.place,
   }));
 }

@@ -1,4 +1,4 @@
-import { Temporal } from "@js-temporal/polyfill";
+import { type Temporal } from "@js-temporal/polyfill";
 
 export const RELATIVE_UTC_ID_REGEX = /^[+-][0-1]?[0-9](:[0-5][0-9])?$/;
 export const STRICT_RELATIVE_UTC_ID_REGEX = /^[+-][0-1][0-9](:[0-5][0-9])?$/;
@@ -14,20 +14,29 @@ export function getLocationFromTimezone(tz: Temporal.TimeZone | string) {
 
   const parts = tz.toString().split("/");
 
-  const location = parts[parts.length - 1];
+  const tzLocation = parts[parts.length - 1];
 
-  if (!location) {
+  if (!tzLocation) {
     // fallback for invalidly saved timezones
     return tz.toString();
   }
 
-  if (location === "Kiev") {
+  if (tzLocation === "Kiev") {
     return "Kyiv";
-  } else if (location === "Sao_Paulo") {
+  }
+
+  if (tzLocation === "Sao_Paulo") {
     return "São Paulo";
   }
 
-  return location.replace(/^St_/, "St. ").replace(/_/g, " ");
+  if (tzLocation.startsWith("St.") || tzLocation.startsWith("St_")) {
+    return tzLocation
+      .replace(/^St\.?/, "Saint")
+      .replace(/_/g, " ")
+      .trim();
+  }
+
+  return tzLocation.replace(/_/g, " ").trim();
 }
 
 export function getPathnameFromTimezone(tz: Temporal.TimeZone | string) {

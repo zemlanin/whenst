@@ -21,7 +21,7 @@ import { guessTimezone } from "./guess-timezone.js";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
-} from "./saved-timezones.js";
+} from "./shared/from-timezone.js";
 
 import Discord from "./icons/discord.svg.js";
 import CalendarPlus from "./icons/calendar-plus.svg.js";
