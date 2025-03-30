@@ -1,4 +1,4 @@
-window.addEventListener("keyup", function handleArrowNavigation(event) {
+window.addEventListener("keydown", function handleArrowNavigation(event) {
   const target = event.target;
   if (!target || !(target instanceof HTMLElement)) {
     return;
