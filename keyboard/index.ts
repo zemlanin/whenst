@@ -5,10 +5,15 @@ window.addEventListener("keydown", function handleArrowNavigation(event) {
   }
 
   if (
-    event.key === "ArrowDown" &&
+    (event.key === "ArrowDown" || event.key === "ArrowUp") &&
     target.getAttribute("role") === "combobox" &&
     target.hasAttribute("aria-controls")
   ) {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      return;
+    }
+
     const controlsId = target.getAttribute("aria-controls");
     const controlsElement = controlsId
       ? document.getElementById(controlsId)
