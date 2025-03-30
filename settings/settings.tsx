@@ -6,6 +6,8 @@ import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
 
 import Bars from "../icons/bars.svg.js";
+import CircleNotch from "../icons/circle-notch.svg.js";
+import Check from "../icons/check.svg.js";
 
 import {
   loadSettings,
@@ -37,6 +39,10 @@ const settingsSignal = new Signal<SettingsPayload>({
   timezones: [],
   signedIn: false,
 });
+
+const savingStateSignal = new Signal<{
+  [K in string]?: "initial" | "saving" | "saved";
+}>({});
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
@@ -70,12 +76,12 @@ function TimezonesEdit({
           return;
         }
 
-        item.classList.add("saving");
+        setSavingState(id, "saving");
         sortable.option("disabled", true);
 
         reorderTimezone({ id, index: newDraggableIndex }).then(() => {
           updateSavedTimezonesList();
-          item.classList.remove("saving");
+          setSavingState(id, "saved");
           sortable.option("disabled", false);
         });
       },
@@ -90,26 +96,82 @@ function TimezonesEdit({
       <ul id="timezones-list" ref={timezonesListRef}>
         {timezones.value.map(({ id, timezone, label }) => {
           return (
-            <li key={id} className="timezone-row">
-              <div className="dnd-handle">
-                <Bars height="1em" />
-              </div>
-
-              <TimezoneLabelForm id={id} timezone={timezone} label={label} />
-
-              <form
-                action="javascript:void(0)"
-                onSubmit={deleteFormHandler}
-                className="delete-form"
-              >
-                <input type="hidden" name="id" value={id} />
-                <button type="submit">Delete</button>
-              </form>
-            </li>
+            <TimezoneRow key={id} id={id} timezone={timezone} label={label} />
           );
         })}
       </ul>
     </>
+  );
+}
+
+function setSavingState(id: string, state: "initial" | "saving" | "saved") {
+  savingStateSignal.value = {
+    ...savingStateSignal.peek(),
+    [id]: state,
+  };
+
+  if (state === "saved") {
+    setTimeout(() => {
+      if (savingStateSignal.peek()[id] === "saved") {
+        setSavingState(id, "initial");
+      }
+    }, 1000);
+  }
+}
+
+function TimezoneRow({
+  id,
+  timezone,
+  label,
+}: {
+  id: string;
+  timezone: string;
+  label: string;
+}) {
+  const className = useComputed(() => {
+    const savingState = savingStateSignal.value[id] ?? "initial";
+
+    return (
+      "timezone-row" +
+      (savingState === "initial"
+        ? ""
+        : savingState === "saving"
+          ? " saving"
+          : savingState === "saved"
+            ? " saved"
+            : "")
+    );
+  });
+
+  const icon = useComputed(() => {
+    const savingState = savingStateSignal.value[id] ?? "initial";
+
+    if (savingState === "saving") {
+      return <CircleNotch height="1em" width="1em" />;
+    }
+
+    if (savingState === "saved") {
+      return <Check height="1em" width="1em" />;
+    }
+
+    return <Bars height="1em" width="1em" />;
+  });
+
+  return (
+    <li className={className}>
+      <div className="dnd-handle">{icon}</div>
+
+      <TimezoneLabelForm id={id} timezone={timezone} label={label} />
+
+      <form
+        action="javascript:void(0)"
+        onSubmit={deleteFormHandler}
+        className="delete-form"
+      >
+        <input type="hidden" name="id" value={id} />
+        <button type="submit">Delete</button>
+      </form>
+    </li>
   );
 }
 
@@ -152,7 +214,12 @@ function TimezoneLabelForm({
             return;
           }
 
-          changeTimezoneLabel({ id, label: input.value }).then(() => {
+          const label = input.value;
+
+          setSavingState(id, "saving");
+
+          changeTimezoneLabel({ id, label }).then(() => {
+            setSavingState(id, "saved");
             updateSavedTimezonesList();
           });
         }}
@@ -199,7 +266,11 @@ function deleteFormHandler(event: SubmitEvent) {
     return;
   }
 
-  deleteTimezone({ id: idInput.value }).then(() => {
+  const id = idInput.value;
+  setSavingState(id, "saving");
+
+  deleteTimezone({ id }).then(() => {
+    setSavingState(id, "saved");
     updateSavedTimezonesList();
   });
 }
@@ -221,11 +292,15 @@ function patchFormHandler(event: SubmitEvent) {
     return;
   }
 
-  changeTimezoneLabel({ id: idInput.value, label: labelInput.value }).then(
-    () => {
-      updateSavedTimezonesList();
-    },
-  );
+  const id = idInput.value;
+  const label = labelInput.value;
+
+  setSavingState(id, "saving");
+
+  changeTimezoneLabel({ id, label }).then(() => {
+    setSavingState(id, "saved");
+    updateSavedTimezonesList();
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

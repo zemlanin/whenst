@@ -36,8 +36,25 @@
   color: #888;
 }
 
+#timezones-edit .timezone-row.saving .plus-icon,
+#timezones-edit .timezone-row.saved .plus-icon,
+#timezones-edit .timezone-row.saving .dnd-handle,
+#timezones-edit .timezone-row.saved .dnd-handle {
+  color: var(--primary);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#timezones-edit .timezone-row.saving .plus-icon,
 #timezones-edit .timezone-row.saving .dnd-handle {
-  color: red;
+  animation: spin 2s infinite linear;
 }
 
 #timezones-edit .timezone-row .timezone-label-wrapper {

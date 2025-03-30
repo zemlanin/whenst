@@ -1,14 +1,17 @@
-import { signal, useComputed } from "@preact/signals";
+import { Signal, useComputed } from "@preact/signals";
 import Fuse from "fuse.js/basic";
 import { useEffect, useId, useRef } from "preact/hooks";
 
 import Plus from "../icons/plus.svg.js";
+import CircleNotch from "../icons/circle-notch.svg.js";
+import Check from "../icons/check.svg.js";
 
 import "./add-timezone-form.css";
 import { addTimezone } from "../api.js";
 
-const collapsedSignal = signal(true);
-const activeValueSignal = signal("");
+const collapsedSignal = new Signal(true);
+const activeValueSignal = new Signal("");
+const addingStateSignal = new Signal<"initial" | "saving" | "saved">("initial");
 
 export function AddTimezoneForm({
   updateSavedTimezonesList,
@@ -30,6 +33,35 @@ export function AddTimezoneForm({
   }, []);
 
   const disabledSignal = useComputed(() => activeValueSignal.value === "");
+
+  const plusIconClassName = useComputed(() => {
+    const addingState = addingStateSignal.value;
+
+    return (
+      "plus-icon" +
+      (addingState === "initial"
+        ? ""
+        : addingState === "saving"
+          ? " saving"
+          : addingState === "saved"
+            ? " saved"
+            : "")
+    );
+  });
+
+  const icon = useComputed(() => {
+    const addingState = addingStateSignal.value;
+
+    if (addingState === "saving") {
+      return <CircleNotch height="1em" width="1em" />;
+    }
+
+    if (addingState === "saved") {
+      return <Check height="1em" width="1em" />;
+    }
+
+    return <Plus height="1em" width="1em" />;
+  });
 
   return (
     <form
@@ -55,12 +87,16 @@ export function AddTimezoneForm({
           return;
         }
 
+        setAddingState("saving");
+
         addTimezone({
           id: undefined,
           timezone: activeValueSignal.peek(),
           label: "",
         }).then(() => {
           updateSavedTimezonesList();
+
+          setAddingState("saved");
 
           for (const input of formRef.current?.querySelectorAll("input") ??
             []) {
@@ -87,9 +123,7 @@ export function AddTimezoneForm({
       }}
       className="add-timezone-form"
     >
-      <div className="plus-icon">
-        <Plus height="1em" />
-      </div>
+      <div className={plusIconClassName}>{icon}</div>
       <AddTimezoneFormMainInput />
       <button type="submit" disabled={disabledSignal} className="primary">
         Add
@@ -98,7 +132,19 @@ export function AddTimezoneForm({
   );
 }
 
-const optionsSignal = signal<
+function setAddingState(state: "initial" | "saving" | "saved") {
+  addingStateSignal.value = state;
+
+  if (state === "saved") {
+    setTimeout(() => {
+      if (addingStateSignal.peek() === "saved") {
+        setAddingState("initial");
+      }
+    }, 1000);
+  }
+}
+
+const optionsSignal = new Signal<
   {
     title: string;
     timezoneId: string;
