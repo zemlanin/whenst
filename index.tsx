@@ -978,7 +978,7 @@ function SavedTimezones({
           const dateString = shortDateFormatter.format(plainDateTime);
           const timeString = shortTimeFormatter.format(plainDateTime);
 
-          const tzLocation = getLocationFromTimezone(timezone);
+          const displayedLabel = label || getLocationFromTimezone(timezone);
 
           return (
             <div
@@ -997,13 +997,8 @@ function SavedTimezones({
                   tabIndex={-1}
                   role="cell"
                 >
-                  {label || tzLocation}
+                  {displayedLabel}
                 </a>
-                {label && label !== tzLocation ? (
-                  <span className="subtitle">
-                    {timezone === "Europe/Kiev" ? "Europe/Kyiv" : timezone}
-                  </span>
-                ) : null}
               </div>
 
               <div role="cell" className="timezone-time-wrapper">
