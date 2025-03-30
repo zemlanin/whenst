@@ -242,6 +242,7 @@ nav {
   top: 0;
   background: var(--background);
   padding-top: calc(0.5rem + env(safe-area-inset-top));
+  z-index: 2;
 }
 
 nav .left-half,
