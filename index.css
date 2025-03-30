@@ -91,12 +91,13 @@ optgroup {
 }
 
 body {
-  margin: 0.5rem;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "ss03";
   background: var(--background);
   color: var(--foreground);
-  padding-top: env(safe-area-inset-top);
+  margin: 0;
+  margin-right: calc(0.5rem + env(safe-area-inset-right));
+  margin-left: calc(0.5rem + env(safe-area-inset-left));
 }
 
 div,
@@ -237,6 +238,10 @@ nav {
   flex-flow: row;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--background);
+  padding-top: calc(0.5rem + env(safe-area-inset-top));
 }
 
 nav .left-half,
@@ -270,6 +275,7 @@ nav a.about {
 main {
   display: flex;
   flex-flow: column;
+  margin-bottom: env(safe-area-inset-bottom);
 }
 
 .clock-row {
