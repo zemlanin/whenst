@@ -21,6 +21,16 @@ export function generateIntlTimezones() {
       };
     },
   );
+
+  if (!timezones.some(({ timezoneId }) => timezoneId === "UTC")) {
+    // node doesn't seem to include `UTC` in `Intl.supportedValuesOf("timeZone")`
+    timezones.push({
+      timezoneId: "UTC",
+      region: undefined,
+      place: "UTC",
+    });
+  }
+
   timezones.push({
     timezoneId: "unix",
     region: undefined,
