@@ -66,7 +66,7 @@ function IndexPage() {
 
   useEffect(() => {
     if (!urlTZ && location.pathname !== "/" && location.pathname !== "") {
-      history.replaceState(null, "", "/");
+      history.replaceState(history.state || null, "", "/");
     }
 
     if (!urlTZ) {
@@ -82,7 +82,7 @@ function IndexPage() {
         ? getPathnameFromTimezone(isUnix ? "unix" : pageTZ)
         : `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${timeString}`;
 
-    history.replaceState(null, "", canonicalPathname);
+    history.replaceState(history.state || null, "", canonicalPathname);
     updateTitle(
       urlDT === "now" ? undefined : dt.peek(),
       isUnix ? "unix" : pageTZ,
@@ -91,7 +91,7 @@ function IndexPage() {
 
   const writeToLocation = (dt: Temporal.ZonedDateTime) => {
     history.replaceState(
-      null,
+      history.state || null,
       "",
       `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${
         isUnix ? dt.epochSeconds : formatDTInput(dt.withTimeZone(pageTZ))
@@ -1248,7 +1248,7 @@ effect(() => {
   if (activeTabSignal.value !== history.state?.activeTab) {
     history.replaceState(
       { ...history.state, activeTab: activeTabSignal.value },
-      undefined as unknown as string, // ???
+      "",
     );
   }
 });
