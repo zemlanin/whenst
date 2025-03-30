@@ -149,6 +149,8 @@ const optionsSignal = new Signal<
     title: string;
     timezoneId: string;
     subtitle?: string;
+    // `true` by default
+    worldClockEnabled?: boolean;
   }[]
 >([]);
 
@@ -243,6 +245,7 @@ let fuse:
       timezoneId: string;
       region: string | undefined;
       place: string;
+      worldClockEnabled?: boolean;
     }>
   | undefined;
 
@@ -255,10 +258,16 @@ async function loadOptions(query: string) {
         timezoneId: string;
         region: string | undefined;
         place: string;
+        worldClockEnabled?: boolean;
       }[];
     };
 
-    fuse = new Fuse(timezones, {
+    const filteredTimezones = timezones.filter(
+      // `true` by default
+      (v) => v.worldClockEnabled !== false,
+    );
+
+    fuse = new Fuse(filteredTimezones, {
       ignoreDiacritics: true,
       keys: [
         { name: "place", weight: 2 },

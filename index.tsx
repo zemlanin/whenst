@@ -950,12 +950,20 @@ function SavedTimezones({
   }, []);
 
   const filteredTimezones = useComputed(() => {
-    return timezones.value.filter(
-      ({ timezone, label }) =>
+    return timezones.value.filter(({ timezone, label }) => {
+      try {
+        Temporal.TimeZone.from(timezone);
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+
+      return (
         (timezone !== localTZ.id &&
           (typeof pageTZ === "string" || timezone !== pageTZ.id)) ||
-        label,
-    );
+        label
+      );
+    });
   });
 
   const settingsLabel = useComputed(() =>

@@ -148,6 +148,7 @@ let fuse:
       timezoneId: string;
       region: string | undefined;
       place: string;
+      worldClockEnabled?: boolean;
     }>
   | undefined;
 
@@ -160,6 +161,7 @@ async function loadOptions(query: string) {
         timezoneId: string;
         region: string | undefined;
         place: string;
+        worldClockEnabled?: boolean;
       }[];
     };
 

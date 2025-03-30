@@ -10,6 +10,7 @@ export function generateIntlTimezones() {
           timezoneId,
           region: undefined,
           place,
+          worldClockEnabled: true,
         };
       }
 
@@ -18,6 +19,7 @@ export function generateIntlTimezones() {
         timezoneId,
         region,
         place,
+        worldClockEnabled: true,
       };
     },
   );
@@ -28,6 +30,7 @@ export function generateIntlTimezones() {
       timezoneId: "UTC",
       region: undefined,
       place: "UTC",
+      worldClockEnabled: true,
     });
   }
 
@@ -35,6 +38,7 @@ export function generateIntlTimezones() {
     timezoneId: "unix",
     region: undefined,
     place: "Unix Epoch",
+    worldClockEnabled: false,
   });
 
   return timezones;
