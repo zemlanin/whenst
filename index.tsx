@@ -101,6 +101,31 @@ function IndexPage() {
     updateTitle(dt, isUnix ? "unix" : pageTZ);
   };
 
+  const shouldShowBack = isUnix || pageForRemoteTimeZone;
+
+  useEffect(() => {
+    const titleBarBack = document.querySelector("#title-bar a.back");
+
+    if (!titleBarBack) {
+      return;
+    }
+
+    if (shouldShowBack) {
+      titleBarBack.removeAttribute("hidden");
+    } else {
+      titleBarBack.setAttribute("hidden", "hidden");
+    }
+  }, [shouldShowBack]);
+
+  useEffect(() => {
+    const titleBarH1 = document.querySelector("#title-bar h1");
+    if (titleBarH1) {
+      titleBarH1.textContent = isUnix
+        ? "Unix Epoch"
+        : getLocationFromTimezone(pageTZ);
+    }
+  }, [isUnix, pageTZ]);
+
   return (
     <>
       {isUnix ? (
@@ -1269,4 +1294,9 @@ if (main) {
 const cmdRoot = document.getElementById("cmd-root");
 if (cmdRoot) {
   mountCommandPalette(cmdRoot);
+}
+
+const cmdTitle = document.getElementById("cmd-title");
+if (cmdTitle) {
+  mountCommandPalette(cmdTitle);
 }
