@@ -6,6 +6,7 @@
     "target": "es2023",
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
+    "skipLibCheck": true,
     "strict": true
   },
   "include": ["**/*"],

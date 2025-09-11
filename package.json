@@ -34,7 +34,7 @@
     "fuse.js/basic": "fuse.js/dist/fuse.basic"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tap",
     "build": "npm run build:client && npm run build:server",
     "build:client": "parcel build --target default",
     "build:server": "parcel build --target server --config \"@parcel/config-default\"",
@@ -44,8 +44,8 @@
     "release": "node dist/server/release",
     "lint": "npm run eslint && npm run prettier -- -l",
     "fmt": "tsc && tsc -p service-worker && tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts,json}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker,command-palette,shared}/**/*.{js,ts,tsx,mjs,html}\" \"./icons/**/*.{jsx,tsx}\"",
-    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker,command-palette,shared}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
+    "prettier": "prettier \"./*.{html,css,js,jsx,cjs,mjs,tsx,ts,json}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker,command-palette,shared,test}/**/*.{js,ts,tsx,mjs,html}\" \"./icons/**/*.{jsx,tsx}\"",
+    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{server,parcel-plugins,settings,link,about,keyboard,service-worker,command-palette,shared,test}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
   },
   "repository": {
     "type": "git",
@@ -91,6 +91,7 @@
     "prettier": "^3.0.2",
     "sortablejs": "^1.15.0",
     "svgo": "^3.3.2",
+    "tap": "^21.1.0",
     "typescript": "^5.7.3",
     "urlpattern-polyfill": "^10.0.0"
   }
