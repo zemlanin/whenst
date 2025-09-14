@@ -58,6 +58,8 @@
   },
   "homepage": "https://github.com/zemlanin/whenst#readme",
   "dependencies": {
+    "@automerge/automerge": "^3.1.2",
+    "@automerge/automerge-repo": "^2.3.0",
     "@aws-sdk/client-s3": "^3.722.0",
     "@aws-sdk/lib-storage": "^3.722.0",
     "@fastify/compress": "^8.0.1",
