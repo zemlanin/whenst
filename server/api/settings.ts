@@ -6,7 +6,7 @@ import {
   extractSessionIdFromCookie,
   getSessionCookie,
 } from "../_common/session-id.js";
-import { getSessionTimezones } from "../db/index.js";
+import { getSessionTimezonesLegacy } from "../db/index.js";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 const EMPTY_RESPONSE = { timezones: [], signedIn: false };
@@ -27,9 +27,9 @@ export async function apiSettingsGet(
 
   reply.header("cache-control", "private, no-cache");
   const account = getAccount(sessionId);
-  const timezones = getSessionTimezones(sessionId);
+  const timezones = getSessionTimezonesLegacy(sessionId);
 
-  if (account || timezones?.length) {
+  if (account || timezones.length) {
     reply.header(
       "set-cookie",
       cookie.serialize(COOKIE_NAME, await getSessionCookie(sessionId), {
@@ -41,12 +41,5 @@ export async function apiSettingsGet(
     );
   }
 
-  if (!timezones) {
-    return reply.send({
-      timezones: [],
-      signedIn: !!account,
-    });
-  }
-
-  return reply.send({ timezones: timezones, signedIn: true });
+  return reply.send({ timezones: timezones, signedIn: !!account });
 }

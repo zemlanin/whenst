@@ -15,6 +15,7 @@ timezonesDB.loadExtension(
 
 export { db, timezonesDB };
 
+/** @deprecated */
 export function getSessionTimezones(sessionId: string) {
   const account = getAccount(sessionId);
 
@@ -45,4 +46,107 @@ export function getSessionTimezones(sessionId: string) {
   }
 
   return undefined;
+}
+
+export function getSessionTimezonesLegacy(sessionId: string) {
+  const account = getAccount(sessionId);
+
+  return account
+    ? db
+        .prepare<{ account_id: string }, { timezones: string }>(
+          `
+          SELECT id, label, timezone FROM account_timezones
+          WHERE account_id = @account_id AND NOT tombstone
+          ORDER BY position ASC
+        `,
+        )
+        .all({ account_id: account.id })
+    : db
+        .prepare<{ session_id: string }, { timezones: string }>(
+          `
+          SELECT id, label, timezone FROM session_timezones
+          WHERE session_id = @session_id AND NOT tombstone
+          ORDER BY position ASC
+        `,
+        )
+        .all({ session_id: sessionId });
+}
+
+export class DBCursor {
+  constructor(
+    public updated_at: string,
+    public id: string | null,
+  ) {}
+  toString() {
+    return Buffer.from(JSON.stringify([this.updated_at, this.id])).toString(
+      "base64url",
+    );
+  }
+  static from(str: string) {
+    const [updated_at, id] = JSON.parse(
+      Buffer.from(str, "base64url").toString("utf8"),
+    );
+
+    return new DBCursor(updated_at, id || null);
+  }
+}
+
+export function getSessionTimezonesChanges(
+  sessionId: string,
+  cursor: DBCursor,
+) {
+  const account = getAccount(sessionId);
+  const { updated_at, id } = cursor;
+
+  const rows = account
+    ? db
+        .prepare<
+          { account_id: string; updated_at: string; id: string | null },
+          {
+            id: string;
+            timezone: string;
+            label: string;
+            updated_at: string;
+            tombstone: 0 | 1;
+          }
+        >(
+          `
+            SELECT id, timezone, label, updated_at, tombstone FROM account_timezones
+            WHERE account_id = @account_id AND
+              (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
+            ORDER BY updated_at ASC, id ASC
+            LIMIT 10;
+        `,
+        )
+        .all({ account_id: account.id, updated_at, id })
+    : db
+        .prepare<
+          { session_id: string; updated_at: string; id: string | null },
+          {
+            id: string;
+            timezone: string;
+            label: string;
+            updated_at: string;
+            tombstone: 0 | 1;
+          }
+        >(
+          `
+            SELECT id, timezone, label, updated_at, tombstone FROM session_timezones
+            WHERE session_id = @session_id AND
+              (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
+            ORDER BY updated_at ASC, id ASC
+            LIMIT 10;
+        `,
+        )
+        .all({ session_id: sessionId, updated_at, id });
+
+  const lastRow = rows.at(-1);
+  const nextCursor = lastRow
+    ? new DBCursor(lastRow.updated_at, lastRow.id)
+    : null;
+
+  return {
+    rows,
+    next: nextCursor,
+  };
 }
