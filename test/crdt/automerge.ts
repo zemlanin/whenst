@@ -526,6 +526,140 @@ t.test("absent on client", async (t) => {
   t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 1 });
 });
 
+t.test("load and change on client", async (t) => {
+  const { serverDocHandle, baseURL } = await setup(t);
+
+  t.same(serverDocHandle.doc(), { changedOnServer: 1, changedOnClient: 1 });
+
+  serverDocHandle.change((doc) => {
+    doc.changedOnServer = 2;
+  });
+
+  const respGet = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: serverDocHandle.documentId.toString(),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "get",
+      headers: {
+        // 'content-type': 'application/vnd.automerge'
+      },
+    },
+  );
+
+  t.equal(respGet.status, 200);
+
+  const respDoc = await respGet.arrayBuffer();
+  const initDoc = automerge.load(new Uint8Array(respDoc));
+
+  t.same(initDoc, { changedOnServer: 2, changedOnClient: 1 });
+  t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 1 });
+
+  const clientRepo = new Repo({
+    storage: undefined,
+  });
+  const clientDocHandle = clientRepo.import<{
+    changedOnServer: number;
+    changedOnClient: number;
+  }>(automerge.save(initDoc), { docId: serverDocHandle.documentId });
+
+  clientDocHandle.change((doc) => {
+    doc.changedOnClient = 2;
+  });
+
+  t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 1 });
+  t.same(clientDocHandle.doc(), { changedOnServer: 2, changedOnClient: 2 });
+
+  const syncState = automerge.initSyncState();
+  const [newSyncState, syncMessage] = automerge.generateSyncMessage(
+    clientDocHandle.doc(),
+    syncState,
+  );
+
+  t.ok(syncMessage);
+  if (!syncMessage) {
+    return;
+  }
+
+  const resp = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: clientDocHandle.documentId.toString(),
+        sync: Buffer.from(syncMessage).toString("base64url"),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "put",
+      headers: {
+        // 'content-type': 'application/vnd.automerge'
+      },
+    },
+  );
+
+  t.equal(resp.status, 200);
+
+  const respSyncMessage = await resp.arrayBuffer();
+  const [newDoc, newNewSyncState] = automerge.receiveSyncMessage(
+    clientDocHandle.doc(),
+    newSyncState,
+    new Uint8Array(respSyncMessage),
+  );
+
+  clientDocHandle.update(() => newDoc);
+
+  t.same(clientDocHandle.doc(), { changedOnServer: 2, changedOnClient: 2 });
+  t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 1 });
+
+  const [newNewNewSyncState, outgoingSyncMessage] =
+    automerge.generateSyncMessage(clientDocHandle.doc(), newNewSyncState);
+
+  t.ok(outgoingSyncMessage);
+  if (!outgoingSyncMessage) {
+    return;
+  }
+
+  const resp2 = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: clientDocHandle.documentId.toString(),
+        sync: Buffer.from(outgoingSyncMessage).toString("base64url"),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "put",
+      headers: {
+        // 'content-type': 'application/vnd.automerge'
+      },
+    },
+  );
+
+  t.equal(resp.status, 200);
+
+  const resp2SyncMessage = await resp2.arrayBuffer();
+  const [newNewDoc, newNewNewNewSyncState] = automerge.receiveSyncMessage(
+    clientDocHandle.doc(),
+    newNewNewSyncState,
+    new Uint8Array(resp2SyncMessage),
+  );
+
+  clientDocHandle.update(() => newNewDoc);
+
+  t.same(clientDocHandle.doc(), { changedOnServer: 2, changedOnClient: 2 });
+  t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 2 });
+
+  const [, outgoing2SyncMessage] = automerge.generateSyncMessage(
+    clientDocHandle.doc(),
+    newNewNewNewSyncState,
+  );
+
+  t.notOk(outgoing2SyncMessage);
+});
+
 async function getServer(repo: Repo) {
   // TODO: move to db?
   let syncState = automerge.initSyncState();
