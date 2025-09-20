@@ -190,7 +190,7 @@ t.test("changes on both server and client", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -228,7 +228,7 @@ t.test("changes on both server and client", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -283,7 +283,7 @@ t.test("no changes", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -342,7 +342,7 @@ t.test("changes on client", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -380,7 +380,7 @@ t.test("changes on client", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -439,7 +439,7 @@ t.test("changes on server", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -479,7 +479,7 @@ t.test("changes on server", async (t) => {
       baseURL,
     ),
     {
-      method: "get",
+      method: "put",
       headers: {
         // 'content-type': 'application/vnd.automerge'
       },
@@ -491,6 +491,39 @@ t.test("changes on server", async (t) => {
   const resp2SyncMessage = await resp2.arrayBuffer();
 
   t.notOk(new Uint8Array(resp2SyncMessage).length);
+});
+
+t.test("absent on client", async (t) => {
+  const { serverDocHandle, baseURL } = await setup(t);
+
+  t.same(serverDocHandle.doc(), { changedOnServer: 1, changedOnClient: 1 });
+
+  serverDocHandle.change((doc) => {
+    doc.changedOnServer = 2;
+  });
+
+  const resp = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: serverDocHandle.documentId.toString(),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "get",
+      headers: {
+        // 'content-type': 'application/vnd.automerge'
+      },
+    },
+  );
+
+  t.equal(resp.status, 200);
+
+  const respDoc = await resp.arrayBuffer();
+  const newDoc = automerge.load(new Uint8Array(respDoc));
+
+  t.same(newDoc, { changedOnServer: 2, changedOnClient: 1 });
+  t.same(serverDocHandle.doc(), { changedOnServer: 2, changedOnClient: 1 });
 });
 
 async function getServer(repo: Repo) {
@@ -512,6 +545,26 @@ async function getServer(repo: Repo) {
 
   await fastify
     .get("/api/sync", async (req, reply) => {
+      const { document_id } = req.query as {
+        document_id?: string;
+      };
+
+      if (!document_id) {
+        reply.status(404);
+        return reply.send();
+      }
+
+      const docHandle = await repo.find(document_id as DocumentId);
+      if (!docHandle) {
+        reply.status(404);
+        return reply.send();
+      }
+
+      const doc = docHandle.doc();
+
+      return reply.send(automerge.save(doc));
+    })
+    .put("/api/sync", async (req, reply) => {
       const { sync, document_id } = req.query as {
         document_id?: string;
         sync?: string;
@@ -554,9 +607,6 @@ async function getServer(repo: Repo) {
       }
 
       return reply.send(outgoingSyncMessage);
-    })
-    .put("/api/sync", async (req, reply) => {
-      return reply.send();
     })
     .listen();
 
