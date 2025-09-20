@@ -13,6 +13,14 @@ import Fastify from "fastify";
 import * as automerge from "@automerge/automerge";
 import { AddressInfo } from "node:net";
 
+function bufferToUint8Array(buf: Buffer): Uint8Array {
+  return new Uint8Array(
+    buf.buffer,
+    buf.byteOffset,
+    buf.length / Uint8Array.BYTES_PER_ELEMENT,
+  );
+}
+
 class BetterSqliteStorageAdapter implements StorageAdapterInterface {
   #db: DatabaseInstance;
   #load_stmt: Statement<[string], { data: Buffer } | undefined>;
@@ -60,21 +68,13 @@ class BetterSqliteStorageAdapter implements StorageAdapterInterface {
     return key.split(BetterSqliteStorageAdapter.KEY_SEPARATOR);
   }
 
-  static #bufferToUint8Array(buf: Buffer): Uint8Array {
-    return new Uint8Array(
-      buf.buffer,
-      buf.byteOffset,
-      buf.length / Uint8Array.BYTES_PER_ELEMENT,
-    );
-  }
-
   async load(keyArray: StorageKey): Promise<Uint8Array | undefined> {
     const key = BetterSqliteStorageAdapter.#keyToString(keyArray);
     const result = this.#load_stmt.get(key);
     if (!result) {
       return undefined;
     }
-    return BetterSqliteStorageAdapter.#bufferToUint8Array(result.data);
+    return bufferToUint8Array(result.data);
   }
 
   async save(keyArray: StorageKey, data: Uint8Array): Promise<void> {
@@ -104,7 +104,7 @@ class BetterSqliteStorageAdapter implements StorageAdapterInterface {
 
     return result.map(({ key, data }) => ({
       key: BetterSqliteStorageAdapter.#stringToKey(key),
-      data: BetterSqliteStorageAdapter.#bufferToUint8Array(data),
+      data: bufferToUint8Array(data),
     }));
   }
 
@@ -185,15 +185,15 @@ t.test("changes on both server and client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(syncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: syncMessage,
     },
   );
 
@@ -223,15 +223,15 @@ t.test("changes on both server and client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(outgoingSyncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: outgoingSyncMessage,
     },
   );
 
@@ -278,15 +278,15 @@ t.test("no changes", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(syncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: syncMessage,
     },
   );
 
@@ -337,15 +337,15 @@ t.test("changes on client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(syncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: syncMessage,
     },
   );
 
@@ -375,15 +375,15 @@ t.test("changes on client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(outgoingSyncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: outgoingSyncMessage,
     },
   );
 
@@ -434,15 +434,15 @@ t.test("changes on server", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(syncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: syncMessage,
     },
   );
 
@@ -474,15 +474,15 @@ t.test("changes on server", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(outgoingSyncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: outgoingSyncMessage,
     },
   );
 
@@ -588,15 +588,15 @@ t.test("load and change on client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(syncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: syncMessage,
     },
   );
 
@@ -626,15 +626,15 @@ t.test("load and change on client", async (t) => {
     new URL(
       `/api/sync?${new URLSearchParams({
         document_id: clientDocHandle.documentId.toString(),
-        sync: Buffer.from(outgoingSyncMessage).toString("base64url"),
       })}`,
       baseURL,
     ),
     {
       method: "put",
       headers: {
-        // 'content-type': 'application/vnd.automerge'
+        "content-type": "application/vnd.automerge",
       },
+      body: outgoingSyncMessage,
     },
   );
 
@@ -699,10 +699,11 @@ async function getServer(repo: Repo) {
       return reply.send(automerge.save(doc));
     })
     .put("/api/sync", async (req, reply) => {
-      const { sync, document_id } = req.query as {
+      const { document_id } = req.query as {
         document_id?: string;
-        sync?: string;
       };
+
+      const sync = req.body;
 
       if (!document_id) {
         reply.status(404);
@@ -714,6 +715,11 @@ async function getServer(repo: Repo) {
         return reply.send();
       }
 
+      if (!(sync instanceof Buffer)) {
+        reply.status(400);
+        return reply.send();
+      }
+
       const docHandle = await repo.find(document_id as DocumentId);
       if (!docHandle) {
         reply.status(404);
@@ -722,7 +728,7 @@ async function getServer(repo: Repo) {
 
       const doc = docHandle.doc();
 
-      const incomingSyncMessage = Buffer.from(sync, "base64");
+      const incomingSyncMessage = bufferToUint8Array(sync);
       const [newDoc, newSyncState] = automerge.receiveSyncMessage(
         doc,
         syncState,
