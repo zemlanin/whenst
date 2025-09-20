@@ -150,6 +150,7 @@ async function setup(t: Test) {
   const address = fastify.server.address() as AddressInfo | null;
 
   return {
+    serverRepo,
     serverDocHandle,
     clientDocHandle,
     baseURL: new URL(`http://localhost:${address?.port}/`),
@@ -660,6 +661,134 @@ t.test("load and change on client", async (t) => {
   t.notOk(outgoing2SyncMessage);
 });
 
+t.test("create and sync a new client doc", async (t) => {
+  const { baseURL, serverRepo } = await setup(t);
+
+  const clientRepo = new Repo({
+    storage: undefined,
+  });
+
+  const initialValue = { createdOnClient: 1 };
+  const doc = automerge.from(initialValue);
+  const clientDocHandle = clientRepo.import<typeof initialValue>(
+    automerge.save(doc),
+  );
+  const documentId = clientDocHandle.documentId;
+
+  t.same(clientDocHandle.doc(), { createdOnClient: 1 });
+
+  clientDocHandle.change((doc) => {
+    doc.createdOnClient = 2;
+  });
+
+  const respGet = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: documentId.toString(),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "get",
+      headers: {
+        // 'content-type': 'application/vnd.automerge'
+      },
+    },
+  );
+
+  t.equal(respGet.status, 404);
+
+  const syncState = automerge.initSyncState();
+  const [newSyncState, syncMessage] = automerge.generateSyncMessage(
+    clientDocHandle.doc(),
+    syncState,
+  );
+
+  t.ok(syncMessage);
+  if (!syncMessage) {
+    return;
+  }
+
+  const resp = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: documentId.toString(),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "put",
+      headers: {
+        "content-type": "application/vnd.automerge",
+      },
+      body: syncMessage,
+    },
+  );
+
+  t.equal(resp.status, 200);
+
+  const respSyncMessage = await resp.arrayBuffer();
+  const [newDoc, newNewSyncState] = automerge.receiveSyncMessage(
+    clientDocHandle.doc(),
+    newSyncState,
+    new Uint8Array(respSyncMessage),
+  );
+
+  clientDocHandle.update(() => newDoc);
+
+  t.same(clientDocHandle.doc(), { createdOnClient: 2 });
+  t.ok(
+    (
+      await serverRepo.find(documentId, { allowableStates: ["unavailable"] })
+    ).isUnavailable(),
+  );
+
+  const [newNewNewSyncState, outgoingSyncMessage] =
+    automerge.generateSyncMessage(clientDocHandle.doc(), newNewSyncState);
+
+  t.ok(outgoingSyncMessage);
+  if (!outgoingSyncMessage) {
+    return;
+  }
+
+  const resp2 = await fetch(
+    new URL(
+      `/api/sync?${new URLSearchParams({
+        document_id: documentId.toString(),
+      })}`,
+      baseURL,
+    ),
+    {
+      method: "put",
+      headers: {
+        "content-type": "application/vnd.automerge",
+      },
+      body: outgoingSyncMessage,
+    },
+  );
+
+  t.equal(resp.status, 200);
+
+  const resp2SyncMessage = await resp2.arrayBuffer();
+  const [newNewDoc, newNewNewNewSyncState] = automerge.receiveSyncMessage(
+    clientDocHandle.doc(),
+    newNewNewSyncState,
+    new Uint8Array(resp2SyncMessage),
+  );
+
+  clientDocHandle.update(() => newNewDoc);
+
+  t.same(clientDocHandle.doc(), { createdOnClient: 2 });
+  t.same((await serverRepo.find(documentId)).doc(), { createdOnClient: 2 });
+
+  const [, outgoing2SyncMessage] = automerge.generateSyncMessage(
+    clientDocHandle.doc(),
+    newNewNewNewSyncState,
+  );
+
+  t.notOk(outgoing2SyncMessage);
+});
+
 async function getServer(repo: Repo) {
   // TODO: move to db?
   let syncState = automerge.initSyncState();
@@ -688,7 +817,9 @@ async function getServer(repo: Repo) {
         return reply.send();
       }
 
-      const docHandle = await repo.find(document_id as DocumentId);
+      const docHandle = await repo
+        .find(document_id as DocumentId)
+        .catch(() => null);
       if (!docHandle) {
         reply.status(404);
         return reply.send();
@@ -720,13 +851,18 @@ async function getServer(repo: Repo) {
         return reply.send();
       }
 
-      const docHandle = await repo.find(document_id as DocumentId);
-      if (!docHandle) {
-        reply.status(404);
-        return reply.send();
+      let docHandle = await repo
+        .find(document_id as DocumentId)
+        .catch(() => null);
+      let doc = docHandle?.doc();
+      if (!doc) {
+        doc = automerge.init();
       }
-
-      const doc = docHandle.doc();
+      if (!docHandle) {
+        docHandle = repo.import(automerge.save(doc), {
+          docId: document_id as DocumentId,
+        });
+      }
 
       const incomingSyncMessage = bufferToUint8Array(sync);
       const [newDoc, newSyncState] = automerge.receiveSyncMessage(
