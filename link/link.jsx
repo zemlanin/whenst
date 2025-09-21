@@ -1,7 +1,7 @@
 import { render } from "preact";
 import { useSignal, useComputed, batch } from "@preact/signals";
 
-import { sqrapInit, sqrapStatus, sqrapCode, loadUser } from "../api";
+import { sqrapInit, sqrapStatus, sqrapCode, loadSession, wipeDatabase } from "../api";
 
 render(<LinkPage />, document.querySelector("main"));
 
@@ -101,7 +101,8 @@ function LinkPage() {
                     async ({ done }) => {
                       if (done) {
                         // request new settings to invalidate SW cache
-                        await loadUser();
+                        await loadSession();
+                        await wipeDatabase();
                         location.href = "/";
                         return;
                       }

@@ -2,7 +2,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { manifest, version } from "@parcel/service-worker";
 import { generateIntlTimezones } from "../shared/generateIntlTimezones.js";
-import "./db.js";
+import { sync } from "./db.js";
 
 async function install() {
   const cache = await caches.open(version);
@@ -39,8 +39,11 @@ async function activate() {
   await Promise.all(keys.map((key) => key !== version && caches.delete(key)));
 }
 self.addEventListener("activate", (e) => e.waitUntil(activate()));
-
-let staleAPICache = false;
+self.addEventListener("message", (e) => {
+  if (e.data === "sync") {
+    return sync();
+  }
+});
 
 self.addEventListener("fetch", (e) => {
   const { origin, pathname } = new URL(e.request.url);
@@ -49,11 +52,10 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  if (e.request.method !== "GET") {
-    if (pathname.startsWith("/api/")) {
-      staleAPICache = true;
-    }
-
+  if (
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/timezones-index")
+  ) {
     return;
   }
 
@@ -74,12 +76,6 @@ self.addEventListener("fetch", (e) => {
         if (r) {
           return r;
         }
-      }
-
-      if (pathname.startsWith("/api/") && staleAPICache) {
-        const response = fetchAndCache(e.request);
-        staleAPICache = false;
-        return response;
       }
 
       const cachedResponse = await getResponseWithIndexFallback(e.request);

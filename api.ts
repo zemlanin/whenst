@@ -1,17 +1,17 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { IDBPObjectStore, openDB } from "idb";
 
-export async function loadUser() {
+export async function loadSession() {
   await transferLocalTimezones();
 
-  const resp = await fetch("/api/user", {
+  const resp = await fetch("/api/session", {
     headers: {
       accept: "application/json",
     },
   });
-  const settings: { signedIn: boolean } = await resp.json();
+  const session: { signedIn: boolean } = await resp.json();
 
-  return settings;
+  return session;
 }
 
 export async function getSavedTimezones() {
@@ -24,6 +24,16 @@ export async function getSavedTimezones() {
   db.close();
 
   return timezones.filter(({ tombstone }) => !tombstone);
+}
+
+export async function wipeDatabase() {
+  const db = await openDB("whenst", 1);
+  for (const storeName of db.objectStoreNames) {
+    const tx = db.transaction([storeName], "readwrite");
+    await tx.objectStore(storeName).clear();
+    await tx.done;
+  }
+  db.close();
 }
 
 async function computePosition(
@@ -112,9 +122,8 @@ export async function addTimezone({
   }
 
   const db = await openDB("whenst", 1);
-  const store = db
-    .transaction(["timezones"], "readwrite")
-    .objectStore("timezones");
+  const tx = db.transaction(["timezones"], "readwrite");
+  const store = tx.objectStore("timezones");
   const position = await computePosition(store, {
     after: POSITION_ALPHABET_START,
   });
@@ -127,23 +136,26 @@ export async function addTimezone({
     position,
     stale: 1,
   });
+  await tx.done;
 
   db.close();
+  sendSyncMessage();
 }
 
 export async function deleteTimezone({ id }: { id: string }) {
   const db = await openDB("whenst", 1);
-  const store = db
-    .transaction(["timezones"], "readwrite")
-    .objectStore("timezones");
+  const tx = db.transaction(["timezones"], "readwrite");
+  const store = tx.objectStore("timezones");
   await store.put({
     id,
     updated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
     tombstone: 1,
     stale: 1,
   });
+  await tx.done;
 
   db.close();
+  sendSyncMessage();
 }
 
 export async function reorderTimezone({
@@ -154,17 +166,18 @@ export async function reorderTimezone({
   after: string;
 }) {
   const db = await openDB("whenst", 1);
-  const store = db
-    .transaction(["timezones"], "readwrite")
-    .objectStore("timezones");
+  const tx = db.transaction(["timezones"], "readwrite");
+  const store = tx.objectStore("timezones");
 
   const timezone = await store.get(id);
   timezone.position = await computePosition(store, { after });
   timezone.updated_at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   timezone.stale = 1;
   await store.put(timezone);
+  await tx.done;
 
   db.close();
+  sendSyncMessage();
 }
 
 export async function changeTimezoneLabel({
@@ -175,17 +188,23 @@ export async function changeTimezoneLabel({
   label: string;
 }) {
   const db = await openDB("whenst", 1);
-  const store = db
-    .transaction(["timezones"], "readwrite")
-    .objectStore("timezones");
+  const tx = db.transaction(["timezones"], "readwrite");
+  const store = tx.objectStore("timezones");
 
   const timezone = await store.get(id);
   timezone.label = label;
   timezone.updated_at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   timezone.stale = 1;
   await store.put(timezone);
+  await tx.done;
 
   db.close();
+  sendSyncMessage();
+}
+
+async function sendSyncMessage() {
+  const registration = await navigator.serviceWorker.ready;
+  registration.active?.postMessage("sync");
 }
 
 export async function transferLocalTimezones() {

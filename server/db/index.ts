@@ -105,7 +105,7 @@ export function upsertTimezone(
           @position,
           0
         )
-        ON CONFLICT UPDATE SET
+        ON CONFLICT(id) DO UPDATE SET
           updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
           client_updated_at = @client_updated_at,
           timezone = @timezone,
@@ -142,7 +142,7 @@ export function upsertTimezone(
           @position,
           0
         )
-        ON CONFLICT UPDATE SET
+        ON CONFLICT(id) DO UPDATE SET
           updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
           client_updated_at = @client_updated_at,
           timezone = @timezone,
@@ -189,7 +189,7 @@ export function deleteExistingTimezone(
           @position,
           1
         )
-        ON CONFLICT UPDATE SET
+        ON CONFLICT(id) DO UPDATE SET
           updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
           client_updated_at = @client_updated_at,
           timezone = @timezone,
@@ -226,7 +226,7 @@ export function deleteExistingTimezone(
           @position,
           1
         )
-        ON CONFLICT UPDATE SET
+        ON CONFLICT(id) DO UPDATE SET
           updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
           client_updated_at = @client_updated_at,
           timezone = @timezone,

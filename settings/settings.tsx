@@ -14,8 +14,9 @@ import {
   reorderTimezone,
   changeTimezoneLabel,
   signOut,
-  loadUser,
+  loadSession,
   getSavedTimezones,
+  wipeDatabase,
 } from "../api.js";
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
@@ -25,8 +26,9 @@ import { AddTimezoneForm } from "./add-timezone-form.js";
 
 document.getElementById("sign-out-button")?.addEventListener("click", () => {
   signOut().then(async () => {
-    // request new settings to invalidate SW cache
-    await loadUser();
+    // request new session to invalidate SW cache
+    await loadSession();
+    await wipeDatabase();
     location.href = "/";
   });
 });
@@ -34,10 +36,9 @@ document.getElementById("sign-out-button")?.addEventListener("click", () => {
 type UnpackPromise<T extends PromiseLike<unknown>> =
   T extends PromiseLike<infer R> ? R : never;
 
-type SettingsPayload = UnpackPromise<ReturnType<typeof loadUser>>;
+type SessionPayload = UnpackPromise<ReturnType<typeof loadSession>>;
 
-// TODO: rename to `userSignal`
-const settingsSignal = new Signal<SettingsPayload>({
+const sessionSignal = new Signal<SessionPayload>({
   signedIn: false,
 });
 
@@ -254,10 +255,11 @@ function TimezoneLabelForm({
   );
 }
 
+updateSession();
 updateSavedTimezonesList();
 
-async function updateSavedTimezonesList() {
-  const { signedIn } = await loadUser();
+async function updateSession() {
+  const { signedIn } = await loadSession();
 
   if (signedIn) {
     const signOutButton = document.getElementById("sign-out-button");
@@ -270,7 +272,10 @@ async function updateSavedTimezonesList() {
     }
   }
 
-  settingsSignal.value = { signedIn };
+  sessionSignal.value = { signedIn };
+}
+
+async function updateSavedTimezonesList() {
   timezonesSignal.value = await getSavedTimezones();
 }
 

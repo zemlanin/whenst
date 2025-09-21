@@ -12,30 +12,25 @@ export const dbPromise = openDB("whenst", 1, {
       db.createObjectStore("syncStates");
     }
   },
-  blocked(_currentVersion, _blockedVersion, _event) {},
-  blocking(_currentVersion, _blockedVersion, _event) {},
+  blocked(_currentVersion, _blockedVersion, _event) {
+    console.log("blocked");
+  },
+  blocking(_currentVersion, _blockedVersion, _event) {
+    console.log("blocking");
+  },
   terminated() {},
 });
 
-dbPromise.then(async (db) => {
-  await push(db);
-  await pull(db);
-});
+export async function sync() {
+  if (!navigator.onLine) {
+    console.log("offline. skipping sync");
+    return;
+  }
 
-/** @ts-expect-error - debug function */
-globalThis._deleteDB = async () => {
-  return deleteDB("whenst", { blocked: console.error });
-};
-
-/** @ts-expect-error - debug function */
-globalThis._pull = async () => {
-  return pull(await dbPromise);
-};
-
-/** @ts-expect-error - debug function */
-globalThis._push = async () => {
-  return pull(await dbPromise);
-};
+  const db = await dbPromise;
+  await pushTimezones(db);
+  await pullTimezones(db);
+}
 
 async function getSyncState(
   db: IDBPDatabase,
@@ -46,7 +41,7 @@ async function getSyncState(
   return syncStatesStore.get(key);
 }
 
-async function pull(db: IDBPDatabase) {
+async function pullTimezones(db: IDBPDatabase) {
   const syncState = await getSyncState(db, "timezones");
   let next = syncState ?? "/api/sync/timezones";
 
@@ -73,16 +68,36 @@ async function pull(db: IDBPDatabase) {
     if (next) {
       syncStatesStore.put(next, timezonesStore.name);
     }
-    tx.commit();
+    await tx.done;
   } while (next);
 }
 
-async function push(db: IDBPDatabase) {
+async function pushTimezones(db: IDBPDatabase) {
   const tx = db.transaction(["timezones"], "readonly");
-  let cursor = await tx.objectStore("timezones").index("stale").openCursor();
+  const staleTimezones = await tx
+    .objectStore("timezones")
+    .index("stale")
+    .getAll();
 
-  while (cursor) {
-    console.log(cursor);
-    cursor = await cursor.continue();
+  if (!staleTimezones.length) {
+    return;
   }
+
+  return fetch("/api/sync/timezones", {
+    method: "patch",
+    body: JSON.stringify(staleTimezones),
+    headers: {
+      "content-type": "application/json",
+    },
+  });
 }
+
+/** @ts-expect-error - debug function */
+self._deleteDB = async () => {
+  return deleteDB("whenst", { blocked: console.error });
+};
+
+/** @ts-expect-error - debug function */
+self._sync = async () => {
+  return sync();
+};
