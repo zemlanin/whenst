@@ -13,7 +13,10 @@ import { apiSqrapCodePost } from "./api/sqrap/code.js";
 import { apiSqrapInitPost } from "./api/sqrap/init.js";
 import { apiSqrapStatusGet } from "./api/sqrap/status.js";
 import { apiTimezonesIndex } from "./api/timezones-index.js";
-import { apiSyncTimezonesGet } from "./api/sync/timezones.js";
+import {
+  apiSyncTimezonesGet,
+  apiSyncTimezonesPatch,
+} from "./api/sync/timezones.js";
 
 const fastify = Fastify({
   logger: true,
@@ -121,6 +124,7 @@ fastify.post("/api/sqrap/init", apiSqrapInitPost);
 fastify.get("/api/sqrap/status", apiSqrapStatusGet);
 fastify.get("/api/timezones-index", apiTimezonesIndex);
 fastify.get("/api/sync/timezones", apiSyncTimezonesGet);
+fastify.patch("/api/sync/timezones", apiSyncTimezonesPatch);
 fastify.get("/.well-known/healthcheck", (_request, reply) => {
   return reply.code(200).send();
 });

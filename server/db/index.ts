@@ -72,6 +72,182 @@ export function getSessionTimezonesLegacy(sessionId: string) {
         .all({ session_id: sessionId });
 }
 
+export function upsertTimezone(
+  patch: {
+    id: string;
+    updated_at: string;
+    tombstone: 0;
+    timezone: string;
+    label: string;
+    position: string;
+  },
+  {
+    sessionId,
+    accountId,
+  }: {
+    sessionId?: string;
+    accountId?: string;
+  },
+) {
+  if (accountId) {
+    db.prepare(
+      `
+        INSERT INTO account_timezones (
+          id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
+        )
+        VALUES (
+          @id,
+          @account_id,
+          strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          @client_updated_at,
+          @timezone,
+          @label,
+          @position,
+          0
+        )
+        ON CONFLICT UPDATE SET
+          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          client_updated_at = @client_updated_at,
+          timezone = @timezone,
+          label = @label,
+          position = @position,
+          tombstone = 0
+        WHERE id = @id AND account_id = @account_id AND client_updated_at < @client_updated_at
+      `,
+    ).run({
+      id: patch.id,
+      account_id: accountId,
+      client_updated_at: patch.updated_at,
+      timezone: patch.timezone,
+      label: patch.label,
+      position: patch.position,
+    });
+
+    return;
+  }
+
+  if (sessionId) {
+    db.prepare(
+      `
+        INSERT INTO session_timezones (
+          id, session_id, updated_at, client_updated_at, timezone, label, position, tombstone
+        )
+        VALUES (
+          @id,
+          @session_id,
+          strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          @client_updated_at,
+          @timezone,
+          @label,
+          @position,
+          0
+        )
+        ON CONFLICT UPDATE SET
+          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          client_updated_at = @client_updated_at,
+          timezone = @timezone,
+          label = @label,
+          position = @position,
+          tombstone = 0
+        WHERE id = @id AND session_id = @session_id AND client_updated_at < @client_updated_at
+      `,
+    ).run({
+      id: patch.id,
+      session_id: sessionId,
+      client_updated_at: patch.updated_at,
+      timezone: patch.timezone,
+      label: patch.label,
+      position: patch.position,
+    });
+
+    return;
+  }
+}
+export function deleteExistingTimezone(
+  patch: { id: string; updated_at: string; tombstone: 1 },
+  {
+    sessionId,
+    accountId,
+  }: {
+    sessionId?: string;
+    accountId?: string;
+  },
+) {
+  if (accountId) {
+    db.prepare(
+      `
+        INSERT INTO account_timezones (
+          id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
+        )
+        VALUES (
+          @id,
+          @account_id,
+          strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          @client_updated_at,
+          @timezone,
+          @label,
+          @position,
+          1
+        )
+        ON CONFLICT UPDATE SET
+          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          client_updated_at = @client_updated_at,
+          timezone = @timezone,
+          label = @label,
+          position = @position,
+          tombstone = 1
+        WHERE id = @id AND account_id = @account_id AND client_updated_at < @client_updated_at
+      `,
+    ).run({
+      id: patch.id,
+      account_id: accountId,
+      client_updated_at: patch.updated_at,
+      timezone: "",
+      label: "",
+      position: "",
+    });
+
+    return;
+  }
+
+  if (sessionId) {
+    db.prepare(
+      `
+        INSERT INTO session_timezones (
+          id, session_id, updated_at, client_updated_at, timezone, label, position, tombstone
+        )
+        VALUES (
+          @id,
+          @session_id,
+          strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          @client_updated_at,
+          @timezone,
+          @label,
+          @position,
+          1
+        )
+        ON CONFLICT UPDATE SET
+          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+          client_updated_at = @client_updated_at,
+          timezone = @timezone,
+          label = @label,
+          position = @position,
+          tombstone = 1
+        WHERE id = @id AND session_id = @session_id AND client_updated_at < @client_updated_at
+      `,
+    ).run({
+      id: patch.id,
+      session_id: sessionId,
+      client_updated_at: patch.updated_at,
+      timezone: "",
+      label: "",
+      position: "",
+    });
+
+    return;
+  }
+}
+
 export class DBCursor {
   constructor(
     public updated_at: string,
