@@ -10,11 +10,12 @@ import CircleNotch from "../icons/circle-notch.svg.js";
 import Check from "../icons/check.svg.js";
 
 import {
-  loadSettings,
   deleteTimezone,
   reorderTimezone,
   changeTimezoneLabel,
   signOut,
+  loadUser,
+  getSavedTimezones,
 } from "../api.js";
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
@@ -25,7 +26,7 @@ import { AddTimezoneForm } from "./add-timezone-form.js";
 document.getElementById("sign-out-button")?.addEventListener("click", () => {
   signOut().then(async () => {
     // request new settings to invalidate SW cache
-    await loadSettings();
+    await loadUser();
     location.href = "/";
   });
 });
@@ -33,12 +34,18 @@ document.getElementById("sign-out-button")?.addEventListener("click", () => {
 type UnpackPromise<T extends PromiseLike<unknown>> =
   T extends PromiseLike<infer R> ? R : never;
 
-type SettingsPayload = UnpackPromise<ReturnType<typeof loadSettings>>;
+type SettingsPayload = UnpackPromise<ReturnType<typeof loadUser>>;
 
+// TODO: rename to `userSignal`
 const settingsSignal = new Signal<SettingsPayload>({
-  timezones: [],
   signedIn: false,
 });
+
+type SavedTimezone = UnpackPromise<
+  ReturnType<typeof getSavedTimezones>
+>[number];
+
+const timezonesSignal = new Signal<SavedTimezone[]>([]);
 
 const savingStateSignal = new Signal<{
   [K in string]?: "initial" | "saving" | "saved";
@@ -46,15 +53,14 @@ const savingStateSignal = new Signal<{
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
-  render(<TimezonesEdit settingsSignal={settingsSignal} />, timezonesEdit);
+  render(<TimezonesEdit timezonesSignal={timezonesSignal} />, timezonesEdit);
 }
 
 function TimezonesEdit({
-  settingsSignal,
+  timezonesSignal,
 }: {
-  settingsSignal: Signal<SettingsPayload>;
+  timezonesSignal: Signal<SavedTimezone[]>;
 }) {
-  const timezones = useComputed(() => settingsSignal.value.timezones);
   const timezonesListRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -68,18 +74,33 @@ function TimezonesEdit({
       handle: ".dnd-handle",
       ghostClass: "sortable-ghost",
       onEnd(event) {
-        const { item, newDraggableIndex } = event;
+        const { item, newDraggableIndex, oldDraggableIndex } = event;
         const id =
           item.querySelector<HTMLInputElement>('input[name="id"]')?.value;
 
-        if (!id || newDraggableIndex === undefined) {
+        if (
+          !id ||
+          newDraggableIndex === undefined ||
+          oldDraggableIndex === undefined ||
+          newDraggableIndex === oldDraggableIndex
+        ) {
           return;
         }
 
         setSavingState(id, "saving");
         sortable.option("disabled", true);
 
-        reorderTimezone({ id, index: newDraggableIndex }).then(() => {
+        const after =
+          newDraggableIndex === 0
+            ? "0"
+            : timezonesSignal.peek()[
+                // TODO: wtf is this mess
+                newDraggableIndex > oldDraggableIndex
+                  ? newDraggableIndex
+                  : newDraggableIndex - 1
+              ]?.position;
+
+        reorderTimezone({ id, after: after ?? "0" }).then(() => {
           updateSavedTimezonesList();
           setSavingState(id, "saved");
           sortable.option("disabled", false);
@@ -94,7 +115,7 @@ function TimezonesEdit({
         <AddTimezoneForm updateSavedTimezonesList={updateSavedTimezonesList} />
       </div>
       <ul id="timezones-list" ref={timezonesListRef}>
-        {timezones.value.map(({ id, timezone, label }) => {
+        {timezonesSignal.value.map(({ id, timezone, label }) => {
           return (
             <TimezoneRow key={id} id={id} timezone={timezone} label={label} />
           );
@@ -236,7 +257,7 @@ function TimezoneLabelForm({
 updateSavedTimezonesList();
 
 async function updateSavedTimezonesList() {
-  const { timezones, signedIn } = await loadSettings();
+  const { signedIn } = await loadUser();
 
   if (signedIn) {
     const signOutButton = document.getElementById("sign-out-button");
@@ -249,7 +270,8 @@ async function updateSavedTimezonesList() {
     }
   }
 
-  settingsSignal.value = { timezones, signedIn };
+  settingsSignal.value = { signedIn };
+  timezonesSignal.value = await getSavedTimezones();
 }
 
 function deleteFormHandler(event: SubmitEvent) {

@@ -2,6 +2,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { manifest, version } from "@parcel/service-worker";
 import { generateIntlTimezones } from "../shared/generateIntlTimezones.js";
+import "./db.js";
 
 async function install() {
   const cache = await caches.open(version);

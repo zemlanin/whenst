@@ -4,6 +4,7 @@ import fastifyStatic from "@fastify/static";
 
 import { apiSessionDelete } from "./api/session.js";
 import { apiSettingsGet } from "./api/settings.js";
+import { apiUserGet } from "./api/user.js";
 import {
   apiTimezonesDelete,
   apiTimezonesPatch,
@@ -116,6 +117,7 @@ fastify.register((childContext, _, done) => {
 
 fastify.delete("/api/session", apiSessionDelete);
 fastify.get("/api/settings", apiSettingsGet);
+fastify.get("/api/user", apiUserGet);
 fastify.put("/api/timezones", apiTimezonesPut);
 fastify.delete("/api/timezones", apiTimezonesDelete);
 fastify.patch("/api/timezones", apiTimezonesPatch);

@@ -283,11 +283,12 @@ export function getSessionTimezonesChanges(
             timezone: string;
             label: string;
             updated_at: string;
+            position: string;
             tombstone: 0 | 1;
           }
         >(
           `
-            SELECT id, timezone, label, updated_at, tombstone FROM account_timezones
+            SELECT id, timezone, label, updated_at, position, tombstone FROM account_timezones
             WHERE account_id = @account_id AND
               (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
             ORDER BY updated_at ASC, id ASC
@@ -303,11 +304,12 @@ export function getSessionTimezonesChanges(
             timezone: string;
             label: string;
             updated_at: string;
+            position: string;
             tombstone: 0 | 1;
           }
         >(
           `
-            SELECT id, timezone, label, updated_at, tombstone FROM session_timezones
+            SELECT id, timezone, label, updated_at, position, tombstone FROM session_timezones
             WHERE session_id = @session_id AND
               (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
             ORDER BY updated_at ASC, id ASC

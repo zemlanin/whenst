@@ -34,7 +34,7 @@
     "fuse.js/basic": "fuse.js/dist/fuse.basic"
   },
   "scripts": {
-    "test": "tap",
+    "test": "tap --disable-coverage",
     "build": "npm run build:client && npm run build:server",
     "build:client": "parcel build --target default",
     "build:server": "parcel build --target server --config \"@parcel/config-default\"",
@@ -67,6 +67,7 @@
     "better-sqlite3": "^11.7.0",
     "cookie": "^1.0.2",
     "fastify": "^5.2.0",
+    "idb": "^8.0.3",
     "mime": "^4.0.6"
   },
   "devDependencies": {

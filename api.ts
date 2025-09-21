@@ -1,19 +1,101 @@
 import { Temporal } from "@js-temporal/polyfill";
+import { IDBPObjectStore, openDB } from "idb";
 
-export async function loadSettings() {
+export async function loadUser() {
   await transferLocalTimezones();
 
-  const resp = await fetch("/api/settings", {
+  const resp = await fetch("/api/user", {
     headers: {
       accept: "application/json",
     },
   });
-  const settings: {
-    timezones: { id: string; label: string; timezone: string }[];
-    signedIn: boolean;
-  } = await resp.json();
+  const settings: { signedIn: boolean } = await resp.json();
 
   return settings;
+}
+
+export async function getSavedTimezones() {
+  const db = await openDB("whenst", 1);
+  const timezones = await db
+    .transaction(["timezones"], "readonly")
+    .objectStore("timezones")
+    .index("position")
+    .getAll();
+  db.close();
+
+  return timezones.filter(({ tombstone }) => !tombstone);
+}
+
+async function computePosition(
+  store: IDBPObjectStore<
+    unknown,
+    string[],
+    "timezones",
+    "readonly" | "readwrite"
+  >,
+  options: { after: string },
+) {
+  const keyRange = IDBKeyRange.lowerBound(options.after, true);
+  const cursor = await store.index("position").openCursor(keyRange);
+
+  const pointA = options.after;
+
+  const pointB = cursor ? cursor.key.toString() : POSITION_ALPHABET_END;
+
+  return getMidpointPosition(pointA, pointB);
+}
+
+const POSITION_ALPHABET =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const POSITION_ALPHABET_START = "0";
+const POSITION_ALPHABET_MIDDLE = "U";
+const POSITION_ALPHABET_END = "z";
+
+export function getMidpointPosition(pointA: string, pointB: string) {
+  if (!pointA || !pointB) {
+    throw new Error("both points can't be empty");
+  }
+
+  if (+pointA === 0 && +pointB === 0) {
+    throw new Error("both points can't contain only zeroes");
+  }
+
+  let midpoint = "";
+  for (let i = 0; i < Math.max(pointA.length, pointB.length); i++) {
+    const digitA = pointA[i] ?? POSITION_ALPHABET_START;
+    const digitB = pointB[i] ?? POSITION_ALPHABET_END;
+
+    if (digitA === digitB) {
+      midpoint += digitA;
+      continue;
+    }
+
+    const indexA = POSITION_ALPHABET.indexOf(digitA);
+    const indexB = POSITION_ALPHABET.indexOf(digitB);
+
+    const indexM = Math.floor((indexA + indexB) / 2);
+    if (indexM === indexA || indexM === indexB) {
+      midpoint += digitA;
+      continue;
+    }
+
+    midpoint += POSITION_ALPHABET[indexM];
+    if (midpoint.length === Math.min(pointA.length, pointB.length)) {
+      break;
+    }
+  }
+
+  if (
+    midpoint === pointA ||
+    midpoint === pointB ||
+    // avoiding creating zeroes-only position
+    // because it's impossible(?) to get a midpoint between two zeroes-only positions
+    +midpoint === 0
+  ) {
+    midpoint += POSITION_ALPHABET_MIDDLE;
+  }
+
+  return midpoint;
 }
 
 export async function addTimezone({
@@ -29,58 +111,60 @@ export async function addTimezone({
     timezone = timezone.toString();
   }
 
-  const resp = await fetch("/api/timezones", {
-    method: "PUT",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      id: id || `${+new Date()}${Math.random().toString().slice(1)}`,
-      timezone,
-      label: label || "",
-    }),
+  const db = await openDB("whenst", 1);
+  const store = db
+    .transaction(["timezones"], "readwrite")
+    .objectStore("timezones");
+  const position = await computePosition(store, {
+    after: POSITION_ALPHABET_START,
+  });
+  await store.put({
+    id: id || `${+new Date()}${Math.random().toString().slice(1)}`,
+    updated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+    tombstone: 0,
+    timezone,
+    label,
+    position,
+    stale: 1,
   });
 
-  if (resp.status >= 400) {
-    throw resp;
-  }
+  db.close();
 }
 
 export async function deleteTimezone({ id }: { id: string }) {
-  const resp = await fetch("/api/timezones", {
-    method: "DELETE",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ id }),
+  const db = await openDB("whenst", 1);
+  const store = db
+    .transaction(["timezones"], "readwrite")
+    .objectStore("timezones");
+  await store.put({
+    id,
+    updated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+    tombstone: 1,
+    stale: 1,
   });
 
-  if (resp.status >= 400) {
-    throw resp;
-  }
+  db.close();
 }
 
 export async function reorderTimezone({
   id,
-  index,
+  after,
 }: {
   id: string;
-  index: number;
+  after: string;
 }) {
-  const resp = await fetch("/api/timezones", {
-    method: "PATCH",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ id, index }),
-  });
+  const db = await openDB("whenst", 1);
+  const store = db
+    .transaction(["timezones"], "readwrite")
+    .objectStore("timezones");
 
-  if (resp.status >= 400) {
-    throw resp;
-  }
+  const timezone = await store.get(id);
+  timezone.position = await computePosition(store, { after });
+  timezone.updated_at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  timezone.stale = 1;
+  await store.put(timezone);
+
+  db.close();
 }
 
 export async function changeTimezoneLabel({
@@ -90,18 +174,18 @@ export async function changeTimezoneLabel({
   id: string;
   label: string;
 }) {
-  const resp = await fetch("/api/timezones", {
-    method: "PATCH",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ id, label }),
-  });
+  const db = await openDB("whenst", 1);
+  const store = db
+    .transaction(["timezones"], "readwrite")
+    .objectStore("timezones");
 
-  if (resp.status >= 400) {
-    throw resp;
-  }
+  const timezone = await store.get(id);
+  timezone.label = label;
+  timezone.updated_at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  timezone.stale = 1;
+  await store.put(timezone);
+
+  db.close();
 }
 
 export async function transferLocalTimezones() {
