@@ -1,6 +1,6 @@
 import t from "tap";
 
-import { getMidpointPosition } from "../api.js";
+import { getMidpointPosition } from "../shared/getMidpointPosition.js";
 
 t.test("", async (t) => {
   t.equal(getMidpointPosition("0", "z"), "U");
