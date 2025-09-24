@@ -2,7 +2,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import { IDBPObjectStore, openDB } from "idb";
 
 export async function loadSession() {
-  await transferLocalTimezones();
+  await transferLocalWorldClocks();
 
   const resp = await fetch("/api/session", {
     headers: {
@@ -14,16 +14,16 @@ export async function loadSession() {
   return session;
 }
 
-export async function getSavedTimezones() {
+export async function getSavedWorldClock() {
   const db = await openDB("whenst", 1);
-  const timezones = await db
-    .transaction(["timezones"], "readonly")
-    .objectStore("timezones")
+  const worldClock = await db
+    .transaction(["world-clock"], "readonly")
+    .objectStore("world-clock")
     .index("position")
     .getAll();
   db.close();
 
-  return timezones.filter(({ tombstone }) => !tombstone);
+  return worldClock.filter(({ tombstone }) => !tombstone);
 }
 
 export async function wipeDatabase() {
@@ -40,7 +40,7 @@ async function computePosition(
   store: IDBPObjectStore<
     unknown,
     string[],
-    "timezones",
+    "world-clock",
     "readonly" | "readwrite"
   >,
   options: { after: string },
@@ -108,7 +108,7 @@ export function getMidpointPosition(pointA: string, pointB: string) {
   return midpoint;
 }
 
-export async function addTimezone({
+export async function addWorldClock({
   id,
   timezone,
   label,
@@ -122,8 +122,8 @@ export async function addTimezone({
   }
 
   const db = await openDB("whenst", 1);
-  const tx = db.transaction(["timezones"], "readwrite");
-  const store = tx.objectStore("timezones");
+  const tx = db.transaction(["world-clock"], "readwrite");
+  const store = tx.objectStore("world-clock");
   const position = await computePosition(store, {
     after: POSITION_ALPHABET_START,
   });
@@ -142,10 +142,10 @@ export async function addTimezone({
   sendSyncMessage();
 }
 
-export async function deleteTimezone({ id }: { id: string }) {
+export async function deleteWorldClock({ id }: { id: string }) {
   const db = await openDB("whenst", 1);
-  const tx = db.transaction(["timezones"], "readwrite");
-  const store = tx.objectStore("timezones");
+  const tx = db.transaction(["world-clock"], "readwrite");
+  const store = tx.objectStore("world-clock");
   await store.put({
     id,
     updated_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
@@ -158,7 +158,7 @@ export async function deleteTimezone({ id }: { id: string }) {
   sendSyncMessage();
 }
 
-export async function reorderTimezone({
+export async function reorderWorldClock({
   id,
   after,
 }: {
@@ -166,8 +166,8 @@ export async function reorderTimezone({
   after: string;
 }) {
   const db = await openDB("whenst", 1);
-  const tx = db.transaction(["timezones"], "readwrite");
-  const store = tx.objectStore("timezones");
+  const tx = db.transaction(["world-clock"], "readwrite");
+  const store = tx.objectStore("world-clock");
 
   const timezone = await store.get(id);
   timezone.position = await computePosition(store, { after });
@@ -180,7 +180,7 @@ export async function reorderTimezone({
   sendSyncMessage();
 }
 
-export async function changeTimezoneLabel({
+export async function changeWorldClockLabel({
   id,
   label,
 }: {
@@ -188,8 +188,8 @@ export async function changeTimezoneLabel({
   label: string;
 }) {
   const db = await openDB("whenst", 1);
-  const tx = db.transaction(["timezones"], "readwrite");
-  const store = tx.objectStore("timezones");
+  const tx = db.transaction(["world-clock"], "readwrite");
+  const store = tx.objectStore("world-clock");
 
   const timezone = await store.get(id);
   timezone.label = label;
@@ -207,15 +207,15 @@ async function sendSyncMessage() {
   registration.active?.postMessage("sync");
 }
 
-export async function transferLocalTimezones() {
+export async function transferLocalWorldClocks() {
   const knownTimezones = window.Intl.supportedValuesOf("timeZone");
-  let timezones: { id: string; label: string; timezone: string }[] = [];
+  let worldClock: { id: string; label: string; timezone: string }[] = [];
 
   try {
     const raw = localStorage.getItem("whenst.saved-timezones");
 
     if (raw) {
-      timezones = (
+      worldClock = (
         JSON.parse(raw) as {
           id: string;
           label: string | undefined;
@@ -239,8 +239,8 @@ export async function transferLocalTimezones() {
   }
 
   try {
-    for (const { id, label, timezone } of timezones) {
-      await addTimezone({ id, label, timezone });
+    for (const { id, label, timezone } of worldClock) {
+      await addWorldClock({ id, label, timezone });
     }
 
     localStorage.removeItem("whenst.saved-timezones");

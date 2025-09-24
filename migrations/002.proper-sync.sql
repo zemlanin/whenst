@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE session_timezones (
+CREATE TABLE session_world_clock (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
@@ -11,7 +11,7 @@ CREATE TABLE session_timezones (
   position TEXT NOT NULL
 ) WITHOUT ROWID, STRICT;
 
-INSERT INTO session_timezones (id, session_id, timezone, label, position)
+INSERT INTO session_world_clock (id, session_id, timezone, label, position)
 SELECT
   json_extract(t.value, '$.id') as id,
   session_id,
@@ -20,7 +20,7 @@ SELECT
   char(unicode('A') + t.rowid) as position
 FROM session_settings, json_each(session_settings.timezones) as t;
 
-CREATE TABLE account_timezones (
+CREATE TABLE account_world_clock (
   id TEXT PRIMARY KEY,
   account_id TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
@@ -31,7 +31,7 @@ CREATE TABLE account_timezones (
   position TEXT NOT NULL
 ) WITHOUT ROWID, STRICT;
 
-INSERT INTO account_timezones (id, account_id, timezone, label, position)
+INSERT INTO account_world_clock (id, account_id, timezone, label, position)
 SELECT
   json_extract(t.value, '$.id') as id,
   account_id,

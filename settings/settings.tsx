@@ -10,12 +10,12 @@ import CircleNotch from "../icons/circle-notch.svg.js";
 import Check from "../icons/check.svg.js";
 
 import {
-  deleteTimezone,
-  reorderTimezone,
-  changeTimezoneLabel,
+  deleteWorldClock,
+  reorderWorldClock,
+  changeWorldClockLabel,
   signOut,
   loadSession,
-  getSavedTimezones,
+  getSavedWorldClock,
   wipeDatabase,
 } from "../api.js";
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
@@ -43,7 +43,7 @@ const sessionSignal = new Signal<SessionPayload>({
 });
 
 type SavedTimezone = UnpackPromise<
-  ReturnType<typeof getSavedTimezones>
+  ReturnType<typeof getSavedWorldClock>
 >[number];
 
 const timezonesSignal = new Signal<SavedTimezone[]>([]);
@@ -101,7 +101,7 @@ function TimezonesEdit({
                   : newDraggableIndex - 1
               ]?.position;
 
-        reorderTimezone({ id, after: after ?? "0" }).then(() => {
+        reorderWorldClock({ id, after: after ?? "0" }).then(() => {
           updateSavedTimezonesList();
           setSavingState(id, "saved");
           sortable.option("disabled", false);
@@ -240,7 +240,7 @@ function TimezoneLabelForm({
 
           setSavingState(id, "saving");
 
-          changeTimezoneLabel({ id, label }).then(() => {
+          changeWorldClockLabel({ id, label }).then(() => {
             setSavingState(id, "saved");
             updateSavedTimezonesList();
           });
@@ -276,7 +276,7 @@ async function updateSession() {
 }
 
 async function updateSavedTimezonesList() {
-  timezonesSignal.value = await getSavedTimezones();
+  timezonesSignal.value = await getSavedWorldClock();
 }
 
 function deleteFormHandler(event: SubmitEvent) {
@@ -296,7 +296,7 @@ function deleteFormHandler(event: SubmitEvent) {
   const id = idInput.value;
   setSavingState(id, "saving");
 
-  deleteTimezone({ id }).then(() => {
+  deleteWorldClock({ id }).then(() => {
     setSavingState(id, "saved");
     updateSavedTimezonesList();
   });
@@ -324,7 +324,7 @@ function patchFormHandler(event: SubmitEvent) {
 
   setSavingState(id, "saving");
 
-  changeTimezoneLabel({ id, label }).then(() => {
+  changeWorldClockLabel({ id, label }).then(() => {
     setSavingState(id, "saved");
     updateSavedTimezonesList();
   });

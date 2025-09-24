@@ -7,12 +7,13 @@ import CircleNotch from "../icons/circle-notch.svg.js";
 import Check from "../icons/check.svg.js";
 
 import "./add-timezone-form.css";
-import { addTimezone } from "../api.js";
+import { addWorldClock } from "../api.js";
 
 const collapsedSignal = new Signal(true);
 const activeValueSignal = new Signal("");
 const addingStateSignal = new Signal<"initial" | "saving" | "saved">("initial");
 
+// TODO: rename to `AddWorldClockForm`
 export function AddTimezoneForm({
   updateSavedTimezonesList,
 }: {
@@ -89,7 +90,7 @@ export function AddTimezoneForm({
 
         setAddingState("saving");
 
-        addTimezone({
+        addWorldClock({
           id: undefined,
           timezone: activeValueSignal.peek(),
           label: "",

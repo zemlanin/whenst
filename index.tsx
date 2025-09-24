@@ -16,7 +16,7 @@ import {
 import "./keyboard";
 
 // TODO: `addTimezone`
-import { getSavedTimezones } from "./api.js";
+import { getSavedWorldClock } from "./api.js";
 import { guessTimezone } from "./guess-timezone.js";
 import {
   getLocationFromTimezone,
@@ -969,8 +969,8 @@ function SavedTimezones({
   );
 
   useEffect(() => {
-    getSavedTimezones().then((tzs) => {
-      timezones.value = tzs;
+    getSavedWorldClock().then((worldClock) => {
+      timezones.value = worldClock;
     });
   }, []);
 

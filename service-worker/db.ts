@@ -3,13 +3,13 @@ import { openDB, deleteDB, IDBPDatabase } from "idb";
 export const dbPromise = openDB("whenst", 1, {
   upgrade(db, oldVersion, _newVersion, _transaction, _event) {
     if (oldVersion < 1) {
-      const timezonesStore = db.createObjectStore("timezones", {
+      const worldClockStore = db.createObjectStore("world-clock", {
         keyPath: "id",
       });
-      timezonesStore.createIndex("position", "position");
-      timezonesStore.createIndex("stale", "stale");
+      worldClockStore.createIndex("position", "position");
+      worldClockStore.createIndex("stale", "stale");
 
-      db.createObjectStore("syncStates");
+      db.createObjectStore("sync-states");
     }
   },
   blocked(_currentVersion, _blockedVersion, _event) {
@@ -28,22 +28,22 @@ export async function sync() {
   }
 
   const db = await dbPromise;
-  await pushTimezones(db);
-  await pullTimezones(db);
+  await pushWorldClock(db);
+  await pullWorldClock(db);
 }
 
 async function getSyncState(
   db: IDBPDatabase,
-  key: "timezones",
+  key: "world-clock",
 ): Promise<string | undefined> {
-  const tx = db.transaction(["syncStates"], "readonly");
-  const syncStatesStore = tx.objectStore("syncStates");
+  const tx = db.transaction(["sync-states"], "readonly");
+  const syncStatesStore = tx.objectStore("sync-states");
   return syncStatesStore.get(key);
 }
 
-async function pullTimezones(db: IDBPDatabase) {
-  const syncState = await getSyncState(db, "timezones");
-  let next = syncState ?? "/api/sync/timezones";
+async function pullWorldClock(db: IDBPDatabase) {
+  const syncState = await getSyncState(db, "world-clock");
+  let next = syncState ?? "/api/sync/world-clock";
 
   do {
     const resp = await fetch(next);
@@ -55,27 +55,27 @@ async function pullTimezones(db: IDBPDatabase) {
     const changes = payload.changes;
     next = payload.next;
 
-    const tx = db.transaction(["timezones", "syncStates"], "readwrite");
-    const timezonesStore = tx.objectStore("timezones");
-    const syncStatesStore = tx.objectStore("syncStates");
+    const tx = db.transaction(["world-clock", "sync-states"], "readwrite");
+    const worldClockStore = tx.objectStore("world-clock");
+    const syncStatesStore = tx.objectStore("sync-states");
     for (const change of changes) {
       if (change.tombstone) {
-        timezonesStore.delete(change.id);
+        worldClockStore.delete(change.id);
       } else {
-        timezonesStore.put(change);
+        worldClockStore.put(change);
       }
     }
     if (next) {
-      syncStatesStore.put(next, timezonesStore.name);
+      syncStatesStore.put(next, worldClockStore.name);
     }
     await tx.done;
   } while (next);
 }
 
-async function pushTimezones(db: IDBPDatabase) {
-  const tx = db.transaction(["timezones"], "readonly");
+async function pushWorldClock(db: IDBPDatabase) {
+  const tx = db.transaction(["world-clock"], "readonly");
   const staleTimezones = await tx
-    .objectStore("timezones")
+    .objectStore("world-clock")
     .index("stale")
     .getAll();
 
@@ -83,7 +83,7 @@ async function pushTimezones(db: IDBPDatabase) {
     return;
   }
 
-  return fetch("/api/sync/timezones", {
+  return fetch("/api/sync/world-clock", {
     method: "patch",
     body: JSON.stringify(staleTimezones),
     headers: {

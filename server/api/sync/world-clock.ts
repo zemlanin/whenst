@@ -14,8 +14,8 @@ import {
 } from "../../db/index.js";
 import { getAccount } from "../../_common/account.js";
 
-export const apiSyncTimezonesGet = {
-  handler: apiSyncTimezonesGetHandler,
+export const apiSyncWorldClockGet = {
+  handler: apiSyncWorldClockGetHandler,
   schema: {
     querystring: {
       type: "object",
@@ -27,7 +27,7 @@ export const apiSyncTimezonesGet = {
   },
 };
 
-async function apiSyncTimezonesGetHandler(
+async function apiSyncWorldClockGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
@@ -67,15 +67,15 @@ async function apiSyncTimezonesGetHandler(
     changes: changes.rows,
     // TODO: use to store sync state on the client
     next: changes.next
-      ? `/api/sync/timezones?${new URLSearchParams({
+      ? `/api/sync/world-clock?${new URLSearchParams({
           cursor: changes.next.toString(),
         })}`
       : null,
   });
 }
 
-export const apiSyncTimezonesPatch = {
-  handler: apiSyncTimezonesPatchHandler,
+export const apiSyncWorldClockPatch = {
+  handler: apiSyncWorldClockPatchHandler,
   schema: {
     body: {
       type: "array",
@@ -149,7 +149,7 @@ export const apiSyncTimezonesPatch = {
   },
 };
 
-async function apiSyncTimezonesPatchHandler(
+async function apiSyncWorldClockPatchHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {

@@ -22,7 +22,7 @@ export function getSessionTimezonesLegacy(sessionId: string) {
     ? db
         .prepare<{ account_id: string }, { timezones: string }>(
           `
-          SELECT id, label, timezone FROM account_timezones
+          SELECT id, label, timezone FROM account_world_clock
           WHERE account_id = @account_id AND NOT tombstone
           ORDER BY position ASC
         `,
@@ -31,7 +31,7 @@ export function getSessionTimezonesLegacy(sessionId: string) {
     : db
         .prepare<{ session_id: string }, { timezones: string }>(
           `
-          SELECT id, label, timezone FROM session_timezones
+          SELECT id, label, timezone FROM session_world_clock
           WHERE session_id = @session_id AND NOT tombstone
           ORDER BY position ASC
         `,
@@ -59,7 +59,7 @@ export function upsertTimezone(
   if (accountId) {
     db.prepare(
       `
-        INSERT INTO account_timezones (
+        INSERT INTO account_world_clock (
           id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
         )
         VALUES (
@@ -96,7 +96,7 @@ export function upsertTimezone(
   if (sessionId) {
     db.prepare(
       `
-        INSERT INTO session_timezones (
+        INSERT INTO session_world_clock (
           id, session_id, updated_at, client_updated_at, timezone, label, position, tombstone
         )
         VALUES (
@@ -143,7 +143,7 @@ export function deleteExistingTimezone(
   if (accountId) {
     db.prepare(
       `
-        INSERT INTO account_timezones (
+        INSERT INTO account_world_clock (
           id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
         )
         VALUES (
@@ -180,7 +180,7 @@ export function deleteExistingTimezone(
   if (sessionId) {
     db.prepare(
       `
-        INSERT INTO session_timezones (
+        INSERT INTO session_world_clock (
           id, session_id, updated_at, client_updated_at, timezone, label, position, tombstone
         )
         VALUES (
@@ -255,7 +255,7 @@ export function getSessionTimezonesChanges(
           }
         >(
           `
-            SELECT id, timezone, label, updated_at, position, tombstone FROM account_timezones
+            SELECT id, timezone, label, updated_at, position, tombstone FROM account_world_clock
             WHERE account_id = @account_id AND
               (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
             ORDER BY updated_at ASC, id ASC
@@ -276,7 +276,7 @@ export function getSessionTimezonesChanges(
           }
         >(
           `
-            SELECT id, timezone, label, updated_at, position, tombstone FROM session_timezones
+            SELECT id, timezone, label, updated_at, position, tombstone FROM session_world_clock
             WHERE session_id = @session_id AND
               (updated_at > @updated_at OR @id IS NOT NULL AND updated_at == @updated_at AND id > @id)
             ORDER BY updated_at ASC, id ASC
