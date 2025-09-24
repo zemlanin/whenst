@@ -84,7 +84,7 @@ async function pushWorldClock(db: IDBPDatabase) {
   }
 
   return fetch("/api/sync/world-clock", {
-    method: "patch",
+    method: "PATCH",
     body: JSON.stringify(staleTimezones),
     headers: {
       "content-type": "application/json",

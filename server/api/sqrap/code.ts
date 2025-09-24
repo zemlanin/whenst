@@ -4,7 +4,6 @@ import {
   getAccount,
   createAccount,
   associateSessionWithAccount,
-  moveDataFromSessionToAccount,
 } from "../../_common/account.js";
 import {
   COOKIE_NAME,
@@ -64,10 +63,6 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
   if (!account) {
     account = createAccount();
     associateSessionWithAccount(sessionId || newSessionId, account.id);
-
-    if (sessionId) {
-      moveDataFromSessionToAccount(sessionId, account.id);
-    }
   }
 
   db.prepare<{ code: string; session_id: string; account_id: string }>(

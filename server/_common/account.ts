@@ -46,29 +46,3 @@ export function associateSessionWithAccount(
     account_id: accountId,
   });
 }
-
-export function moveDataFromSessionToAccount(
-  sessionId: string,
-  accountId: string,
-) {
-  const row = db
-    .prepare<
-      { session_id: string },
-      { timezones: string }
-    >(`SELECT timezones FROM session_settings WHERE session_id = @session_id`)
-    .get({ session_id: sessionId });
-
-  if (row) {
-    db.prepare<{ account_id: string; timezones: string }>(
-      `INSERT INTO account_settings (account_id, timezones) VALUES (@account_id, @timezones)
-        ON CONFLICT(account_id) DO UPDATE SET timezones = @timezones`,
-    ).run({
-      account_id: accountId,
-      timezones: row.timezones,
-    });
-
-    db.prepare<{ session_id: string }>(
-      `DELETE FROM session_settings WHERE session_id = @session_id`,
-    ).run({ session_id: sessionId });
-  }
-}

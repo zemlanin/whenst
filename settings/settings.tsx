@@ -13,34 +13,17 @@ import {
   deleteWorldClock,
   reorderWorldClock,
   changeWorldClockLabel,
-  signOut,
-  loadSession,
   getSavedWorldClock,
-  wipeDatabase,
 } from "../api.js";
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
 
 import { mountCommandPalette } from "../command-palette/index.js";
 import { AddTimezoneForm } from "./add-timezone-form.js";
-
-document.getElementById("sign-out-button")?.addEventListener("click", () => {
-  signOut().then(async () => {
-    // request new session to invalidate SW cache
-    await loadSession();
-    await wipeDatabase();
-    location.href = "/";
-  });
-});
+import { AccountEdit } from "./AccountEdit.js";
 
 type UnpackPromise<T extends PromiseLike<unknown>> =
   T extends PromiseLike<infer R> ? R : never;
-
-type SessionPayload = UnpackPromise<ReturnType<typeof loadSession>>;
-
-const sessionSignal = new Signal<SessionPayload>({
-  signedIn: false,
-});
 
 type SavedTimezone = UnpackPromise<
   ReturnType<typeof getSavedWorldClock>
@@ -55,6 +38,11 @@ const savingStateSignal = new Signal<{
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
   render(<TimezonesEdit timezonesSignal={timezonesSignal} />, timezonesEdit);
+}
+
+const accountEdit = document.getElementById("account-edit");
+if (accountEdit) {
+  render(<AccountEdit />, accountEdit);
 }
 
 function TimezonesEdit({
@@ -254,26 +242,7 @@ function TimezoneLabelForm({
     </form>
   );
 }
-
-updateSession();
 updateSavedTimezonesList();
-
-async function updateSession() {
-  const { signedIn } = await loadSession();
-
-  if (signedIn) {
-    const signOutButton = document.getElementById("sign-out-button");
-    if (
-      signOutButton?.parentNode &&
-      "hidden" in signOutButton.parentNode &&
-      signOutButton.parentNode.hidden
-    ) {
-      signOutButton.parentNode.hidden = false;
-    }
-  }
-
-  sessionSignal.value = { signedIn };
-}
 
 async function updateSavedTimezonesList() {
   timezonesSignal.value = await getSavedWorldClock();

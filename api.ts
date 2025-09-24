@@ -92,7 +92,7 @@ export async function addWorldClock({
   await tx.done;
 
   db.close();
-  sendSyncMessage();
+  await sendSyncMessage();
 }
 
 export async function deleteWorldClock({ id }: { id: string }) {
@@ -108,7 +108,7 @@ export async function deleteWorldClock({ id }: { id: string }) {
   await tx.done;
 
   db.close();
-  sendSyncMessage();
+  await sendSyncMessage();
 }
 
 export async function reorderWorldClock({
@@ -130,7 +130,7 @@ export async function reorderWorldClock({
   await tx.done;
 
   db.close();
-  sendSyncMessage();
+  await sendSyncMessage();
 }
 
 export async function changeWorldClockLabel({
@@ -152,7 +152,23 @@ export async function changeWorldClockLabel({
   await tx.done;
 
   db.close();
-  sendSyncMessage();
+  await sendSyncMessage();
+}
+
+export async function syncEverything() {
+  const db = await openDB("whenst", 1);
+  const tx = db.transaction(["world-clock"], "readwrite");
+  const store = tx.objectStore("world-clock");
+
+  const worldClocks = await store.getAll();
+  for (const worldClock of worldClocks) {
+    worldClock.stale = 1;
+    await store.put(worldClock);
+  }
+  await tx.done;
+
+  db.close();
+  await sendSyncMessage();
 }
 
 async function sendSyncMessage() {
