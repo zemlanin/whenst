@@ -8,17 +8,6 @@ import {
 } from "./shared/getMidpointPosition.js";
 import { Signal } from "@preact/signals";
 
-export async function loadSession() {
-  const resp = await fetch("/api/session", {
-    headers: {
-      accept: "application/json",
-    },
-  });
-  const session: { signedIn: boolean } = await resp.json();
-
-  return session;
-}
-
 export const worldClockSignal = new Signal(
   [] as { id: string; position: string; timezone: string; label: string }[],
 );
@@ -32,15 +21,27 @@ connectSignal(worldClockSignal, async (db: IDBPDatabase) => {
   return worldClock.filter(({ tombstone }) => !tombstone);
 });
 
+export const accountSignal = new Signal(null as { id: string } | null);
+connectSignal(accountSignal, async (db: IDBPDatabase) => {
+  return (
+    (await db
+      .transaction(["account"], "readonly")
+      .objectStore("account")
+      .get("")) ?? null
+  );
+});
+
 async function connectSignal<T>(
   signal: Signal<T>,
   callback: (db: IDBPDatabase) => Promise<T>,
 ) {
-  const db = await openDB("whenst");
-  try {
-    signal.value = await callback(db);
-  } finally {
-    db.close();
+  if (await dbExists()) {
+    const db = await openDB("whenst");
+    try {
+      signal.value = await callback(db);
+    } finally {
+      db.close();
+    }
   }
 
   const bc = new BroadcastChannel("whenst_db_update");
@@ -54,7 +55,15 @@ async function connectSignal<T>(
   });
 }
 
+async function dbExists() {
+  return (await indexedDB.databases()).some((db) => db.name === "whenst");
+}
+
 export async function wipeDatabase() {
+  if (!(await dbExists())) {
+    return;
+  }
+
   const db = await openDB("whenst");
   for (const storeName of db.objectStoreNames) {
     const tx = db.transaction([storeName], "readwrite");
@@ -99,6 +108,10 @@ export async function addWorldClock({
     timezone = timezone.toString();
   }
 
+  if (!(await dbExists())) {
+    throw new Error(`db does not exist`);
+  }
+
   const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
@@ -121,6 +134,10 @@ export async function addWorldClock({
 }
 
 export async function deleteWorldClock({ id }: { id: string }) {
+  if (!(await dbExists())) {
+    throw new Error(`db does not exist`);
+  }
+
   const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
@@ -143,6 +160,10 @@ export async function reorderWorldClock({
   id: string;
   after: string;
 }) {
+  if (!(await dbExists())) {
+    throw new Error(`db does not exist`);
+  }
+
   const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
@@ -165,6 +186,10 @@ export async function changeWorldClockLabel({
   id: string;
   label: string;
 }) {
+  if (!(await dbExists())) {
+    throw new Error(`db does not exist`);
+  }
+
   const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
@@ -181,24 +206,40 @@ export async function changeWorldClockLabel({
 }
 
 export async function syncEverything() {
-  const db = await openDB("whenst");
-  const tx = db.transaction(["world-clock"], "readwrite");
-  const store = tx.objectStore("world-clock");
+  if (!(await dbExists())) {
+    throw new Error(`db does not exist`);
+  }
 
-  const worldClocks = await store.getAll();
+  const db = await openDB("whenst");
+  const tx = db.transaction(["world-clock", "account"], "readwrite");
+  const worldClockStore = tx.objectStore("world-clock");
+
+  const worldClocks = await worldClockStore.getAll();
   for (const worldClock of worldClocks) {
     worldClock.stale = 1;
-    await store.put(worldClock);
+    await worldClockStore.put(worldClock);
   }
+
+  const accountStore = tx.objectStore("account");
+  if (!(await accountStore.get(""))) {
+    await accountStore.put({}, "");
+  }
+
   await tx.done;
 
   db.close();
+  await sendAuthCheckMessage();
   await sendSyncMessage();
 }
 
 async function sendSyncMessage() {
   const registration = await navigator.serviceWorker.ready;
   registration.active?.postMessage("sync");
+}
+
+export async function sendAuthCheckMessage() {
+  const registration = await navigator.serviceWorker.ready;
+  registration.active?.postMessage("authCheck");
 }
 
 export async function sqrapInit() {

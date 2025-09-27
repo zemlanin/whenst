@@ -4,7 +4,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
   COOKIE_NAME,
   extractSessionIdFromCookie,
-  generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
 import {
@@ -37,10 +36,8 @@ async function apiSyncWorldClockGetHandler(
   reply.header("vary", "Cookie");
 
   if (!sessionId) {
-    reply.header("cache-control", "public, max-age=14400");
-    return reply.send({
-      changes: [],
-    });
+    reply.status(401);
+    return reply.send();
   }
 
   const { since, cursor } = request.query as {
@@ -49,20 +46,38 @@ async function apiSyncWorldClockGetHandler(
   };
 
   reply.header("cache-control", "private, no-cache");
-  reply.header(
-    "set-cookie",
-    cookie.serialize(COOKIE_NAME, await getSessionCookie(sessionId), {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-      secure: !!process.env.WHENST_SECURE_COOKIE,
-    }),
-  );
+  const account = getAccount(sessionId);
+
+  if (account) {
+    reply.header(
+      "set-cookie",
+      cookie.serialize(COOKIE_NAME, await getSessionCookie(sessionId), {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        secure: !!process.env.WHENST_SECURE_COOKIE,
+      }),
+    );
+  }
 
   const changes = getSessionTimezonesChanges(
     sessionId,
     cursor ? DBCursor.from(cursor) : new DBCursor(since || "0", null),
   );
+
+  if (!changes.rows.length) {
+    if (!account) {
+      reply.header(
+        "set-cookie",
+        cookie.serialize(COOKIE_NAME, "", {
+          httpOnly: true,
+          maxAge: 0,
+          path: "/",
+          secure: !!process.env.WHENST_SECURE_COOKIE,
+        }),
+      );
+    }
+  }
 
   return reply.send({
     changes: changes.rows,
@@ -154,6 +169,12 @@ async function apiSyncWorldClockPatchHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  const sessionId = await extractSessionIdFromCookie(request);
+  if (!sessionId) {
+    reply.status(401);
+    return reply.send();
+  }
+
   const body = request.body as (
     | {
         id: string;
@@ -170,33 +191,27 @@ async function apiSyncWorldClockPatchHandler(
     return reply.send();
   }
 
-  const sessionId = await extractSessionIdFromCookie(request);
-  const account = sessionId ? getAccount(sessionId) : null;
-  const newSessionId = sessionId || generateSessionId();
+  const account = getAccount(sessionId);
 
-  if (!sessionId) {
+  if (!account) {
     reply.header(
       "set-cookie",
-      cookie.serialize(COOKIE_NAME, await getSessionCookie(newSessionId), {
+      cookie.serialize(COOKIE_NAME, "", {
         httpOnly: true,
-        maxAge: 60 * 60 * 24 * 365,
+        maxAge: 0,
         path: "/",
         secure: !!process.env.WHENST_SECURE_COOKIE,
       }),
     );
+    reply.status(401);
+    return reply.send();
   }
 
   for (const patch of body) {
     if (patch.tombstone) {
-      deleteExistingTimezone(
-        patch,
-        account ? { accountId: account.id } : { sessionId: newSessionId },
-      );
+      deleteExistingTimezone(patch, { accountId: account.id });
     } else {
-      upsertTimezone(
-        patch,
-        account ? { accountId: account.id } : { sessionId: newSessionId },
-      );
+      upsertTimezone(patch, { accountId: account.id });
     }
   }
 

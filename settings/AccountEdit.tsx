@@ -1,20 +1,39 @@
-import { Signal, useSignal, useComputed, batch } from "@preact/signals";
+import { useSignal, useComputed, batch } from "@preact/signals";
 
 import {
   signOut,
   sqrapInit,
   sqrapStatus,
-  loadSession,
-  wipeDatabase,
+  accountSignal,
+  sendAuthCheckMessage,
 } from "../api.js";
-
-const sessionSignal = new Signal<{ signedIn: boolean } | null>(null);
-
-loadSession().then((session) => {
-  sessionSignal.value = session;
-});
+import { Show } from "@preact/signals/utils";
 
 export function AccountEdit() {
+  return (
+    <Show when={accountSignal} fallback={<SignedOut />}>
+      <SignedIn />
+    </Show>
+  );
+}
+
+function SignedIn() {
+  return (
+    <button
+      onClick={() => {
+        signOut().then(async () => {
+          await sendAuthCheckMessage();
+
+          location.href = "/";
+        });
+      }}
+    >
+      Sign out
+    </button>
+  );
+}
+
+function SignedOut() {
   const code = useSignal("");
 
   const receiverStarting = useSignal(false);
@@ -32,24 +51,6 @@ export function AccountEdit() {
   const checkButtonText = useComputed(() =>
     statusError.value ? "⚠" : "Complete",
   );
-
-  if (sessionSignal.value?.signedIn) {
-    return (
-      <button
-        onClick={() => {
-          signOut().then(async () => {
-            // request new session to invalidate SW cache
-            await loadSession();
-            await wipeDatabase();
-
-            location.href = "/";
-          });
-        }}
-      >
-        Sign out
-      </button>
-    );
-  }
 
   return (
     <>
@@ -117,9 +118,7 @@ export function AccountEdit() {
                   sqrapStatus({ code: code.peek() }).then(
                     async ({ done }) => {
                       if (done) {
-                        // request new settings to invalidate SW cache
-                        await loadSession();
-                        await wipeDatabase();
+                        await sendAuthCheckMessage();
                         location.href = "/";
                         return;
                       }

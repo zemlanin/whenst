@@ -2,7 +2,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { manifest, version } from "@parcel/service-worker";
 import { generateIntlTimezones } from "../shared/generateIntlTimezones.js";
-import { sync } from "./db.js";
+import { authCheck, sync } from "./db.js";
 
 async function install() {
   const cache = await caches.open(version);
@@ -42,6 +42,10 @@ self.addEventListener("activate", (e) => e.waitUntil(activate()));
 self.addEventListener("message", (e) => {
   if (e.data === "sync") {
     return sync();
+  }
+
+  if (e.data === "authCheck") {
+    return authCheck();
   }
 });
 

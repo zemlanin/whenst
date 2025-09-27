@@ -1,7 +1,7 @@
 import { render } from "preact";
 import { useSignal, useComputed, batch } from "@preact/signals";
 
-import { sqrapInit, sqrapStatus, sqrapCode, loadSession, wipeDatabase, syncEverything } from "../api";
+import { sqrapInit, sqrapStatus, sqrapCode, wipeDatabase, syncEverything, accountSignal } from "../api";
 
 render(<LinkPage />, document.querySelector("main"));
 
@@ -39,7 +39,9 @@ function LinkPage() {
                 checkingCode.value = false;
               });
 
-              void syncEverything();
+              if (!accountSignal.peek()) {
+                void syncEverything();
+              }
             },
             (error) => {
               batch(() => {

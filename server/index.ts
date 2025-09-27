@@ -2,7 +2,8 @@ import path from "node:path";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 
-import { apiSessionGet, apiSessionDelete } from "./api/session.js";
+import { apiSessionDelete } from "./api/session.js";
+import { apiAccountGet } from "./api/account.js";
 import { apiSettingsGet } from "./api/settings.js";
 import { apiSqrapCodePost } from "./api/sqrap/code.js";
 import { apiSqrapInitPost } from "./api/sqrap/init.js";
@@ -109,7 +110,7 @@ fastify.register((childContext, _, done) => {
   done();
 });
 
-fastify.get("/api/session", apiSessionGet);
+fastify.get("/api/account", apiAccountGet);
 fastify.delete("/api/session", apiSessionDelete);
 fastify.get("/api/settings", apiSettingsGet);
 fastify.post("/api/sqrap/code", apiSqrapCodePost);
