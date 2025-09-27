@@ -36,7 +36,7 @@ async function connectSignal<T>(
   signal: Signal<T>,
   callback: (db: IDBPDatabase) => Promise<T>,
 ) {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   try {
     signal.value = await callback(db);
   } finally {
@@ -45,7 +45,7 @@ async function connectSignal<T>(
 
   const bc = new BroadcastChannel("whenst_db_update");
   bc.addEventListener("message", async () => {
-    const db = await openDB("whenst", 1);
+    const db = await openDB("whenst");
     try {
       signal.value = await callback(db);
     } finally {
@@ -55,7 +55,7 @@ async function connectSignal<T>(
 }
 
 export async function wipeDatabase() {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   for (const storeName of db.objectStoreNames) {
     const tx = db.transaction([storeName], "readwrite");
     await tx.objectStore(storeName).clear();
@@ -99,7 +99,7 @@ export async function addWorldClock({
     timezone = timezone.toString();
   }
 
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
   const position = await computePosition(store, {
@@ -121,7 +121,7 @@ export async function addWorldClock({
 }
 
 export async function deleteWorldClock({ id }: { id: string }) {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
   await store.put({
@@ -143,7 +143,7 @@ export async function reorderWorldClock({
   id: string;
   after: string;
 }) {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
 
@@ -165,7 +165,7 @@ export async function changeWorldClockLabel({
   id: string;
   label: string;
 }) {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
 
@@ -181,7 +181,7 @@ export async function changeWorldClockLabel({
 }
 
 export async function syncEverything() {
-  const db = await openDB("whenst", 1);
+  const db = await openDB("whenst");
   const tx = db.transaction(["world-clock"], "readwrite");
   const store = tx.objectStore("world-clock");
 
