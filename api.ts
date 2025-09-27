@@ -8,6 +8,8 @@ import {
 } from "./shared/getMidpointPosition.js";
 import { Signal } from "@preact/signals";
 
+const dbUpdateChannel = new BroadcastChannel("whenst_db_update");
+
 export const worldClockSignal = new Signal(
   [] as { id: string; position: string; timezone: string; label: string }[],
 );
@@ -44,8 +46,7 @@ async function connectSignal<T>(
     }
   }
 
-  const bc = new BroadcastChannel("whenst_db_update");
-  bc.addEventListener("message", async () => {
+  dbUpdateChannel.addEventListener("message", async () => {
     const db = await openDB("whenst");
     try {
       signal.value = await callback(db);
@@ -72,8 +73,7 @@ export async function wipeDatabase() {
   }
   db.close();
 
-  const bc = new BroadcastChannel("whenst_db_update");
-  bc.postMessage({});
+  dbUpdateChannel.postMessage({});
 }
 
 async function computePosition(
@@ -131,6 +131,8 @@ export async function addWorldClock({
 
   db.close();
   await sendSyncMessage();
+
+  dbUpdateChannel.postMessage({});
 }
 
 export async function deleteWorldClock({ id }: { id: string }) {
@@ -151,6 +153,8 @@ export async function deleteWorldClock({ id }: { id: string }) {
 
   db.close();
   await sendSyncMessage();
+
+  dbUpdateChannel.postMessage({});
 }
 
 export async function reorderWorldClock({
@@ -177,6 +181,8 @@ export async function reorderWorldClock({
 
   db.close();
   await sendSyncMessage();
+
+  dbUpdateChannel.postMessage({});
 }
 
 export async function changeWorldClockLabel({
@@ -203,6 +209,8 @@ export async function changeWorldClockLabel({
 
   db.close();
   await sendSyncMessage();
+
+  dbUpdateChannel.postMessage({});
 }
 
 export async function syncEverything() {
@@ -230,6 +238,8 @@ export async function syncEverything() {
   db.close();
   await sendAuthCheckMessage();
   await sendSyncMessage();
+
+  dbUpdateChannel.postMessage({});
 }
 
 async function sendSyncMessage() {
