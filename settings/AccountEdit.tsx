@@ -55,7 +55,7 @@ export function AccountEdit() {
     <>
       <div>Sign in to enable sync</div>
       <ul>
-        <li>
+        <li style="margin-block: 0.5rem">
           Using another device:{" "}
           <button
             onClick={() => {
@@ -91,20 +91,20 @@ export function AccountEdit() {
 
         {code.value ? (
           <>
-            <li>
+            <li style="margin-block: 0.5rem">
               On another device:
               <ol>
-                <li>
+                <li style="margin-block: 0.5rem">
                   Open <b>{location.origin.replace(/^https?:\/\//, "")}/link</b>
                 </li>
-                <li>
+                <li style="margin-block: 0.5rem">
                   Enter <b>{code}</b> in the “Code” field
                 </li>
-                <li>Press “Send” button</li>
+                <li style="margin-block: 0.5rem">Press “Send” button</li>
               </ol>
             </li>
 
-            <li>
+            <li style="margin-block: 0.5rem">
               Press this button:{" "}
               <button
                 className="primary"
@@ -139,7 +139,10 @@ export function AccountEdit() {
                 {checkButtonText}
               </button>
               <br />
-              <i>This will replace settings</i>
+              <i>
+                This will replace when.st data on this device with data from
+                another
+              </i>
             </li>
 
             {statusError.value ? (
