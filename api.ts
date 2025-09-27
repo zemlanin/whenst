@@ -1,11 +1,12 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { IDBPObjectStore, openDB } from "idb";
+import { IDBPDatabase, IDBPObjectStore, openDB } from "idb";
 
 import {
   getMidpointPosition,
   POSITION_ALPHABET_END,
   POSITION_ALPHABET_START,
 } from "./shared/getMidpointPosition.js";
+import { Signal } from "@preact/signals";
 
 export async function loadSession() {
   const resp = await fetch("/api/session", {
@@ -18,16 +19,39 @@ export async function loadSession() {
   return session;
 }
 
-export async function getSavedWorldClock() {
-  const db = await openDB("whenst", 1);
+export const worldClockSignal = new Signal(
+  [] as { id: string; position: string; timezone: string; label: string }[],
+);
+connectSignal(worldClockSignal, async (db: IDBPDatabase) => {
   const worldClock = await db
     .transaction(["world-clock"], "readonly")
     .objectStore("world-clock")
     .index("position")
     .getAll();
-  db.close();
 
   return worldClock.filter(({ tombstone }) => !tombstone);
+});
+
+async function connectSignal<T>(
+  signal: Signal<T>,
+  callback: (db: IDBPDatabase) => Promise<T>,
+) {
+  const db = await openDB("whenst", 1);
+  try {
+    signal.value = await callback(db);
+  } finally {
+    db.close();
+  }
+
+  const bc = new BroadcastChannel("whenst_db_update");
+  bc.addEventListener("message", async () => {
+    const db = await openDB("whenst", 1);
+    try {
+      signal.value = await callback(db);
+    } finally {
+      db.close();
+    }
+  });
 }
 
 export async function wipeDatabase() {
@@ -38,6 +62,9 @@ export async function wipeDatabase() {
     await tx.done;
   }
   db.close();
+
+  const bc = new BroadcastChannel("whenst_db_update");
+  bc.postMessage({});
 }
 
 async function computePosition(

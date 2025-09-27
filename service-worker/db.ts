@@ -1,6 +1,6 @@
 import { openDB, deleteDB, IDBPDatabase } from "idb";
 
-initDb();
+sync();
 
 export async function sync() {
   if (!navigator.onLine) {
@@ -11,6 +11,10 @@ export async function sync() {
   const db = await initDb();
   await pushWorldClock(db);
   await pullWorldClock(db);
+  db.close();
+
+  const bc = new BroadcastChannel("whenst_db_update");
+  bc.postMessage({});
 }
 
 function initDb() {

@@ -16,7 +16,7 @@ import {
 import "./keyboard";
 
 // TODO: `addTimezone`
-import { getSavedWorldClock } from "./api.js";
+import { worldClockSignal } from "./api.js";
 import { guessTimezone } from "./guess-timezone.js";
 import {
   getLocationFromTimezone,
@@ -952,10 +952,6 @@ function SavedTimezones({
   localTZ: Temporal.TimeZone;
   hidden?: Signal<boolean>;
 }) {
-  const timezones = useSignal<
-    { id: string; label: string; timezone: string }[]
-  >([]);
-
   const pageDateString = useComputed(() =>
     shortDateFormatter.format(
       rootDT.value.withTimeZone(pageTZ).toPlainDateTime(),
@@ -968,14 +964,8 @@ function SavedTimezones({
     ),
   );
 
-  useEffect(() => {
-    getSavedWorldClock().then((worldClock) => {
-      timezones.value = worldClock;
-    });
-  }, []);
-
   const filteredTimezones = useComputed(() => {
-    return timezones.value.filter(({ timezone, label }) => {
+    return worldClockSignal.value.filter(({ timezone, label }) => {
       try {
         Temporal.TimeZone.from(timezone);
       } catch (e) {

@@ -14,11 +14,7 @@ const activeValueSignal = new Signal("");
 const addingStateSignal = new Signal<"initial" | "saving" | "saved">("initial");
 
 // TODO: rename to `AddWorldClockForm`
-export function AddTimezoneForm({
-  updateSavedTimezonesList,
-}: {
-  updateSavedTimezonesList: () => void;
-}) {
+export function AddTimezoneForm() {
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     window.addEventListener("click", (event) => {
@@ -95,8 +91,6 @@ export function AddTimezoneForm({
           timezone: activeValueSignal.peek(),
           label: "",
         }).then(() => {
-          updateSavedTimezonesList();
-
           setAddingState("saved");
 
           for (const input of formRef.current?.querySelectorAll("input") ??

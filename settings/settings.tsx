@@ -13,7 +13,7 @@ import {
   deleteWorldClock,
   reorderWorldClock,
   changeWorldClockLabel,
-  getSavedWorldClock,
+  worldClockSignal,
 } from "../api.js";
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
@@ -22,22 +22,13 @@ import { mountCommandPalette } from "../command-palette/index.js";
 import { AddTimezoneForm } from "./add-timezone-form.js";
 import { AccountEdit } from "./AccountEdit.js";
 
-type UnpackPromise<T extends PromiseLike<unknown>> =
-  T extends PromiseLike<infer R> ? R : never;
-
-type SavedTimezone = UnpackPromise<
-  ReturnType<typeof getSavedWorldClock>
->[number];
-
-const timezonesSignal = new Signal<SavedTimezone[]>([]);
-
 const savingStateSignal = new Signal<{
   [K in string]?: "initial" | "saving" | "saved";
 }>({});
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
-  render(<TimezonesEdit timezonesSignal={timezonesSignal} />, timezonesEdit);
+  render(<TimezonesEdit />, timezonesEdit);
 }
 
 const accountEdit = document.getElementById("account-edit");
@@ -45,11 +36,7 @@ if (accountEdit) {
   render(<AccountEdit />, accountEdit);
 }
 
-function TimezonesEdit({
-  timezonesSignal,
-}: {
-  timezonesSignal: Signal<SavedTimezone[]>;
-}) {
+function TimezonesEdit() {
   const timezonesListRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -82,7 +69,7 @@ function TimezonesEdit({
         const after =
           newDraggableIndex === 0
             ? "0"
-            : timezonesSignal.peek()[
+            : worldClockSignal.peek()[
                 // TODO: wtf is this mess
                 newDraggableIndex > oldDraggableIndex
                   ? newDraggableIndex
@@ -90,7 +77,6 @@ function TimezonesEdit({
               ]?.position;
 
         reorderWorldClock({ id, after: after ?? "0" }).then(() => {
-          updateSavedTimezonesList();
           setSavingState(id, "saved");
           sortable.option("disabled", false);
         });
@@ -101,10 +87,10 @@ function TimezonesEdit({
   return (
     <>
       <div className="timezone-row">
-        <AddTimezoneForm updateSavedTimezonesList={updateSavedTimezonesList} />
+        <AddTimezoneForm />
       </div>
       <ul id="timezones-list" ref={timezonesListRef}>
-        {timezonesSignal.value.map(({ id, timezone, label }) => {
+        {worldClockSignal.value.map(({ id, timezone, label }) => {
           return (
             <TimezoneRow key={id} id={id} timezone={timezone} label={label} />
           );
@@ -230,7 +216,6 @@ function TimezoneLabelForm({
 
           changeWorldClockLabel({ id, label }).then(() => {
             setSavingState(id, "saved");
-            updateSavedTimezonesList();
           });
         }}
       />
@@ -241,11 +226,6 @@ function TimezoneLabelForm({
       ) : null}
     </form>
   );
-}
-updateSavedTimezonesList();
-
-async function updateSavedTimezonesList() {
-  timezonesSignal.value = await getSavedWorldClock();
 }
 
 function deleteFormHandler(event: SubmitEvent) {
@@ -267,7 +247,6 @@ function deleteFormHandler(event: SubmitEvent) {
 
   deleteWorldClock({ id }).then(() => {
     setSavingState(id, "saved");
-    updateSavedTimezonesList();
   });
 }
 
@@ -295,7 +274,6 @@ function patchFormHandler(event: SubmitEvent) {
 
   changeWorldClockLabel({ id, label }).then(() => {
     setSavingState(id, "saved");
-    updateSavedTimezonesList();
   });
 }
 
