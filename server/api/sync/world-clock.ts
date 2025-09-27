@@ -4,6 +4,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
   COOKIE_NAME,
   extractSessionIdFromCookie,
+  generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
 import {
@@ -170,23 +171,31 @@ async function apiSyncWorldClockPatchHandler(
   }
 
   const sessionId = await extractSessionIdFromCookie(request);
-  if (!sessionId) {
-    reply.status(401);
-    return reply.send();
-  }
+  const account = sessionId ? getAccount(sessionId) : null;
+  const newSessionId = sessionId || generateSessionId();
 
-  const account = getAccount(sessionId);
+  if (!sessionId) {
+    reply.header(
+      "set-cookie",
+      cookie.serialize(COOKIE_NAME, await getSessionCookie(newSessionId), {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        secure: !!process.env.WHENST_SECURE_COOKIE,
+      }),
+    );
+  }
 
   for (const patch of body) {
     if (patch.tombstone) {
       deleteExistingTimezone(
         patch,
-        account ? { accountId: account.id } : { sessionId },
+        account ? { accountId: account.id } : { sessionId: newSessionId },
       );
     } else {
       upsertTimezone(
         patch,
-        account ? { accountId: account.id } : { sessionId },
+        account ? { accountId: account.id } : { sessionId: newSessionId },
       );
     }
   }
