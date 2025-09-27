@@ -9,7 +9,6 @@ import {
   useSignalEffect,
   batch,
   effect,
-  signal,
   Signal,
 } from "@preact/signals";
 import { For } from "@preact/signals/utils";
@@ -1262,10 +1261,10 @@ function updateTitle(
   document.title = `${timeStr} in ${placeStr} | when.st`;
 }
 
-const activeTabSignal = signal(
+const activeTabSignal = new Signal(
   history.state?.activeTab === SAVED_TIMEZONES_ID ||
-    history.state?.activeTab === DISCORD_FORMATS_ID ||
-    history.state?.activeTab === CALENDAR_LINKS_ID
+  history.state?.activeTab === DISCORD_FORMATS_ID ||
+  history.state?.activeTab === CALENDAR_LINKS_ID
     ? history.state.activeTab
     : SAVED_TIMEZONES_ID,
 );

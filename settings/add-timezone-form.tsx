@@ -1,5 +1,5 @@
 import { Signal, useComputed } from "@preact/signals";
-import { For } from "@preact/signals/utils";
+import { For, Show } from "@preact/signals/utils";
 import Fuse from "fuse.js/basic";
 import { useEffect, useId, useRef } from "preact/hooks";
 
@@ -154,17 +154,10 @@ function AddTimezoneFormMainInput() {
   const commandsId = "atf" + useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const expanded = useComputed(() =>
-    optionsSignal.value.length ? "true" : "false",
+  const expanded = useComputed(
+    () => !!optionsSignal.value.length && !collapsedSignal.value,
   );
-  const listboxHidden = useComputed(
-    () =>
-      expanded.value === "false" ||
-      collapsedSignal.value ||
-      optionsSignal.value.every(
-        (option) => option.title === inputRef.current?.value.trim(),
-      ),
-  );
+  const ariaExpanded = useComputed(() => (expanded.value ? "true" : "false"));
 
   return (
     <div className="main-input">
@@ -179,7 +172,7 @@ function AddTimezoneFormMainInput() {
         aria-controls={commandsId}
         aria-haspopup="listbox"
         aria-autocomplete="list"
-        aria-expanded={expanded}
+        aria-expanded={ariaExpanded}
         placeholder="Add timezone"
         onInput={(event) => {
           if (!event.target || !(event.target instanceof HTMLInputElement)) {
@@ -209,31 +202,33 @@ function AddTimezoneFormMainInput() {
           }
         }}
       />
-      <ul id={commandsId} role="listbox" hidden={listboxHidden}>
-        <For each={optionsSignal}>
-          {(option) => {
-            return (
-              <li
-                key={option.timezoneId}
-                role="option"
-                tabIndex={-1}
-                value={option.timezoneId}
-                onClick={() => {
-                  collapsedSignal.value = true;
-                  activeValueSignal.value = option.timezoneId;
+      <Show when={expanded}>
+        <ul id={commandsId} role="listbox">
+          <For each={optionsSignal}>
+            {(option) => {
+              return (
+                <li
+                  key={option.timezoneId}
+                  role="option"
+                  tabIndex={-1}
+                  value={option.timezoneId}
+                  onClick={() => {
+                    collapsedSignal.value = true;
+                    activeValueSignal.value = option.timezoneId;
 
-                  if (inputRef.current) {
-                    inputRef.current.value = option.title;
-                    inputRef.current.focus();
-                  }
-                }}
-              >
-                {option.title}
-              </li>
-            );
-          }}
-        </For>
-      </ul>
+                    if (inputRef.current) {
+                      inputRef.current.value = option.title;
+                      inputRef.current.focus();
+                    }
+                  }}
+                >
+                  {option.title}
+                </li>
+              );
+            }}
+          </For>
+        </ul>
+      </Show>
     </div>
   );
 }

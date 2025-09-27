@@ -1,5 +1,5 @@
-import { signal, useComputed } from "@preact/signals";
-import { For } from "@preact/signals/utils";
+import { Signal, useComputed } from "@preact/signals";
+import { For, Show } from "@preact/signals/utils";
 import Fuse from "fuse.js/basic";
 import { ContainerNode, render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
@@ -7,17 +7,40 @@ import { useEffect, useId, useRef } from "preact/hooks";
 import "./index.css";
 import { getPathnameFromTimezone } from "../shared/from-timezone.js";
 
+type PaletteOption = {
+  url: string;
+  title: string;
+  subtitle?: string;
+};
+let i = 0;
+
 export function mountCommandPalette(parent: ContainerNode) {
-  render(<CommandPalette />, parent);
+  const collapsedSignal = new Signal(true);
+  const optionsSignal = new Signal<PaletteOption[]>([]);
+
+  render(
+    <CommandPalette
+      collapsedSignal={collapsedSignal}
+      optionsSignal={optionsSignal}
+      idPrefix={`cfp${i++}-`}
+    />,
+    parent,
+  );
 
   if ("hidden" in parent && parent.hidden) {
     parent.hidden = false;
   }
 }
 
-const collapsedSignal = signal(true);
-
-function CommandPalette() {
+function CommandPalette({
+  collapsedSignal,
+  optionsSignal,
+  idPrefix,
+}: {
+  collapsedSignal: Signal<boolean>;
+  optionsSignal: Signal<PaletteOption[]>;
+  idPrefix: string;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     window.addEventListener("click", (event) => {
@@ -72,29 +95,31 @@ function CommandPalette() {
       }}
       className="command-palette"
     >
-      <CommandPaletteFields />
+      <CommandPaletteFields
+        collapsedSignal={collapsedSignal}
+        optionsSignal={optionsSignal}
+        idPrefix={idPrefix}
+      />
     </form>
   );
 }
 
-const optionsSignal = signal<
-  {
-    url: string;
-    title: string;
-    subtitle?: string;
-  }[]
->([]);
-
-function CommandPaletteFields() {
-  const commandsId = useId();
+function CommandPaletteFields({
+  collapsedSignal,
+  optionsSignal,
+  idPrefix,
+}: {
+  collapsedSignal: Signal<boolean>;
+  optionsSignal: Signal<PaletteOption[]>;
+  idPrefix: string;
+}) {
+  const commandsId = idPrefix + useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const expanded = useComputed(() =>
-    optionsSignal.value.length ? "true" : "false",
+  const expanded = useComputed(
+    () => !!optionsSignal.value.length && !collapsedSignal.value,
   );
-  const listboxHidden = useComputed(
-    () => expanded.value === "false" || collapsedSignal.value,
-  );
+  const ariaExpanded = useComputed(() => (expanded.value ? "true" : "false"));
 
   return (
     <>
@@ -108,7 +133,7 @@ function CommandPaletteFields() {
         aria-controls={commandsId}
         aria-haspopup="listbox"
         aria-autocomplete="list"
-        aria-expanded={expanded}
+        aria-expanded={ariaExpanded}
         placeholder="Search"
         onInput={(event) => {
           if (!event.target || !(event.target instanceof HTMLInputElement)) {
@@ -117,7 +142,11 @@ function CommandPaletteFields() {
 
           collapsedSignal.value = false;
 
-          void loadOptions(event.target.value.trim().replace(/\s+/, " "));
+          loadOptions(event.target.value.trim().replace(/\s+/, " ")).then(
+            (options) => {
+              optionsSignal.value = options;
+            },
+          );
         }}
         onFocus={() => {
           collapsedSignal.value = false;
@@ -129,19 +158,21 @@ function CommandPaletteFields() {
           }
         }}
       />
-      <ul id={commandsId} role="listbox" hidden={listboxHidden}>
-        <For each={optionsSignal}>
-          {(option) => {
-            return (
-              <li key={option.url} role="option" tabIndex={-1}>
-                <a href={option.url} tabIndex={-1}>
-                  {option.title}
-                </a>
-              </li>
-            );
-          }}
-        </For>
-      </ul>
+      <Show when={expanded}>
+        <ul id={commandsId} role="listbox">
+          <For each={optionsSignal}>
+            {(option) => {
+              return (
+                <li key={option.url} role="option" tabIndex={-1}>
+                  <a href={option.url} tabIndex={-1}>
+                    {option.title}
+                  </a>
+                </li>
+              );
+            }}
+          </For>
+        </ul>
+      </Show>
     </>
   );
 }
@@ -189,7 +220,7 @@ async function loadOptions(query: string) {
 
   const results = fuse.search(query, { limit: 6 });
 
-  optionsSignal.value = results.map((r) => ({
+  return results.map((r) => ({
     url: getPathnameFromTimezone(r.item.timezoneId),
     title: r.item.place,
   }));
