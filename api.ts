@@ -8,8 +8,6 @@ import {
 } from "./shared/getMidpointPosition.js";
 
 export async function loadSession() {
-  await transferLocalWorldClocks();
-
   const resp = await fetch("/api/session", {
     headers: {
       accept: "application/json",
@@ -174,48 +172,6 @@ export async function syncEverything() {
 async function sendSyncMessage() {
   const registration = await navigator.serviceWorker.ready;
   registration.active?.postMessage("sync");
-}
-
-export async function transferLocalWorldClocks() {
-  const knownTimezones = window.Intl.supportedValuesOf("timeZone");
-  let worldClock: { id: string; label: string; timezone: string }[] = [];
-
-  try {
-    const raw = localStorage.getItem("whenst.saved-timezones");
-
-    if (raw) {
-      worldClock = (
-        JSON.parse(raw) as {
-          id: string;
-          label: string | undefined;
-          timezone: string;
-        }[]
-      )
-        .map((d) => {
-          return {
-            id: d.id,
-            label: d.label || "",
-            timezone: d.timezone,
-          };
-        })
-        .filter(
-          ({ id, timezone }) =>
-            id && timezone && knownTimezones.includes(timezone),
-        );
-    }
-  } catch (e) {
-    console.error(e);
-  }
-
-  try {
-    for (const { id, label, timezone } of worldClock) {
-      await addWorldClock({ id, label, timezone });
-    }
-
-    localStorage.removeItem("whenst.saved-timezones");
-  } catch (e) {
-    console.error(e);
-  }
 }
 
 export async function sqrapInit() {
