@@ -1,4 +1,5 @@
 import { signal, useComputed } from "@preact/signals";
+import { For } from "@preact/signals/utils";
 import Fuse from "fuse.js/basic";
 import { ContainerNode, render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
@@ -129,15 +130,17 @@ function CommandPaletteFields() {
         }}
       />
       <ul id={commandsId} role="listbox" hidden={listboxHidden}>
-        {optionsSignal.value.map((option) => {
-          return (
-            <li key={option.url} role="option" tabIndex={-1}>
-              <a href={option.url} tabIndex={-1}>
-                {option.title}
-              </a>
-            </li>
-          );
-        })}
+        <For each={optionsSignal}>
+          {(option) => {
+            return (
+              <li key={option.url} role="option" tabIndex={-1}>
+                <a href={option.url} tabIndex={-1}>
+                  {option.title}
+                </a>
+              </li>
+            );
+          }}
+        </For>
       </ul>
     </>
   );

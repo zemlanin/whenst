@@ -1,6 +1,7 @@
 import "../parcel.d.ts";
 
 import { useComputed, Signal } from "@preact/signals";
+import { For } from "@preact/signals/utils";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
@@ -90,11 +91,13 @@ function TimezonesEdit() {
         <AddTimezoneForm />
       </div>
       <ul id="timezones-list" ref={timezonesListRef}>
-        {worldClockSignal.value.map(({ id, timezone, label }) => {
-          return (
-            <TimezoneRow key={id} id={id} timezone={timezone} label={label} />
-          );
-        })}
+        <For each={worldClockSignal}>
+          {({ id, timezone, label }) => {
+            return (
+              <TimezoneRow key={id} id={id} timezone={timezone} label={label} />
+            );
+          }}
+        </For>
       </ul>
     </>
   );

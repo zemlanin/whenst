@@ -79,7 +79,7 @@
     "@parcel/service-worker": "^2.13.3",
     "@parcel/transformer-inline-string": "^2.13.3",
     "@parcel/transformer-webmanifest": "^2.13.3",
-    "@preact/signals": "^1.2.1",
+    "@preact/signals": "^2.3.1",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
     "@types/sortablejs": "^1.15.8",

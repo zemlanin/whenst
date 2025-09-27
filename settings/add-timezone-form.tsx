@@ -1,4 +1,5 @@
 import { Signal, useComputed } from "@preact/signals";
+import { For } from "@preact/signals/utils";
 import Fuse from "fuse.js/basic";
 import { useEffect, useId, useRef } from "preact/hooks";
 
@@ -209,27 +210,29 @@ function AddTimezoneFormMainInput() {
         }}
       />
       <ul id={commandsId} role="listbox" hidden={listboxHidden}>
-        {optionsSignal.value.map((option) => {
-          return (
-            <li
-              key={option.timezoneId}
-              role="option"
-              tabIndex={-1}
-              value={option.timezoneId}
-              onClick={() => {
-                collapsedSignal.value = true;
-                activeValueSignal.value = option.timezoneId;
+        <For each={optionsSignal}>
+          {(option) => {
+            return (
+              <li
+                key={option.timezoneId}
+                role="option"
+                tabIndex={-1}
+                value={option.timezoneId}
+                onClick={() => {
+                  collapsedSignal.value = true;
+                  activeValueSignal.value = option.timezoneId;
 
-                if (inputRef.current) {
-                  inputRef.current.value = option.title;
-                  inputRef.current.focus();
-                }
-              }}
-            >
-              {option.title}
-            </li>
-          );
-        })}
+                  if (inputRef.current) {
+                    inputRef.current.value = option.title;
+                    inputRef.current.focus();
+                  }
+                }}
+              >
+                {option.title}
+              </li>
+            );
+          }}
+        </For>
       </ul>
     </div>
   );

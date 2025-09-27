@@ -12,6 +12,7 @@ import {
   signal,
   Signal,
 } from "@preact/signals";
+import { For } from "@preact/signals/utils";
 
 import "./keyboard";
 
@@ -993,47 +994,49 @@ function SavedTimezones({
       hidden={hidden}
     >
       <div role="table">
-        {filteredTimezones.value.map(({ timezone, label }, index) => {
-          const plainDateTime = rootDT.value
-            .withTimeZone(Temporal.TimeZone.from(timezone))
-            .toPlainDateTime();
+        <For each={filteredTimezones}>
+          {({ timezone, label }, index) => {
+            const plainDateTime = rootDT.value
+              .withTimeZone(Temporal.TimeZone.from(timezone))
+              .toPlainDateTime();
 
-          const dateString = shortDateFormatter.format(plainDateTime);
-          const timeString = shortTimeFormatter.format(plainDateTime);
+            const dateString = shortDateFormatter.format(plainDateTime);
+            const timeString = shortTimeFormatter.format(plainDateTime);
 
-          const displayedLabel = label || getLocationFromTimezone(timezone);
+            const displayedLabel = label || getLocationFromTimezone(timezone);
 
-          return (
-            <div
-              role="row"
-              className="timezone-row"
-              key={timezone + ":" + label}
-              tabIndex={index === 0 ? 0 : -1}
-            >
-              <div className="timezone-label-wrapper">
-                <a
-                  className="timezone-label"
-                  href={new URL(
-                    getPathnameFromTimezone(timezone),
-                    location.href,
-                  ).toString()}
-                  tabIndex={-1}
-                  role="cell"
-                >
-                  {displayedLabel}
-                </a>
+            return (
+              <div
+                role="row"
+                className="timezone-row"
+                key={timezone + ":" + label}
+                tabIndex={index === 0 ? 0 : -1}
+              >
+                <div className="timezone-label-wrapper">
+                  <a
+                    className="timezone-label"
+                    href={new URL(
+                      getPathnameFromTimezone(timezone),
+                      location.href,
+                    ).toString()}
+                    tabIndex={-1}
+                    role="cell"
+                  >
+                    {displayedLabel}
+                  </a>
+                </div>
+
+                <div role="cell" className="timezone-time-wrapper">
+                  <div>{timeString}</div>
+                  {localDateString.value !== dateString ||
+                  pageDateString.value !== dateString ? (
+                    <span className="subtitle">{dateString}</span>
+                  ) : null}
+                </div>
               </div>
-
-              <div role="cell" className="timezone-time-wrapper">
-                <div>{timeString}</div>
-                {localDateString.value !== dateString ||
-                pageDateString.value !== dateString ? (
-                  <span className="subtitle">{dateString}</span>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
+            );
+          }}
+        </For>
       </div>
       <div className="footer">
         <div />
