@@ -1,6 +1,17 @@
 import t, { Test } from "tap";
+import Database from "better-sqlite3";
 
 import { getMidpointPosition } from "../shared/getMidpointPosition.js";
+
+const db = new Database(":memory:");
+const order2ByStatement = db.prepare(
+  `WITH t(position) AS (VALUES (?), (?))
+    SELECT position FROM t ORDER BY position ASC;`,
+);
+const order3ByStatement = db.prepare(
+  `WITH t(position) AS (VALUES (?), (?), (?))
+    SELECT position FROM t ORDER BY position ASC;`,
+);
 
 t.test("getMidpointPosition", async (t) => {
   good(t, "0", "z", "U");
@@ -40,14 +51,18 @@ t.test("getMidpointPosition", async (t) => {
 function good(t: Test, a: string, b: string | undefined | null, r: string) {
   t.equal(getMidpointPosition(a, b), r);
 
-  if (a === b) {
-    const expectedOrder = [a, r].filter(Boolean);
+  if (a === b || !b) {
+    const shuffled = [r, a];
+    const expectedOrder = [a, r];
 
-    t.same([r, a].filter(Boolean).toSorted(), expectedOrder);
+    t.same(shuffled.toSorted(), expectedOrder);
+    t.same(order2ByStatement.pluck().all(...shuffled), expectedOrder);
   } else {
-    const expectedOrder = [a, r, b].filter(Boolean);
+    const shuffled = [r, b, a];
+    const expectedOrder = [a, r, b];
 
-    t.same([r, b, a].filter(Boolean).toSorted(), expectedOrder);
+    t.same(shuffled.toSorted(), expectedOrder);
+    t.same(order3ByStatement.pluck().all(...shuffled), expectedOrder);
   }
 }
 
