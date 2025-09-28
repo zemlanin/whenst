@@ -71,8 +71,7 @@ export async function wipeDatabase() {
     await tx.done;
   }
   db.close();
-
-  dbUpdateChannel.postMessage({});
+  await sendSyncMessage();
 }
 
 async function computePosition(
@@ -130,8 +129,6 @@ export async function addWorldClock({
 
   db.close();
   await sendSyncMessage();
-
-  dbUpdateChannel.postMessage({});
 }
 
 export async function deleteWorldClock({ id }: { id: string }) {
@@ -152,8 +149,6 @@ export async function deleteWorldClock({ id }: { id: string }) {
 
   db.close();
   await sendSyncMessage();
-
-  dbUpdateChannel.postMessage({});
 }
 
 export async function reorderWorldClock({
@@ -180,8 +175,6 @@ export async function reorderWorldClock({
 
   db.close();
   await sendSyncMessage();
-
-  dbUpdateChannel.postMessage({});
 }
 
 export async function changeWorldClockLabel({
@@ -208,8 +201,6 @@ export async function changeWorldClockLabel({
 
   db.close();
   await sendSyncMessage();
-
-  dbUpdateChannel.postMessage({});
 }
 
 export async function syncEverything() {
@@ -237,8 +228,6 @@ export async function syncEverything() {
   db.close();
   await sendAuthCheckMessage();
   await sendSyncMessage();
-
-  dbUpdateChannel.postMessage({});
 }
 
 async function sendSyncMessage() {

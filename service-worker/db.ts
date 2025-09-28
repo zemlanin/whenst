@@ -3,9 +3,12 @@ import { openDB, deleteDB, IDBPDatabase } from "idb";
 Promise.resolve() // deleteDB('whenst')
   .then(() => sync());
 
+const dbUpdateChannel = new BroadcastChannel("whenst_db_update");
+
 export async function sync() {
   if (!navigator.onLine) {
     console.log("offline. skipping sync");
+    dbUpdateChannel.postMessage({});
     return;
   }
 
@@ -16,6 +19,7 @@ export async function sync() {
 
   if (!account) {
     db.close();
+    dbUpdateChannel.postMessage({});
     return;
   }
 
@@ -30,8 +34,7 @@ export async function sync() {
   } finally {
     db.close();
 
-    const bc = new BroadcastChannel("whenst_db_update");
-    bc.postMessage({});
+    dbUpdateChannel.postMessage({});
   }
 }
 
@@ -45,8 +48,7 @@ export async function authCheck() {
   await pullAccount(db);
   db.close();
 
-  const bc = new BroadcastChannel("whenst_db_update");
-  bc.postMessage({});
+  dbUpdateChannel.postMessage({});
 }
 
 // prepopulate local db for users with account-less sessions
@@ -67,8 +69,7 @@ async function legacyMigration() {
   } finally {
     db.close();
 
-    const bc = new BroadcastChannel("whenst_db_update");
-    bc.postMessage({});
+    dbUpdateChannel.postMessage({});
   }
 }
 
