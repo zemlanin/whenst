@@ -1,5 +1,9 @@
 import Database from "better-sqlite3";
 import { getAccount } from "../_common/account.js";
+import {
+  POSITION_ALPHABET_END,
+  getMidpointPosition,
+} from "../../shared/getMidpointPosition.js";
 
 const db = new Database(".data/whenst.db", {});
 db.pragma("journal_mode = WAL");
@@ -54,38 +58,75 @@ export function upsertTimezone(
     accountId: string;
   },
 ) {
-  db.prepare(
-    `
-        INSERT INTO account_world_clock (
-          id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
-        )
-        VALUES (
-          @id,
-          @account_id,
-          strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
-          @client_updated_at,
-          @timezone,
-          @label,
-          @position,
-          0
-        )
-        ON CONFLICT(id) DO UPDATE SET
-          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
-          client_updated_at = @client_updated_at,
-          timezone = @timezone,
-          label = @label,
-          position = @position,
-          tombstone = 0
-        WHERE id = @id AND account_id = @account_id AND client_updated_at < @client_updated_at
+  db.transaction(() => {
+    const [a, b] = db
+      .prepare<
+        { account_id: string; position: string },
+        { id: string; position: string }
+      >(
+        `
+        SELECT id, position FROM account_world_clock
+        WHERE account_id = @account_id AND position >= @position
+        ORDER BY position LIMIT 2;
       `,
-  ).run({
-    id: patch.id,
-    account_id: accountId,
-    client_updated_at: patch.updated_at,
-    timezone: patch.timezone,
-    label: patch.label,
-    position: patch.position,
-  });
+      )
+      .all({
+        account_id: accountId,
+        position: patch.position,
+      });
+
+    /*
+      - different position
+        -> safe to use the position
+      - same position, same id
+        -> safe to use — duplicate position won't happen as we'll update the existing row
+      - same position, different id
+        -> need to find an alternative position
+    */
+    const safePosition = (() => {
+      if (a && a.position === patch.position && a.id !== patch.id) {
+        return getMidpointPosition(
+          a.position,
+          b.position ?? POSITION_ALPHABET_END,
+        );
+      }
+
+      return patch.position;
+    })();
+
+    db.prepare(
+      `
+          INSERT INTO account_world_clock (
+            id, account_id, updated_at, client_updated_at, timezone, label, position, tombstone
+          )
+          VALUES (
+            @id,
+            @account_id,
+            strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+            @client_updated_at,
+            @timezone,
+            @label,
+            @position,
+            0
+          )
+          ON CONFLICT(id) DO UPDATE SET
+            updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+            client_updated_at = @client_updated_at,
+            timezone = @timezone,
+            label = @label,
+            position = @position,
+            tombstone = 0
+          WHERE id = @id AND account_id = @account_id AND client_updated_at < @client_updated_at
+        `,
+    ).run({
+      id: patch.id,
+      account_id: accountId,
+      client_updated_at: patch.updated_at,
+      timezone: patch.timezone,
+      label: patch.label,
+      position: safePosition,
+    });
+  })();
 }
 
 export function deleteExistingTimezone(
