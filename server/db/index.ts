@@ -1,9 +1,6 @@
 import Database from "better-sqlite3";
 import { getAccount } from "../_common/account.js";
-import {
-  POSITION_ALPHABET_END,
-  getMidpointPosition,
-} from "../../shared/getMidpointPosition.js";
+import { getMidpointPosition } from "../../shared/getMidpointPosition.js";
 
 const db = new Database(".data/whenst.db", {});
 db.pragma("journal_mode = WAL");
@@ -62,7 +59,7 @@ export function upsertTimezone(
     const [a, b] = db
       .prepare<
         { account_id: string; position: string },
-        { id: string; position: string }
+        { id: string; position: string } | undefined
       >(
         `
         SELECT id, position FROM account_world_clock
@@ -85,10 +82,7 @@ export function upsertTimezone(
     */
     const safePosition = (() => {
       if (a && a.position === patch.position && a.id !== patch.id) {
-        return getMidpointPosition(
-          a.position,
-          b.position ?? POSITION_ALPHABET_END,
-        );
+        return getMidpointPosition(a.position, b?.position);
       }
 
       return patch.position;

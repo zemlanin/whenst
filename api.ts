@@ -3,7 +3,6 @@ import { IDBPDatabase, IDBPObjectStore, openDB } from "idb";
 
 import {
   getMidpointPosition,
-  POSITION_ALPHABET_END,
   POSITION_ALPHABET_START,
 } from "./shared/getMidpointPosition.js";
 import { Signal } from "@preact/signals";
@@ -90,7 +89,7 @@ async function computePosition(
 
   const pointA = options.after;
 
-  const pointB = cursor ? cursor.key.toString() : POSITION_ALPHABET_END;
+  const pointB = cursor ? cursor.key.toString() : null;
 
   return getMidpointPosition(pointA, pointB);
 }
