@@ -1,79 +1,56 @@
-import t from "tap";
+import t, { Test } from "tap";
 
 import { getMidpointPosition } from "../shared/getMidpointPosition.js";
 
-t.test("", async (t) => {
-  t.equal(getMidpointPosition("0", "z"), "U");
-  t.same(["0", "z", "U"].toSorted(), ["0", "U", "z"]);
+t.test("getMidpointPosition", async (t) => {
+  good(t, "0", "z", "U");
+  good(t, "A", "E", "C");
+  good(t, "G", "G", "GU");
+  good(t, "0", null, "V");
+  good(t, "0", "1", "0U");
+  good(t, "0A", "1", "0a");
+  good(t, "0", "RR", "D");
+  good(t, "000", "0001", "0000U");
+  good(t, "000", "0002", "0001");
+  good(t, "000", "0001", "0000U");
+  good(t, "z", "z", "zU");
+  good(t, "z", "", "zU");
+  good(t, "z", null, "zU");
+  good(t, "z", "z1", "z0U");
+  good(t, "z", "z0U", "z0F");
+  good(t, "z", "z01", "z00U");
+  good(t, "y", undefined, "z");
+  good(t, "U", "", "k");
+  good(t, "zz", undefined, "zzU");
+  good(t, "za", undefined, "zn");
+  good(t, "z", "zz", "zU");
 
-  t.equal(getMidpointPosition("A", "E"), "C");
-  t.same(["A", "E", "C"].toSorted(), ["A", "C", "E"]);
-
-  t.equal(getMidpointPosition("G", "G"), "GU");
-  t.same(["G", "GU"].toSorted(), ["G", "GU"]);
-
-  t.equal(getMidpointPosition("0", null), "V");
-  t.same(["0", "V"].toSorted(), ["0", "V"]);
-
-  t.equal(getMidpointPosition("0", "1"), "0U");
-  t.same(["0", "1", "0U"].toSorted(), ["0", "0U", "1"]);
-
-  t.equal(getMidpointPosition("0A", "1"), "0a");
-  t.same(["0A", "1", "0a"].toSorted(), ["0A", "0a", "1"]);
-
-  t.equal(getMidpointPosition("0", "RR"), "D");
-  t.same(["0", "RR", "D"].toSorted(), ["0", "D", "RR"]);
-
-  t.equal(getMidpointPosition("000", "0001"), "0000U");
-  t.same(["000", "0001", "0000U"].toSorted(), ["000", "0000U", "0001"]);
-
-  t.equal(getMidpointPosition("000", "0002"), "0001");
-  t.same(["000", "0002", "0001"].toSorted(), ["000", "0001", "0002"]);
-
-  t.equal(getMidpointPosition("000", "0001"), "0000U");
-  t.same(["000", "0001", "0000U"].toSorted(), ["000", "0000U", "0001"]);
-
-  t.equal(getMidpointPosition("z", "z"), "zU");
-  t.same(["z", "zU"].toSorted(), ["z", "zU"]);
-
-  t.equal(getMidpointPosition("z", ""), "zU");
-  t.same(["z", "zU"].toSorted(), ["z", "zU"]);
-
-  t.equal(getMidpointPosition("z", null), "zU");
-  t.same(["z", "zU"].toSorted(), ["z", "zU"]);
-
-  t.equal(getMidpointPosition("z", "z1"), "z0U");
-  t.same(["z", "z1", "z0U"].toSorted(), ["z", "z0U", "z1"]);
-
-  t.equal(getMidpointPosition("z", "z0U"), "z0F");
-  t.same(["z", "z0U", "z0F"].toSorted(), ["z", "z0F", "z0U"]);
-
-  t.equal(getMidpointPosition("z", "z01"), "z00U");
-  t.same(["z", "z01", "z00U"].toSorted(), ["z", "z00U", "z01"]);
-
-  t.equal(getMidpointPosition("y", undefined), "z");
-  t.same(["y", "z"].toSorted(), ["y", "z"]);
-
-  t.equal(getMidpointPosition("U", ""), "k");
-  t.same(["U", "k"].toSorted(), ["U", "k"]);
-
-  t.equal(getMidpointPosition("zz", undefined), "zzU");
-  t.same(["zz", "zzU"].toSorted(), ["zz", "zzU"]);
-
-  t.equal(getMidpointPosition("za", undefined), "zn");
-  t.same(["za", "zn"].toSorted(), ["za", "zn"]);
-
-  t.equal(getMidpointPosition("z", "zz"), "zU");
-  t.same(["z", "zz", "zU"].toSorted(), ["z", "zU", "zz"]);
-
-  t.throws(() => getMidpointPosition("0", "0"));
-  t.throws(() => getMidpointPosition("0", "00"));
-  t.throws(() => getMidpointPosition("0", "0000"));
-  t.throws(() => getMidpointPosition("00", "00"));
-  t.throws(() => getMidpointPosition("000", "0"));
-  t.throws(() => getMidpointPosition("x", "0"));
-  t.throws(() => getMidpointPosition("K", "K0"));
-  t.throws(() => getMidpointPosition("", ""));
-  t.throws(() => getMidpointPosition("", null));
-  t.throws(() => getMidpointPosition("", "X"));
+  bad(t, "0", "0");
+  bad(t, "0", "00");
+  bad(t, "0", "0000");
+  bad(t, "00", "00");
+  bad(t, "000", "0");
+  bad(t, "x", "0");
+  bad(t, "K", "K0");
+  bad(t, "", "");
+  bad(t, "", null);
+  bad(t, "", "X");
 });
+
+function good(t: Test, a: string, b: string | undefined | null, r: string) {
+  t.equal(getMidpointPosition(a, b), r);
+
+  if (a === b) {
+    const expectedOrder = [a, r].filter(Boolean);
+
+    t.same([r, a].filter(Boolean).toSorted(), expectedOrder);
+  } else {
+    const expectedOrder = [a, r, b].filter(Boolean);
+
+    t.same([r, b, a].filter(Boolean).toSorted(), expectedOrder);
+  }
+}
+
+function bad(t: Test, a: string, b: string | undefined | null) {
+  t.throws(() => getMidpointPosition(a, b));
+}
