@@ -1,14 +1,9 @@
 import * as cookie from "cookie";
 
-import {
-  getAccount,
-  createAccount,
-  associateSessionWithAccount,
-} from "../../_common/account.js";
+import { getAccount } from "../../_common/account.js";
 import {
   COOKIE_NAME,
   extractSessionIdFromCookie,
-  generateSessionId,
   getSessionCookie,
 } from "../../_common/session-id.js";
 import { db } from "../../db/index.js";
@@ -35,13 +30,13 @@ export const apiSqrapCodePost = {
 
 export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
   const sessionId = await extractSessionIdFromCookie(request);
-  const newSessionId = sessionId || generateSessionId();
+  const account = sessionId ? getAccount(sessionId) : null;
 
   reply.header("cache-control", "private, no-cache");
 
   const { code } = request.body as { code: string };
 
-  if (!code) {
+  if (!code || !sessionId || !account) {
     reply.status(401);
     return reply.send(null);
   }
@@ -59,17 +54,11 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
     return reply.send({ error: "Not found" });
   }
 
-  let account = sessionId ? getAccount(sessionId) : null;
-  if (!account) {
-    account = createAccount();
-    associateSessionWithAccount(sessionId || newSessionId, account.id);
-  }
-
   db.prepare<{ code: string; session_id: string; account_id: string }>(
     `UPDATE sqrap_states SET account_id = @account_id WHERE session_id = @session_id AND code = @code AND created_at > date('now', '-5 minutes')`,
   ).run({ code, session_id: sessionIdForCode, account_id: account.id });
 
-  const cookieValue = await getSessionCookie(sessionId || newSessionId);
+  const cookieValue = await getSessionCookie(sessionId);
   if (cookieValue) {
     reply.header(
       "set-cookie",

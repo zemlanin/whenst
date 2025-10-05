@@ -2,6 +2,7 @@ import { render } from "preact";
 import { useSignal, batch } from "@preact/signals";
 
 import { sqrapCode, syncEverything, accountSignal } from "../api.js";
+import { Show } from "@preact/signals/utils";
 
 const main = document.querySelector("main");
 if (main) {
@@ -9,6 +10,33 @@ if (main) {
 }
 
 function LinkPage() {
+  return (
+    <Show when={accountSignal} fallback={<LinkCreateAccount />}>
+      <LinkEnterCode />
+    </Show>
+  );
+}
+
+function LinkCreateAccount() {
+  return (
+    <>
+      <h1>Link</h1>
+
+      <div>
+        <p>
+          To link with another device, this device needs to be signed in into an
+          account
+        </p>
+        <p>
+          Go to <a href="/settings">Settings</a> to sign in or to create an
+          anonymous account and return here after
+        </p>
+      </div>
+    </>
+  );
+}
+
+function LinkEnterCode() {
   const checkingCode = useSignal(false);
   const codeError = useSignal(null);
   const codeSuccess = useSignal(false);

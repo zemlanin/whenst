@@ -240,6 +240,23 @@ export async function sendAuthCheckMessage() {
   registration.active?.postMessage("authCheck");
 }
 
+export async function createAccount() {
+  const resp = await fetch("/api/account", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (200 <= resp.status && resp.status < 300) {
+    return (await resp.json()) as { done: true };
+  }
+
+  throw resp;
+}
+
 export async function sqrapInit() {
   const resp = await fetch("/api/sqrap/init", {
     method: "POST",
