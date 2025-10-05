@@ -449,10 +449,15 @@ main {
   justify-content: center;
 }
 
+.tabs-row .scrolly > a {
+  min-width: 2rem;
+}
+
 .tabs-row .scrolly > button {
   min-width: 2.5rem;
 }
 
+.tabs-row .scrolly > a svg,
 .tabs-row .scrolly > button svg {
   width: auto;
   height: 1rem;
@@ -615,12 +620,13 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   margin-bottom: 1.5em;
 }
 
-#saved-timezones .footer {
+#saved-timezones .message-empty {
   display: flex;
   flex-flow: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 1rem;
+  min-height: 5rem;
 }
 
 #saved-timezones .timezone-row {

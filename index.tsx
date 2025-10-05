@@ -11,7 +11,7 @@ import {
   effect,
   Signal,
 } from "@preact/signals";
-import { For } from "@preact/signals/utils";
+import { For, Show } from "@preact/signals/utils";
 
 import "./keyboard";
 
@@ -25,6 +25,7 @@ import {
 
 import Discord from "./icons/discord.svg.js";
 import CalendarPlus from "./icons/calendar-plus.svg.js";
+import Gear from "./icons/gear.svg.js";
 
 import EarthAfrica from "./icons/earth-africa.svg.js";
 import EarthAmericas from "./icons/earth-americas.svg.js";
@@ -360,6 +361,10 @@ function Tabs({
     <>
       <div className="tabs-row" role="tablist">
         <div className="scrolly">
+          <a role="tab" href="/settings" tabIndex={-1} aria-label="Settings">
+            <Gear aria-hidden="true" width="1rem" height="1rem" />
+          </a>
+
           <button
             role="tab"
             aria-selected={otherTimezonesActive}
@@ -981,9 +986,7 @@ function SavedTimezones({
     });
   });
 
-  const settingsLabel = useComputed(() =>
-    filteredTimezones.value.length ? "Edit" : "Add a timezone",
-  );
+  const emptySignal = useComputed(() => !filteredTimezones.value.length);
 
   return (
     <div
@@ -992,6 +995,11 @@ function SavedTimezones({
       aria-label="World clock"
       hidden={hidden}
     >
+      <Show when={emptySignal}>
+        <div className="message-empty">
+          <a href="/settings">Add a timezone</a>
+        </div>
+      </Show>
       <div role="table">
         <For each={filteredTimezones}>
           {({ timezone, label }, index) => {
@@ -1036,10 +1044,6 @@ function SavedTimezones({
             );
           }}
         </For>
-      </div>
-      <div className="footer">
-        <div />
-        <a href="/settings">{settingsLabel}</a>
       </div>
     </div>
   );
