@@ -1,9 +1,12 @@
 import { render } from "preact";
-import { useSignal, useComputed, batch } from "@preact/signals";
+import { useSignal, batch } from "@preact/signals";
 
-import { sqrapInit, sqrapStatus, sqrapCode, wipeDatabase, syncEverything, accountSignal } from "../api";
+import { sqrapCode, syncEverything, accountSignal } from "../api.js";
 
-render(<LinkPage />, document.querySelector("main"));
+const main = document.querySelector("main");
+if (main) {
+  render(<LinkPage />, main);
+}
 
 function LinkPage() {
   const checkingCode = useSignal(false);
@@ -23,6 +26,14 @@ function LinkPage() {
         onSubmit={(event) => {
           event.preventDefault();
           const form = event.target;
+
+          if (!(form instanceof HTMLFormElement)) {
+            return;
+          }
+
+          if (checkingCode.peek()) {
+            return;
+          }
 
           batch(() => {
             checkingCode.value = true;
@@ -51,12 +62,11 @@ function LinkPage() {
             },
           );
         }}
-        disabled={checkingCode}
       >
         <input
           name="code"
           required
-          maxLength="6"
+          maxLength={6}
           placeholder="code"
           autoComplete="off"
         />{" "}
