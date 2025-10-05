@@ -970,23 +970,27 @@ function SavedTimezones({
   );
 
   const filteredTimezones = useComputed(() => {
-    return worldClockSignal.value.filter(({ timezone, label }) => {
-      try {
-        Temporal.TimeZone.from(timezone);
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
+    return (
+      worldClockSignal.value?.filter(({ timezone, label }) => {
+        try {
+          Temporal.TimeZone.from(timezone);
+        } catch (e) {
+          console.error(e);
+          return false;
+        }
 
-      return (
-        (timezone !== localTZ.id &&
-          (typeof pageTZ === "string" || timezone !== pageTZ.id)) ||
-        label
-      );
-    });
+        return (
+          (timezone !== localTZ.id &&
+            (typeof pageTZ === "string" || timezone !== pageTZ.id)) ||
+          label
+        );
+      }) ?? []
+    );
   });
 
-  const emptySignal = useComputed(() => !filteredTimezones.value.length);
+  const emptySignal = useComputed(
+    () => !!worldClockSignal.value && !filteredTimezones.value.length,
+  );
 
   return (
     <div

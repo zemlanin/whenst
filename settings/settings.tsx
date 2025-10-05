@@ -1,7 +1,7 @@
 import "../parcel.d.ts";
 
 import { useComputed, Signal } from "@preact/signals";
-import { For } from "@preact/signals/utils";
+import { For, Show } from "@preact/signals/utils";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
@@ -29,12 +29,26 @@ const savingStateSignal = new Signal<{
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
-  render(<TimezonesEdit />, timezonesEdit);
+  render(
+    <>
+      <h2>World clock</h2>
+      <TimezonesEdit />
+    </>,
+    timezonesEdit,
+  );
 }
 
 const accountEdit = document.getElementById("account-edit");
 if (accountEdit) {
-  render(<AccountEdit />, accountEdit);
+  render(
+    <Show when={worldClockSignal}>
+      <>
+        <h2>Account</h2>
+        <AccountEdit />
+      </>
+    </Show>,
+    accountEdit,
+  );
 }
 
 function TimezonesEdit() {
@@ -70,7 +84,7 @@ function TimezonesEdit() {
         const after =
           newDraggableIndex === 0
             ? "0"
-            : worldClockSignal.peek()[
+            : worldClockSignal.peek()?.[
                 // TODO: wtf is this mess
                 newDraggableIndex > oldDraggableIndex
                   ? newDraggableIndex
@@ -85,13 +99,17 @@ function TimezonesEdit() {
     });
   }, []);
 
+  const definedWorldClock = useComputed(() => {
+    return worldClockSignal.value ?? [];
+  });
+
   return (
     <>
       <div className="timezone-row">
         <AddTimezoneForm />
       </div>
       <ul id="timezones-list" ref={timezonesListRef}>
-        <For each={worldClockSignal}>
+        <For each={definedWorldClock}>
           {({ id, timezone, label }) => {
             return (
               <TimezoneRow key={id} id={id} timezone={timezone} label={label} />

@@ -10,7 +10,9 @@ import { Signal } from "@preact/signals";
 const dbUpdateChannel = new BroadcastChannel("whenst_db_update");
 
 export const worldClockSignal = new Signal(
-  [] as { id: string; position: string; timezone: string; label: string }[],
+  null as
+    | null
+    | { id: string; position: string; timezone: string; label: string }[],
 );
 connectSignal(worldClockSignal, async (db: IDBPDatabase) => {
   const worldClock = await db
