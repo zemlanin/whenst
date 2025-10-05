@@ -90,7 +90,7 @@ function SignedOutTabs({
         </div>
       </div>
 
-      <div id={id}>
+      <div id={id} style="margin-bottom: 1rem">
         <Show when={signInActive}>
           <SignedOutSignInTab />
         </Show>
