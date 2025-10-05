@@ -362,7 +362,7 @@ function Tabs({
       <div className="tabs-row" role="tablist">
         <div className="scrolly">
           <a role="tab" href="/settings" tabIndex={-1} aria-label="Settings">
-            <Gear aria-hidden="true" width="1rem" height="1rem" />
+            <Gear aria-hidden="true" />
           </a>
 
           <button
