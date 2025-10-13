@@ -19,7 +19,6 @@ import {
 import { getLocationFromTimezone } from "../shared/from-timezone.js";
 import "../keyboard";
 
-import { mountCommandPalette } from "../command-palette/index.js";
 import { AddTimezoneForm } from "./add-timezone-form.js";
 import { AccountEdit } from "./AccountEdit.js";
 
@@ -343,14 +342,4 @@ async function postSWMessage(data: { type: string }) {
   registration.active?.postMessage(data, [channel.port2]);
 
   return response;
-}
-
-const cmdRoot = document.getElementById("cmd-root");
-if (cmdRoot) {
-  mountCommandPalette(cmdRoot);
-}
-
-const cmdTitle = document.getElementById("cmd-title");
-if (cmdTitle) {
-  mountCommandPalette(cmdTitle);
 }

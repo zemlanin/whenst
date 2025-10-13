@@ -99,8 +99,12 @@ window.addEventListener("keydown", function handleArrowNavigation(event) {
     return null;
   })();
 
-  if (focusTarget && focusTarget !== target) {
+  if (focusTarget) {
     event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (focusTarget && focusTarget !== target) {
     focusTarget.tabIndex = 0;
     focusTarget.focus();
 

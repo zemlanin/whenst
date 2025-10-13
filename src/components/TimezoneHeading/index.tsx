@@ -1,63 +1,63 @@
-import { Signal, useComputed } from "@preact/signals";
-import { For, Show } from "@preact/signals/utils";
-import Fuse from "fuse.js/basic";
-import { ContainerNode, render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
-
-import "./index.css";
-import { getPathnameFromTimezone } from "../shared/from-timezone.js";
+import { useComputed, useSignal } from "@preact/signals";
+import { Show, For } from "@preact/signals/utils";
+import * as classes from "./index.module.css";
+import Fuse from "fuse.js";
+import { getPathnameFromTimezone } from "../../../shared/from-timezone.js";
 
 type PaletteOption = {
   url: string;
   title: string;
   subtitle?: string;
 };
-let i = 0;
 
-export function mountCommandPalette(parent: ContainerNode) {
-  const collapsedSignal = new Signal(true);
-  const optionsSignal = new Signal<PaletteOption[]>([]);
-
-  render(
-    <CommandPalette
-      collapsedSignal={collapsedSignal}
-      optionsSignal={optionsSignal}
-      idPrefix={`cfp${i++}-`}
-    />,
-    parent,
-  );
-
-  if ("hidden" in parent && parent.hidden) {
-    parent.hidden = false;
-  }
-}
-
-function CommandPalette({
-  collapsedSignal,
-  optionsSignal,
-  idPrefix,
+export function TimezoneHeading({
+  defaultValue = "",
+  className = "",
+  idPrefix = "tzh",
 }: {
-  collapsedSignal: Signal<boolean>;
-  optionsSignal: Signal<PaletteOption[]>;
-  idPrefix: string;
+  defaultValue?: string;
+  className?: string;
+  idPrefix?: string;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
+  const inputSizerText = useSignal(defaultValue);
+  const inputSizerWidth = useSignal<number | undefined>(undefined);
+  const inputSizerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    window.addEventListener("click", (event) => {
-      if (
-        event.target &&
-        event.target instanceof HTMLElement &&
-        !formRef.current?.contains(event.target) &&
-        !event.target.contains(formRef.current)
-      ) {
-        collapsedSignal.value = true;
-      }
+    if (!inputSizerRef.current) {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          inputSizerWidth.value = Math.ceil(entry.contentRect.width) + 30;
+        }
+      });
     });
+    observer.observe(inputSizerRef.current);
+    return () => {
+      observer.disconnect();
+    };
   }, []);
+
+  const commandsId = idPrefix + useId();
+  const collapsedSignal = useSignal(true);
+  const optionsSignal = useSignal<PaletteOption[]>([]);
+  const expanded = useComputed(
+    () => !!optionsSignal.value.length && !collapsedSignal.value,
+  );
+  const ariaExpanded = useComputed(() => (expanded.value ? "true" : "false"));
+  const inputStyle = useComputed(() =>
+    inputSizerWidth.value === undefined
+      ? `border-color: transparent`
+      : `max-width: ${inputSizerWidth.value}px`,
+  );
 
   return (
     <form
-      ref={formRef}
+      className={`${classes.main} ${className}`}
       onSubmit={(e) => {
         e.preventDefault();
 
@@ -93,53 +93,23 @@ function CommandPalette({
           collapsedSignal.value = true;
         }
       }}
-      className="command-palette"
     >
-      <CommandPaletteFields
-        collapsedSignal={collapsedSignal}
-        optionsSignal={optionsSignal}
-        idPrefix={idPrefix}
-      />
-    </form>
-  );
-}
-
-function CommandPaletteFields({
-  collapsedSignal,
-  optionsSignal,
-  idPrefix,
-}: {
-  collapsedSignal: Signal<boolean>;
-  optionsSignal: Signal<PaletteOption[]>;
-  idPrefix: string;
-}) {
-  const commandsId = idPrefix + useId();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const expanded = useComputed(
-    () => !!optionsSignal.value.length && !collapsedSignal.value,
-  );
-  const ariaExpanded = useComputed(() => (expanded.value ? "true" : "false"));
-
-  return (
-    <>
+      <div
+        className={classes["input-sizer"]}
+        ref={inputSizerRef}
+        aria-hidden={true}
+      >
+        {inputSizerText}
+      </div>
       <input
-        ref={inputRef}
-        name="q"
-        autoComplete="off"
-        autoCapitalize="off"
-        autoCorrect="off"
-        role="combobox"
-        aria-controls={commandsId}
-        aria-haspopup="listbox"
-        aria-autocomplete="list"
-        aria-expanded={ariaExpanded}
-        placeholder="Search"
+        defaultValue={defaultValue}
+        style={inputStyle}
         onInput={(event) => {
           if (!event.target || !(event.target instanceof HTMLInputElement)) {
             return;
           }
 
+          inputSizerText.value = event.target.value;
           collapsedSignal.value = false;
 
           loadOptions(event.target.value.trim().replace(/\s+/, " ")).then(
@@ -147,6 +117,16 @@ function CommandPaletteFields({
               optionsSignal.value = options;
             },
           );
+        }}
+        onBlur={(event) => {
+          if (!event.target || !(event.target instanceof HTMLInputElement)) {
+            return;
+          }
+
+          if (!event.target.value.trim()) {
+            event.target.value = defaultValue;
+            inputSizerText.value = defaultValue;
+          }
         }}
         onFocus={() => {
           collapsedSignal.value = false;
@@ -157,7 +137,18 @@ function CommandPaletteFields({
             collapsedSignal.value = true;
           }
         }}
+        autoComplete="off"
+        autoCapitalize="off"
+        autoCorrect="off"
+        role="combobox"
+        aria-controls={commandsId}
+        aria-haspopup="listbox"
+        aria-autocomplete="list"
+        aria-expanded={ariaExpanded}
+        placeholder="Search"
+        name="timezone"
       />
+
       <Show when={expanded}>
         <ul id={commandsId} role="listbox">
           <For each={optionsSignal}>
@@ -173,7 +164,7 @@ function CommandPaletteFields({
           </For>
         </ul>
       </Show>
-    </>
+    </form>
   );
 }
 

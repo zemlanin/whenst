@@ -33,7 +33,8 @@ import EarthAsia from "./icons/earth-asia.svg.js";
 import EarthEurope from "./icons/earth-europe.svg.js";
 import EarthOceania from "./icons/earth-oceania.svg.js";
 import Globe from "./icons/globe.svg.js";
-import { mountCommandPalette } from "./command-palette/index.js";
+import { TimezoneHeading } from "./src/components/TimezoneHeading/index.js";
+import { TitleBarPortal } from "./src/components/TitleBarPortal/index.js";
 
 const _T = Temporal;
 window.Temporal = Temporal;
@@ -118,17 +119,13 @@ function IndexPage() {
     }
   }, [shouldShowBack]);
 
-  useEffect(() => {
-    const titleBarH1 = document.querySelector("#title-bar h1");
-    if (titleBarH1) {
-      titleBarH1.textContent = isUnix
-        ? "Unix Epoch"
-        : getLocationFromTimezone(pageTZ);
-    }
-  }, [isUnix, pageTZ]);
-
   return (
     <>
+      <TitleBarPortal>
+        <TimezoneHeading
+          defaultValue={isUnix ? "Unix Epoch" : getLocationFromTimezone(pageTZ)}
+        />
+      </TitleBarPortal>
       {isUnix ? (
         <UnixRow rootDT={dt} writeToLocation={writeToLocation} />
       ) : (
@@ -242,7 +239,14 @@ function ClockRow({
 
   return (
     <div className="clock-row">
-      {secondary ? <h2>{tzName}</h2> : <h1>{tzName}</h1>}
+      {secondary ? (
+        <h2>{tzName}</h2>
+      ) : (
+        <TimezoneHeading
+          defaultValue={tzName}
+          className="window-controls-overlay-hidden"
+        />
+      )}
 
       <form className="clock" action="/" method="GET">
         <input
@@ -1289,14 +1293,4 @@ effect(() => {
 const main = document.querySelector("main");
 if (main) {
   render(<IndexPage />, main);
-}
-
-const cmdRoot = document.getElementById("cmd-root");
-if (cmdRoot) {
-  mountCommandPalette(cmdRoot);
-}
-
-const cmdTitle = document.getElementById("cmd-title");
-if (cmdTitle) {
-  mountCommandPalette(cmdTitle);
 }
