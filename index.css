@@ -107,6 +107,10 @@ button {
   line-height: 1.35em;
 }
 
+input {
+  padding: 0.25rem;
+}
+
 h1,
 h2,
 h3 {
