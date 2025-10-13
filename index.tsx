@@ -248,7 +248,12 @@ function ClockRow({
         />
       )}
 
-      <form className="clock" action="/" method="GET">
+      <form
+        className="clock"
+        action="/"
+        method="GET"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <input
           className="local-time"
           name="t"
@@ -918,7 +923,12 @@ function UnixRow({
     <div className="clock-row">
       <h1>Unix Epoch</h1>
 
-      <form className="clock" action="/" method="GET">
+      <form
+        className="clock"
+        action="/"
+        method="GET"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <input
           className="unix-input"
           name="t"
