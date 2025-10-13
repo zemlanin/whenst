@@ -52,7 +52,7 @@ export function TimezoneHeading({
   const inputStyle = useComputed(() =>
     inputSizerWidth.value === undefined
       ? `border-color: transparent`
-      : `max-width: ${inputSizerWidth.value}px`,
+      : `max-width: min(${inputSizerWidth.value}px, 100%)`,
   );
 
   return (

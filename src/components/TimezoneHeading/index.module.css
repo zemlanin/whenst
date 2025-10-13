@@ -4,6 +4,7 @@
   flex-direction: column;
   align-items: flex-start;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 :global(#title-bar) .main input {
@@ -37,8 +38,9 @@
 }
 
 .main input {
+  box-sizing: border-box;
   margin-block-end: 0.5rem;
-  min-width: 120px;
+  min-width: min(120px, 100%);
 }
 
 .main [role="combobox"] {

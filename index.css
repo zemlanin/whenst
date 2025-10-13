@@ -109,6 +109,8 @@ button {
 
 input {
   padding: 0.25rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 h1,
