@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "preact/hooks";
-import { useComputed, useSignal } from "@preact/signals";
+import { Signal, useComputed, useSignal } from "@preact/signals";
 import { Show, For } from "@preact/signals/utils";
 import * as classes from "./index.module.css";
 import Fuse from "fuse.js";
@@ -152,21 +152,45 @@ export function TimezoneHeading({
       />
 
       <Show when={expanded}>
-        <ul id={commandsId} role="listbox">
-          <For each={optionsSignal}>
-            {(option) => {
-              return (
-                <li key={option.url} role="option" tabIndex={-1}>
-                  <a href={option.url} tabIndex={-1}>
-                    {option.title}
-                  </a>
-                </li>
-              );
-            }}
-          </For>
-        </ul>
+        <OptionsList
+          id={commandsId}
+          optionsSignal={optionsSignal}
+          inputSizerWidth={inputSizerWidth}
+        />
       </Show>
     </form>
+  );
+}
+
+function OptionsList({
+  id,
+  optionsSignal,
+  inputSizerWidth,
+}: {
+  id: string;
+  optionsSignal: Signal<PaletteOption[]>;
+  inputSizerWidth: Signal<number | undefined>;
+}) {
+  const optionsStyle = useComputed(() =>
+    inputSizerWidth.value === undefined
+      ? ``
+      : `max-width: min(${inputSizerWidth.value}px, 100%)`,
+  );
+
+  return (
+    <ul id={id} role="listbox" style={optionsStyle}>
+      <For each={optionsSignal}>
+        {(option) => {
+          return (
+            <li key={option.url} role="option" tabIndex={-1}>
+              <a href={option.url} tabIndex={-1}>
+                {option.title}
+              </a>
+            </li>
+          );
+        }}
+      </For>
+    </ul>
   );
 }
 
