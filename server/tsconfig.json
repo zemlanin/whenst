@@ -6,7 +6,5 @@
     "strict": true
   },
   "include": ["**/*"],
-  "types": [
-    "node"
-  ]
+  "types": ["node"]
 }
