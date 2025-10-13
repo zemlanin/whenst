@@ -923,7 +923,10 @@ function UnixRow({
 
   return (
     <div className="clock-row">
-      <h1>Unix Epoch</h1>
+      <TimezoneHeading
+        defaultValue="Unix Epoch"
+        className="window-controls-overlay-hidden"
+      />
 
       <form
         className="clock"
