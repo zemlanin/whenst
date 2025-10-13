@@ -10,6 +10,7 @@ import {
   batch,
   effect,
   Signal,
+  ReadonlySignal,
 } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 
@@ -1020,48 +1021,81 @@ function SavedTimezones({
       </Show>
       <div role="table">
         <For each={filteredTimezones}>
-          {({ timezone, label }, index) => {
-            const plainDateTime = rootDT.value
-              .withTimeZone(Temporal.TimeZone.from(timezone))
-              .toPlainDateTime();
-
-            const dateString = shortDateFormatter.format(plainDateTime);
-            const timeString = shortTimeFormatter.format(plainDateTime);
-
-            const displayedLabel = label || getLocationFromTimezone(timezone);
-
-            return (
-              <div
-                role="row"
-                className="timezone-row"
-                key={timezone + ":" + label}
-                tabIndex={index === 0 ? 0 : -1}
-              >
-                <div className="timezone-label-wrapper">
-                  <a
-                    className="timezone-label"
-                    href={new URL(
-                      getPathnameFromTimezone(timezone),
-                      location.href,
-                    ).toString()}
-                    tabIndex={-1}
-                    role="cell"
-                  >
-                    {displayedLabel}
-                  </a>
-                </div>
-
-                <div role="cell" className="timezone-time-wrapper">
-                  <div>{timeString}</div>
-                  {localDateString.value !== dateString ||
-                  pageDateString.value !== dateString ? (
-                    <span className="subtitle">{dateString}</span>
-                  ) : null}
-                </div>
-              </div>
-            );
-          }}
+          {({ timezone, label }, index) => (
+            <WorldClockRow
+              key={timezone + ":" + label}
+              timezone={timezone}
+              label={label}
+              rootDT={rootDT}
+              tabIndex={index === 0 ? 0 : -1}
+              localDateString={localDateString}
+              pageDateString={pageDateString}
+            />
+          )}
         </For>
+      </div>
+    </div>
+  );
+}
+
+function WorldClockRow({
+  timezone,
+  label,
+  rootDT,
+  tabIndex,
+  localDateString,
+  pageDateString,
+}: {
+  timezone: string;
+  label: string;
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  tabIndex: number;
+  localDateString: ReadonlySignal<string>;
+  pageDateString: ReadonlySignal<string>;
+}) {
+  const plainDateTime = useComputed(() =>
+    rootDT.value
+      .withTimeZone(Temporal.TimeZone.from(timezone))
+      .toPlainDateTime(),
+  );
+
+  const dateString = useComputed(() =>
+    shortDateFormatter.format(plainDateTime.value),
+  );
+  const timeString = useComputed(() =>
+    shortTimeFormatter.format(plainDateTime.value),
+  );
+
+  const displayedLabel = label || getLocationFromTimezone(timezone);
+
+  const showSubtitle = useComputed(() => {
+    return (
+      localDateString.value !== dateString.value ||
+      pageDateString.value !== dateString.value
+    );
+  });
+
+  return (
+    <div role="row" className="timezone-row" tabIndex={tabIndex}>
+      <div className="timezone-label-wrapper">
+        <a
+          className="timezone-label"
+          href={new URL(
+            getPathnameFromTimezone(timezone),
+            location.href,
+          ).toString()}
+          tabIndex={-1}
+          role="cell"
+        >
+          {displayedLabel}
+        </a>
+      </div>
+
+      <div role="cell" className="timezone-time-wrapper">
+        <div>{timeString}</div>
+        <Show when={showSubtitle}>
+          <span className="subtitle">{dateString}</span>
+        </Show>
       </div>
     </div>
   );
