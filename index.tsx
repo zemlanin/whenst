@@ -250,12 +250,7 @@ function ClockRow({
         />
       )}
 
-      <form
-        className="clock"
-        action="/"
-        method="GET"
-        onSubmit={(e) => e.preventDefault()}
-      >
+      <form className="clock" onSubmit={(e) => e.preventDefault()}>
         <input
           className="local-time"
           name="t"
@@ -928,12 +923,7 @@ function UnixRow({
         className="window-controls-overlay-hidden"
       />
 
-      <form
-        className="clock"
-        action="/"
-        method="GET"
-        onSubmit={(e) => e.preventDefault()}
-      >
+      <form className="clock" onSubmit={(e) => e.preventDefault()}>
         <input
           className="unix-input"
           name="t"
