@@ -43,10 +43,8 @@
     "start": "node dist/server",
     "migrate": "node dist/server/migrations",
     "release": "node dist/server/release",
-    "lint": "npm run eslint && npm run prettier -- -l",
-    "fmt": "tsc && tsc -p service-worker && tsc -p server && npm run eslint -- --fix && npm run prettier -- --write",
-    "prettier": "prettier .",
-    "eslint": "eslint \"./*.{js,jsx,cjs,mjs,tsx,ts}\" \"./{src,server,parcel-plugins,settings,link,about,keyboard,service-worker,command-palette,shared,test}/**/*.{js,ts,tsx,mjs}\" \"./icons/**/*.{jsx,tsx}\""
+    "lint": "eslint && prettier . --check",
+    "fmt": "tsc && tsc -p service-worker && tsc -p server && eslint --fix && prettier . --write"
   },
   "repository": {
     "type": "git",
@@ -70,6 +68,7 @@
     "mime": "^4.0.6"
   },
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
     "@fortawesome/fontawesome-free": "^6.4.0",
     "@js-temporal/polyfill": "^0.4.4",
     "@parcel/compressor-brotli": "^2.13.3",
@@ -83,10 +82,9 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
     "@types/sortablejs": "^1.15.8",
-    "@typescript-eslint/eslint-plugin": "^8.18.1",
-    "@typescript-eslint/parser": "^8.18.1",
-    "eslint": "^8.57.1",
-    "eslint-plugin-react": "^7.32.2",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint": "^9.37.0",
+    "eslint-plugin-react": "^7.37.5",
     "fuse.js": "^7.1.0",
     "parcel": "^2.13.3",
     "preact": "^10.26.4",
@@ -95,6 +93,7 @@
     "svgo": "^3.3.2",
     "tap": "^21.1.0",
     "typescript": "^5.7.3",
+    "typescript-eslint": "^8.46.0",
     "urlpattern-polyfill": "^10.0.0"
   }
 }
