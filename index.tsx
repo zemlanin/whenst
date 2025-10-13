@@ -125,6 +125,7 @@ function IndexPage() {
       <TitleBarPortal>
         <TimezoneHeading
           defaultValue={isUnix ? "Unix Epoch" : getLocationFromTimezone(pageTZ)}
+          idPrefix="title-bar-tzh"
         />
       </TitleBarPortal>
       {isUnix ? (
