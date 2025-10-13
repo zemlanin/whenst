@@ -35,6 +35,8 @@
   opacity: 0;
   user-select: none;
   pointer-events: none;
+  padding-inline: calc(0.25rem + 1px);
+  box-sizing: border-box;
 }
 
 .main input {

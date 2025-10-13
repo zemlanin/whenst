@@ -11,6 +11,8 @@ type PaletteOption = {
   subtitle?: string;
 };
 
+const WIDE_CHARACTER = "W";
+
 export function TimezoneHeading({
   defaultValue = "",
   className = "",
@@ -20,7 +22,7 @@ export function TimezoneHeading({
   className?: string;
   idPrefix?: string;
 }) {
-  const inputSizerText = useSignal(defaultValue);
+  const inputSizerText = useSignal(defaultValue + WIDE_CHARACTER);
   const inputSizerWidth = useSignal<number | undefined>(undefined);
   const inputSizerRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +34,7 @@ export function TimezoneHeading({
     const observer = new ResizeObserver((entries) => {
       requestAnimationFrame(() => {
         for (const entry of entries) {
-          inputSizerWidth.value = Math.ceil(entry.contentRect.width) + 30;
+          inputSizerWidth.value = Math.ceil(entry.borderBoxSize[0].inlineSize);
         }
       });
     });
@@ -109,7 +111,7 @@ export function TimezoneHeading({
             return;
           }
 
-          inputSizerText.value = event.target.value;
+          inputSizerText.value = event.target.value + WIDE_CHARACTER;
           collapsedSignal.value = false;
 
           loadOptions(event.target.value.trim().replace(/\s+/, " ")).then(
