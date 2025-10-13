@@ -824,7 +824,7 @@ function ActionButton({
   label: string;
   labelSuccess: string;
   labelFailure: string;
-  action?: null | (() => void);
+  action?: null | (() => void) | (() => Promise<void>);
   primary?: boolean;
   "aria-label"?: string;
   role?: JSX.HTMLAttributes["role"];
