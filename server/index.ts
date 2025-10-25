@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
           .catch(console.error);
         `);
       } else {
-        const httpsUrl = `http://when.st${url}`;
+        const httpsUrl = `https://when.st${url}`;
 
         reply.redirect(httpsUrl, 301);
       }
