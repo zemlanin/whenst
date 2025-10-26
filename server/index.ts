@@ -104,7 +104,7 @@ fastify.register((childContext, _, done) => {
       .code(200)
       .type("text/html")
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("index.html");
+      .sendFile("home/index.html");
   });
 
   done();

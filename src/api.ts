@@ -4,7 +4,7 @@ import { IDBPDatabase, IDBPObjectStore, openDB } from "idb";
 import {
   getMidpointPosition,
   POSITION_ALPHABET_START,
-} from "./shared/getMidpointPosition.js";
+} from "../shared/getMidpointPosition.js";
 import { Signal } from "@preact/signals";
 
 const dbUpdateChannel = new BroadcastChannel("whenst_db_update");

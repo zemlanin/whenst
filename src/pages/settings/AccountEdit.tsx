@@ -8,7 +8,7 @@ import {
   sendAuthCheckMessage,
   createAccount,
   syncEverything,
-} from "../api.js";
+} from "../../api.js";
 import { Show } from "@preact/signals/utils";
 import { useId } from "preact/hooks";
 

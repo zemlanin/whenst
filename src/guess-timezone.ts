@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 
-import { STRICT_RELATIVE_UTC_ID_REGEX } from "./shared/from-timezone.js";
+import { STRICT_RELATIVE_UTC_ID_REGEX } from "../shared/from-timezone.js";
 
 const timezones = window.Intl.supportedValuesOf("timeZone");
 

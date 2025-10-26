@@ -1,7 +1,8 @@
 import { render } from "preact";
 import { useSignal, batch } from "@preact/signals";
 
-import { sqrapCode, syncEverything, accountSignal } from "../api.js";
+import "../../keyboard";
+import { sqrapCode, syncEverything, accountSignal } from "../../api.js";
 import { Show } from "@preact/signals/utils";
 
 const main = document.querySelector("main");

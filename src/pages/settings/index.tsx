@@ -1,4 +1,4 @@
-import "../parcel.d.ts";
+import "../../parcel.d.ts";
 
 import { useComputed, Signal } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
@@ -6,18 +6,18 @@ import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
 
-import Bars from "../icons/bars.svg.js";
-import CircleNotch from "../icons/circle-notch.svg.js";
-import Check from "../icons/check.svg.js";
+import Bars from "../../../icons/bars.svg.js";
+import CircleNotch from "../../../icons/circle-notch.svg.js";
+import Check from "../../../icons/check.svg.js";
 
 import {
   deleteWorldClock,
   reorderWorldClock,
   changeWorldClockLabel,
   worldClockSignal,
-} from "../api.js";
-import { getLocationFromTimezone } from "../shared/from-timezone.js";
-import "../keyboard";
+} from "../../api.js";
+import { getLocationFromTimezone } from "../../../shared/from-timezone.js";
+import "../../keyboard";
 
 import { AddTimezoneForm } from "./add-timezone-form.js";
 import { AccountEdit } from "./AccountEdit.js";

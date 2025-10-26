@@ -14,28 +14,28 @@ import {
 } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 
-import "./keyboard";
+import "../../keyboard";
 
 // TODO: `addTimezone`
-import { worldClockSignal } from "./api.js";
-import { guessTimezone } from "./guess-timezone.js";
+import { worldClockSignal } from "../../api.js";
+import { guessTimezone } from "../../guess-timezone.js";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
-} from "./shared/from-timezone.js";
+} from "../../../shared/from-timezone.js";
 
-import Discord from "./icons/discord.svg.js";
-import CalendarPlus from "./icons/calendar-plus.svg.js";
-import Gear from "./icons/gear.svg.js";
+import Discord from "../../../icons/discord.svg.js";
+import CalendarPlus from "../../../icons/calendar-plus.svg.js";
+import Gear from "../../../icons/gear.svg.js";
 
-import EarthAfrica from "./icons/earth-africa.svg.js";
-import EarthAmericas from "./icons/earth-americas.svg.js";
-import EarthAsia from "./icons/earth-asia.svg.js";
-import EarthEurope from "./icons/earth-europe.svg.js";
-import EarthOceania from "./icons/earth-oceania.svg.js";
-import Globe from "./icons/globe.svg.js";
-import { TimezoneHeading } from "./src/components/TimezoneHeading/index.js";
-import { TitleBarPortal } from "./src/components/TitleBarPortal/index.js";
+import EarthAfrica from "../../../icons/earth-africa.svg.js";
+import EarthAmericas from "../../../icons/earth-americas.svg.js";
+import EarthAsia from "../../../icons/earth-asia.svg.js";
+import EarthEurope from "../../../icons/earth-europe.svg.js";
+import EarthOceania from "../../../icons/earth-oceania.svg.js";
+import Globe from "../../../icons/globe.svg.js";
+import { TimezoneHeading } from "../../components/TimezoneHeading/index.js";
+import { TitleBarPortal } from "../../components/TitleBarPortal/index.js";
 
 const _T = Temporal;
 window.Temporal = Temporal;

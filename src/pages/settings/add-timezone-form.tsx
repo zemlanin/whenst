@@ -3,12 +3,12 @@ import { For, Show } from "@preact/signals/utils";
 import Fuse from "fuse.js/basic";
 import { useEffect, useId, useRef } from "preact/hooks";
 
-import Plus from "../icons/plus.svg.js";
-import CircleNotch from "../icons/circle-notch.svg.js";
-import Check from "../icons/check.svg.js";
+import Plus from "../../../icons/plus.svg.js";
+import CircleNotch from "../../../icons/circle-notch.svg.js";
+import Check from "../../../icons/check.svg.js";
 
 import "./add-timezone-form.css";
-import { addWorldClock } from "../api.js";
+import { addWorldClock } from "../../api.js";
 
 const collapsedSignal = new Signal(true);
 const activeValueSignal = new Signal("");

@@ -1,7 +1,7 @@
 declare const self: ServiceWorkerGlobalScope;
 
 import { manifest, version } from "@parcel/service-worker";
-import { generateIntlTimezones } from "../shared/generateIntlTimezones.js";
+import { generateIntlTimezones } from "../../shared/generateIntlTimezones.js";
 import { authCheck, sync } from "./db.js";
 
 async function install() {
@@ -16,9 +16,8 @@ async function install() {
       .filter((p) => p.endsWith(".html"))
       .map((p) =>
         p
-          .replace(/\.html$/, "")
-          .replace(/^\/index$/, "/")
-          .replace(/\/index$/, ""),
+          .replace(/\/index\.html$/, "")
+          .replace(/^\/home$/, "/"),
       ),
   ]);
 
