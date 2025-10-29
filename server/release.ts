@@ -10,17 +10,7 @@ const client = new S3({
   endpoint: "https://fly.storage.tigris.dev",
 });
 
-// parcel doesn't support top-level await in entrypoint files
-// https://github.com/parcel-bundler/parcel/issues/4028
-release().then(
-  () => {
-    process.exit();
-  },
-  (error) => {
-    console.error(error);
-    process.exit(1);
-  },
-);
+await release();
 
 async function release() {
   const distPath = path.resolve(process.cwd(), "dist");

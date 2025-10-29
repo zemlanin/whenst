@@ -6,7 +6,7 @@ import { globalIgnores } from "eslint/config";
 
 export default tseslint.config(
   { files: ["**/*.{js,mjs,cjs,ts,tsx}"] },
-  globalIgnores(["dist/", ".data/", ".parcel-cache/"]),
+  globalIgnores(["dist/", ".data/"]),
   js.configs.recommended,
   react.configs.flat.recommended,
   react.configs.flat["jsx-runtime"],

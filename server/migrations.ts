@@ -3,17 +3,7 @@ import path from "node:path";
 
 import { db } from "./db/index.js";
 
-// parcel doesn't support top-level await in entrypoint files
-// https://github.com/parcel-bundler/parcel/issues/4028
-migrate().then(
-  () => {
-    process.exit();
-  },
-  (error) => {
-    console.error(error);
-    process.exit(1);
-  },
-);
+await migrate();
 
 async function migrate() {
   const user_version = db.pragma("user_version", { simple: true }) as number;

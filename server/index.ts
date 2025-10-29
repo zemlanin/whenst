@@ -1,4 +1,4 @@
-import "../src/parcel.d.ts";
+import "../src/assets.d.ts";
 
 import path from "node:path";
 import Fastify from "fastify";
@@ -68,6 +68,7 @@ fastify.register((childContext, _, done) => {
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
     // `parcel` doesn't compress while `watch`ing
+    // TODO: precompress with `scripts/build`
     preCompressed: !!process.env.WHENST_SERVE_PRECOMPRESSED,
     cacheControl: false,
     index: [homeHtml],

@@ -1,6 +1,8 @@
 declare const self: ServiceWorkerGlobalScope;
 
-import { manifest, version } from "@parcel/service-worker";
+// import { manifest, version } from "@parcel/service-worker";
+const manifest = "TODO";
+const version = "TODO";
 import { generateIntlTimezones } from "../../shared/generateIntlTimezones.js";
 import { authCheck, sync } from "./db.js";
 
