@@ -119,7 +119,7 @@ async function build() {
            * */
           const getProcessedAssets = ($) => {
             return $(
-              'link[rel="manifest"][href], script[type="module"]',
+              'link[rel="manifest"][href], script[type="module"][src], link[rel="stylesheet"][type="text/css"]',
             ).filter((i, el) => {
               const srcAttr = getBlobAssetSrcAttr(el);
               if (!srcAttr) {
@@ -129,9 +129,7 @@ async function build() {
               const $el = $(el);
 
               if (el.name === "link") {
-                const rel = $el.attr("rel");
-
-                return !!$el.attr("href") && rel === "manifest";
+                return !!$el.attr("href");
               }
 
               if (el.name === "script") {
@@ -168,8 +166,8 @@ async function build() {
           build.onLoad(
             { filter: /.*/, namespace: "html-plugin-blob" },
             async (args) => {
-              /** @type {{assets: {importPath: string; resolvePath: string; resolveDir: string}[]}} */
-              const { assets } = args.pluginData;
+              /** @type {{ assets: {importPath: string; resolvePath: string; resolveDir: string}[], additionalCss: {href: string}[]}} */
+              const { assets, additionalCss } = args.pluginData;
               const file = await fs.readFile(args.path);
               const dirname = path.dirname(args.path);
               const $ = cheerio.load(file);
@@ -183,7 +181,11 @@ async function build() {
                 const $el = $(el);
 
                 const originalHref = $el.attr(srcAttr);
-                if (!originalHref) {
+                if (
+                  !originalHref ||
+                  originalHref.startsWith("http:") ||
+                  originalHref.startsWith("https:")
+                ) {
                   return;
                 }
 
@@ -218,6 +220,12 @@ async function build() {
                 }
               });
 
+              for (const { href } of additionalCss) {
+                $("head").append(
+                  `<link rel="stylesheet" type="text/css" href=${href}>`,
+                );
+              }
+
               return {
                 contents: $.html(),
                 loader: "file",
@@ -236,8 +244,18 @@ async function build() {
                 .map((i, el) => $(el).attr("href"))
                 .toArray();
 
-              const scripts = $('script[type="module"]')
+              const scripts = $('script[type="module"][src]')
                 .map((i, el) => $(el).attr("src"))
+                .filter(
+                  (i, src) =>
+                    !src.startsWith("http:") && !src.startsWith("https:"),
+                )
+                .toArray();
+
+              const stylesheets = $(
+                'link[rel="stylesheet"][type="text/css"][href]',
+              )
+                .map((i, el) => $(el).attr("href"))
                 .filter(
                   (i, src) =>
                     !src.startsWith("http:") && !src.startsWith("https:"),
@@ -257,6 +275,8 @@ async function build() {
 
               /** @type {{ importPath: string; resolveDir: string; resolvePath: string }[]} */
               const assets = [];
+              /** @type {{href: string}[]} */
+              const additionalCss = [];
               const warnings = [];
               /** @type {(importPath: string, options: { resolveDir: string }) => Promise<void | { errors: import('esbuild').Message[] }>} */
               const collectBlob = async (importPath, { resolveDir }) => {
@@ -421,6 +441,7 @@ async function build() {
                 const scriptResult = await buildClient({
                   entrypoint: result.path,
                   outdir,
+                  publicPath: initialOptions.publicPath ?? "/",
                 });
 
                 if (scriptResult.errors.length > 0) {
@@ -445,6 +466,60 @@ async function build() {
                     scriptResult.path,
                   ),
                 });
+
+                if (scriptResult.cssBundle) {
+                  additionalCss.push({ href: scriptResult.cssBundle });
+                }
+              }
+
+              for (const stylesheet of stylesheets) {
+                if (
+                  assets.some(getResolvedAssetPathMatcher(dirname, stylesheet))
+                ) {
+                  continue;
+                }
+
+                const result = await build.resolve(stylesheet, {
+                  kind: "import-statement",
+                  importer: args.path,
+                  resolveDir: dirname,
+                });
+                if (result.errors.length > 0) {
+                  return { errors: result.errors };
+                }
+
+                if (result.warnings.length > 0) {
+                  warnings.push(...result.warnings);
+                }
+
+                const stylesheetResult = await buildClient({
+                  entrypoint: result.path,
+                  outdir,
+                  publicPath: initialOptions.publicPath ?? "/",
+                });
+
+                if (stylesheetResult.errors.length > 0) {
+                  return { errors: stylesheetResult.errors };
+                }
+
+                if (stylesheetResult.warnings.length > 0) {
+                  warnings.push(...stylesheetResult.warnings);
+                }
+
+                if (!stylesheetResult.path) {
+                  throw new Error(
+                    `buildClient returned undefined path but no errors`,
+                  );
+                }
+
+                assets.push({
+                  importPath: stylesheet,
+                  resolveDir: dirname,
+                  resolvePath: path.join(
+                    initialOptions.publicPath ?? "/",
+                    stylesheetResult.path,
+                  ),
+                });
               }
 
               return {
@@ -457,6 +532,7 @@ async function build() {
                 warnings,
                 pluginData: {
                   assets,
+                  additionalCss,
                 },
               };
             },
@@ -493,8 +569,9 @@ async function build() {
  * @param {object} options
  * @param {string} options.entrypoint
  * @param {string} options.outdir
+ * @param {string} options.publicPath
  * */
-async function buildClient({ entrypoint, outdir }) {
+async function buildClient({ entrypoint, outdir, publicPath }) {
   const { errors, warnings, metafile } = await esbuild.build({
     entryPoints: [entrypoint],
     bundle: true,
@@ -502,16 +579,39 @@ async function buildClient({ entrypoint, outdir }) {
     format: "esm",
     outdir,
     entryNames: "static/[name]-[hash]",
+    assetNames: "static/[name]-[hash]",
     metafile: true,
+    publicPath,
+    loader: {
+      ".png": "file",
+      ".woff": "file",
+      ".woff2": "file",
+    },
   });
 
   if (errors.length > 0) {
     return { errors, warnings };
   }
 
+  const [outputPath, mainEntry] =
+    Object.entries(metafile.outputs).find(
+      ([_o, { entryPoint }]) => entryPoint,
+    ) ?? [];
+
+  /** @param {string | undefined} outputPath */
+  const getPublicPath = (outputPath) => {
+    if (!outputPath) {
+      return undefined;
+    }
+
+    return path.join(publicPath, path.relative(outdir, outputPath));
+  };
+
   return {
     errors: [],
     warnings,
-    path: path.relative(outdir, Object.keys(metafile.outputs)[0]),
+    path: getPublicPath(outputPath),
+    cssBundle: getPublicPath(mainEntry?.cssBundle),
+    // TODO: return assets to avoid serving the same file twice
   };
 }
