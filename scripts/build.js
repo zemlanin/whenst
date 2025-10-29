@@ -22,13 +22,12 @@ async function build() {
     chunkNames: "static/[name]-[hash]",
     entryNames: ".pages/[dir]/[name]",
     publicPath: "/",
-    minify: true,
+    minify: true, // TODO: minify html
     bundle: true,
     metafile: true,
     format: "esm",
     platform: "browser",
     plugins: [
-      // htmlPlugin()
       {
         name: "html-plugin",
         setup(build) {
@@ -562,6 +561,7 @@ async function build() {
     outdir: "dist/server",
     packages: "external",
     external: ["#dist/*"],
+    minify: true,
   });
 }
 
@@ -581,6 +581,7 @@ async function buildClient({ entrypoint, outdir, publicPath }) {
     entryNames: "static/[name]-[hash]",
     assetNames: "static/[name]-[hash]",
     metafile: true,
+    minify: true,
     publicPath,
     loader: {
       ".png": "file",
