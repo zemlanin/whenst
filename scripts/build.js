@@ -58,6 +58,10 @@ async function build() {
             if (el.name === "source") {
               return "srcset";
             }
+
+            if (el.name === "script") {
+              return "src";
+            }
           };
 
           /**
@@ -114,7 +118,9 @@ async function build() {
            * @param {import('cheerio').CheerioAPI} $
            * */
           const getProcessedAssets = ($) => {
-            return $('link[rel="manifest"][href]').filter((i, el) => {
+            return $(
+              'link[rel="manifest"][href], script[type="module"]',
+            ).filter((i, el) => {
               const srcAttr = getBlobAssetSrcAttr(el);
               if (!srcAttr) {
                 throw new Error(`${el.name} doesn't have src attribute`);
@@ -126,6 +132,14 @@ async function build() {
                 const rel = $el.attr("rel");
 
                 return !!$el.attr("href") && rel === "manifest";
+              }
+
+              if (el.name === "script") {
+                const src = $el.attr("src");
+
+                return (
+                  !!src && !src.startsWith("http:") && !src.startsWith("https:")
+                );
               }
 
               return false;
@@ -183,7 +197,11 @@ async function build() {
               });
 
               getProcessedAssets($).each((i, el) => {
-                const srcAttr = "href";
+                const srcAttr = getBlobAssetSrcAttr(el);
+                if (!srcAttr) {
+                  throw new Error(`${el.name} doesn't have src attribute`);
+                }
+
                 const $el = $(el);
 
                 const originalHref = $el.attr(srcAttr);
@@ -216,6 +234,14 @@ async function build() {
 
               const manifests = $('link[rel="manifest"][href]')
                 .map((i, el) => $(el).attr("href"))
+                .toArray();
+
+              const scripts = $('script[type="module"]')
+                .map((i, el) => $(el).attr("src"))
+                .filter(
+                  (i, src) =>
+                    !src.startsWith("http:") && !src.startsWith("https:"),
+                )
                 .toArray();
 
               const images = getBlobAssets($)
@@ -374,6 +400,53 @@ async function build() {
                 });
               }
 
+              for (const script of scripts) {
+                if (assets.some(getResolvedAssetPathMatcher(dirname, script))) {
+                  continue;
+                }
+
+                const result = await build.resolve(script, {
+                  kind: "import-statement",
+                  importer: args.path,
+                  resolveDir: dirname,
+                });
+                if (result.errors.length > 0) {
+                  return { errors: result.errors };
+                }
+
+                if (result.warnings.length > 0) {
+                  warnings.push(...result.warnings);
+                }
+
+                const scriptResult = await buildClient({
+                  entrypoint: result.path,
+                  outdir,
+                });
+
+                if (scriptResult.errors.length > 0) {
+                  return { errors: scriptResult.errors };
+                }
+
+                if (scriptResult.warnings.length > 0) {
+                  warnings.push(...scriptResult.warnings);
+                }
+
+                if (!scriptResult.path) {
+                  throw new Error(
+                    `buildClient returned undefined path but no errors`,
+                  );
+                }
+
+                assets.push({
+                  importPath: script,
+                  resolveDir: dirname,
+                  resolvePath: path.join(
+                    initialOptions.publicPath ?? "/",
+                    scriptResult.path,
+                  ),
+                });
+              }
+
               return {
                 contents: `
                 import file from ${JSON.stringify(args.path)};
@@ -414,4 +487,31 @@ async function build() {
     packages: "external",
     external: ["#dist/*"],
   });
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.entrypoint
+ * @param {string} options.outdir
+ * */
+async function buildClient({ entrypoint, outdir }) {
+  const { errors, warnings, metafile } = await esbuild.build({
+    entryPoints: [entrypoint],
+    bundle: true,
+    platform: "browser",
+    format: "esm",
+    outdir,
+    entryNames: "static/[name]-[hash]",
+    metafile: true,
+  });
+
+  if (errors.length > 0) {
+    return { errors, warnings };
+  }
+
+  return {
+    errors: [],
+    warnings,
+    path: path.relative(outdir, Object.keys(metafile.outputs)[0]),
+  };
 }
