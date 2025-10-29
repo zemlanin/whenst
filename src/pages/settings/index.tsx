@@ -1,5 +1,3 @@
-import "../../parcel.d.ts";
-
 import { useComputed, Signal } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 import { render } from "preact";

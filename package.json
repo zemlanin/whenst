@@ -45,7 +45,7 @@
     "migrate": "node dist/server/migrations",
     "release": "node dist/server/release",
     "lint": "eslint && prettier . --check",
-    "fmt": "tsc && tsc -p service-worker && tsc -p server && eslint --fix && prettier . --write"
+    "fmt": "tsc && tsc -p src/service-worker && tsc -p server && eslint --fix && prettier . --write"
   },
   "repository": {
     "type": "git",

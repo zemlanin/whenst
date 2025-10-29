@@ -4,13 +4,13 @@ import path from "node:path";
 export default new Namer({
   name({ bundle, options }) {
     const filePath = bundle.getMainEntry()?.filePath ?? "index.js";
-    const relativePath = path.relative(options.projectRoot, filePath)
+    const relativePath = path.relative(options.projectRoot, filePath);
 
     // keep bundles with a stable name (for example, `/index.html`) as-is
     // but remove `src/pages` from their out path
     if (bundle.needsStableName) {
-      if (relativePath.startsWith('src/pages/')) {
-        return relativePath.slice('src/pages/'.length)
+      if (relativePath.startsWith("src/pages/")) {
+        return relativePath.slice("src/pages/".length);
       }
 
       return null;

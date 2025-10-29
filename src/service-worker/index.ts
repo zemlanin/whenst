@@ -14,11 +14,7 @@ async function install() {
     ),
     ...uniqManifest
       .filter((p) => p.endsWith(".html"))
-      .map((p) =>
-        p
-          .replace(/\/index\.html$/, "")
-          .replace(/^\/home$/, "/"),
-      ),
+      .map((p) => p.replace(/\/index\.html$/, "").replace(/^\/home$/, "/")),
   ]);
 
   const keys = await cache.keys();
