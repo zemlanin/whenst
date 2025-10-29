@@ -10,5 +10,5 @@
     "strict": true
   },
   "include": ["**/*"],
-  "exclude": ["server", "src/service-worker"]
+  "exclude": ["server", "src/service-worker", "dist"]
 }
