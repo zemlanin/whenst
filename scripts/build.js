@@ -95,6 +95,43 @@ async function build() {
             });
           };
 
+          /**
+           * @param {string} dirToMatch
+           * @param {string} pathToMatch
+           * */
+          const getResolvedAssetPathMatcher = (dirToMatch, pathToMatch) => {
+            const absolutePathToMatch = path.resolve(dirToMatch, pathToMatch);
+
+            /** @type {(asset: {importPath: string; resolveDir: string}) => boolean} */
+            return ({ importPath, resolveDir }) => {
+              return (
+                absolutePathToMatch === path.resolve(resolveDir, importPath)
+              );
+            };
+          };
+
+          /**
+           * @param {import('cheerio').CheerioAPI} $
+           * */
+          const getProcessedAssets = ($) => {
+            return $('link[rel="manifest"][href]').filter((i, el) => {
+              const srcAttr = getBlobAssetSrcAttr(el);
+              if (!srcAttr) {
+                throw new Error(`${el.name} doesn't have src attribute`);
+              }
+
+              const $el = $(el);
+
+              if (el.name === "link") {
+                const rel = $el.attr("rel");
+
+                return !!$el.attr("href") && rel === "manifest";
+              }
+
+              return false;
+            });
+          };
+
           // original `import from ".html"` loads `html-plugin-stub`
           // the stub is a generated JS with assets imports
           build.onResolve({ filter: /\.html$/ }, async (args) => {
@@ -117,9 +154,10 @@ async function build() {
           build.onLoad(
             { filter: /.*/, namespace: "html-plugin-blob" },
             async (args) => {
-              /** @type {{assets: {importPath: string; resolvePath: string}[]}} */
+              /** @type {{assets: {importPath: string; resolvePath: string; resolveDir: string}[]}} */
               const { assets } = args.pluginData;
               const file = await fs.readFile(args.path);
+              const dirname = path.dirname(args.path);
               const $ = cheerio.load(file);
 
               getBlobAssets($).each((i, el) => {
@@ -131,9 +169,30 @@ async function build() {
                 const $el = $(el);
 
                 const originalHref = $el.attr(srcAttr);
+                if (!originalHref) {
+                  return;
+                }
 
                 const matchingAsset = assets.find(
-                  ({ importPath }) => importPath === originalHref,
+                  getResolvedAssetPathMatcher(dirname, originalHref),
+                );
+
+                if (matchingAsset) {
+                  $el.attr(srcAttr, matchingAsset.resolvePath);
+                }
+              });
+
+              getProcessedAssets($).each((i, el) => {
+                const srcAttr = "href";
+                const $el = $(el);
+
+                const originalHref = $el.attr(srcAttr);
+                if (!originalHref) {
+                  return;
+                }
+
+                const matchingAsset = assets.find(
+                  getResolvedAssetPathMatcher(dirname, originalHref),
                 );
 
                 if (matchingAsset) {
@@ -144,7 +203,7 @@ async function build() {
               return {
                 contents: $.html(),
                 loader: "file",
-                watchFiles: assets.map(({ importPath }) => importPath),
+                watchFiles: assets.map(({ resolvePath }) => resolvePath),
               };
             },
           );
@@ -154,6 +213,10 @@ async function build() {
             async (args) => {
               const file = await fs.readFile(args.path);
               const $ = cheerio.load(file);
+
+              const manifests = $('link[rel="manifest"][href]')
+                .map((i, el) => $(el).attr("href"))
+                .toArray();
 
               const images = getBlobAssets($)
                 .map((i, el) => {
@@ -166,18 +229,23 @@ async function build() {
                 })
                 .toArray();
 
-              /** @type {{importPath: string; resolvePath: string}[]} */
+              /** @type {{ importPath: string; resolveDir: string; resolvePath: string }[]} */
               const assets = [];
               const warnings = [];
-              for (const image of images) {
-                if (assets.some(({ importPath }) => importPath === image)) {
-                  continue;
+              /** @type {(importPath: string, options: { resolveDir: string }) => Promise<void | { errors: import('esbuild').Message[] }>} */
+              const collectBlob = async (importPath, { resolveDir }) => {
+                if (
+                  assets.some(
+                    getResolvedAssetPathMatcher(resolveDir, importPath),
+                  )
+                ) {
+                  return;
                 }
 
-                const result = await build.resolve(image, {
+                const result = await build.resolve(importPath, {
                   kind: "import-statement",
                   importer: args.path,
-                  resolveDir: path.dirname(args.path),
+                  resolveDir: resolveDir,
                 });
                 if (result.errors.length > 0) {
                   return { errors: result.errors };
@@ -210,7 +278,95 @@ async function build() {
                 );
 
                 assets.push({
-                  importPath: image,
+                  importPath,
+                  resolveDir,
+                  resolvePath: path.join(
+                    initialOptions.publicPath ?? "/",
+                    resolvePath,
+                  ),
+                });
+              };
+
+              const dirname = path.dirname(args.path);
+
+              for (const image of images) {
+                const result = await collectBlob(image, {
+                  resolveDir: dirname,
+                });
+
+                if (result && "errors" in result && result.errors.length > 0) {
+                  return { errors: result.errors };
+                }
+              }
+
+              for (const manifest of manifests) {
+                if (
+                  assets.some(getResolvedAssetPathMatcher(dirname, manifest))
+                ) {
+                  continue;
+                }
+
+                const result = await build.resolve(manifest, {
+                  kind: "import-statement",
+                  importer: args.path,
+                  resolveDir: dirname,
+                });
+                if (result.errors.length > 0) {
+                  return { errors: result.errors };
+                }
+
+                const resolveDir = path.dirname(result.path);
+
+                if (result.warnings.length > 0) {
+                  warnings.push(...result.warnings);
+                }
+
+                const assetContents = JSON.parse(
+                  (await fs.readFile(result.path)).toString(),
+                );
+                /** @type {{ icons: { src: string }[] }} */
+                const { icons } = assetContents;
+
+                for (const icon of icons) {
+                  const iconResult = await collectBlob(icon.src, {
+                    resolveDir,
+                  });
+
+                  if (
+                    iconResult &&
+                    "errors" in iconResult &&
+                    iconResult.errors.length > 0
+                  ) {
+                    return { errors: iconResult.errors };
+                  }
+                }
+
+                const updatedManifest = JSON.stringify({
+                  ...assetContents,
+                  icons: icons.map((icon) => ({
+                    ...icon,
+                    src:
+                      assets.find(
+                        getResolvedAssetPathMatcher(resolveDir, icon.src),
+                      )?.resolvePath ?? icon.src,
+                  })),
+                });
+
+                // single webmanifest per site
+                const resolvePath = "app.webmanifest";
+
+                await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
+                  recursive: true,
+                });
+
+                await fs.writeFile(
+                  path.join(outdir, resolvePath),
+                  updatedManifest,
+                );
+
+                assets.push({
+                  importPath: manifest,
+                  resolveDir: dirname,
                   resolvePath: path.join(
                     initialOptions.publicPath ?? "/",
                     resolvePath,
