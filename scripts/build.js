@@ -1,3 +1,4 @@
+// @ts-check
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -32,8 +33,20 @@ async function build() {
         name: "html-plugin",
         setup(build) {
           const { initialOptions } = build;
+          const { assetNames, outdir } = initialOptions;
 
-          const getImageAssetSrcAttr = (el) => {
+          if (!assetNames) {
+            throw new Error(`assetNames is not defined`);
+          }
+
+          if (!outdir) {
+            throw new Error(`outdir is not defined`);
+          }
+
+          /**
+           * @param {import('domhandler').Element} el
+           * */
+          const getBlobAssetSrcAttr = (el) => {
             if (el.name === "link") {
               return "href";
             }
@@ -47,9 +60,12 @@ async function build() {
             }
           };
 
-          const getImageAssets = ($) => {
+          /**
+           * @param {import('cheerio').CheerioAPI} $
+           * */
+          const getBlobAssets = ($) => {
             return $("link, source, img").filter((i, el) => {
-              const srcAttr = getImageAssetSrcAttr(el);
+              const srcAttr = getBlobAssetSrcAttr(el);
               if (!srcAttr) {
                 throw new Error(`${el.name} doesn't have src attribute`);
               }
@@ -62,7 +78,7 @@ async function build() {
                 return (
                   (rel === "apple-touch-icon" ||
                     (rel == "preload" && $el.attr("as") === "font") ||
-                    rel.split(" ").includes("icon")) &&
+                    !!rel?.split(" ").includes("icon")) &&
                   !!$el.attr(srcAttr)
                 );
               }
@@ -101,12 +117,13 @@ async function build() {
           build.onLoad(
             { filter: /.*/, namespace: "html-plugin-blob" },
             async (args) => {
+              /** @type {{assets: {importPath: string; resolvePath: string}[]}} */
               const { assets } = args.pluginData;
               const file = await fs.readFile(args.path);
               const $ = cheerio.load(file);
 
-              getImageAssets($).each((i, el) => {
-                const srcAttr = getImageAssetSrcAttr(el);
+              getBlobAssets($).each((i, el) => {
+                const srcAttr = getBlobAssetSrcAttr(el);
                 if (!srcAttr) {
                   throw new Error(`${el.name} doesn't have src attribute`);
                 }
@@ -138,9 +155,9 @@ async function build() {
               const file = await fs.readFile(args.path);
               const $ = cheerio.load(file);
 
-              const images = getImageAssets($)
+              const images = getBlobAssets($)
                 .map((i, el) => {
-                  const srcAttr = getImageAssetSrcAttr(el);
+                  const srcAttr = getBlobAssetSrcAttr(el);
                   if (!srcAttr) {
                     throw new Error(`${el.name} doesn't have src attribute`);
                   }
@@ -149,6 +166,7 @@ async function build() {
                 })
                 .toArray();
 
+              /** @type {{importPath: string; resolvePath: string}[]} */
               const assets = [];
               const warnings = [];
               for (const image of images) {
@@ -178,24 +196,23 @@ async function build() {
                 hash.write(assetContents);
                 hash.end();
                 const resolvePath =
-                  initialOptions.assetNames
+                  assetNames
                     .replace("[name]", name)
                     .replace("[hash]", hash.read().slice(0, 8)) + extname;
 
-                await fs.mkdir(
-                  path.dirname(path.join(initialOptions.outdir, resolvePath)),
-                  { recursive: true },
-                );
+                await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
+                  recursive: true,
+                });
 
                 await fs.writeFile(
-                  path.join(initialOptions.outdir, resolvePath),
+                  path.join(outdir, resolvePath),
                   assetContents,
                 );
 
                 assets.push({
                   importPath: image,
                   resolvePath: path.join(
-                    initialOptions.publicPath,
+                    initialOptions.publicPath ?? "/",
                     resolvePath,
                   ),
                 });
