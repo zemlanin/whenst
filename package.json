@@ -35,6 +35,9 @@
     "preact/jsx-dev-runtime": "preact/jsx-runtime",
     "fuse.js/basic": "fuse.js/dist/fuse.basic"
   },
+  "imports": {
+    "#dist/*": "./dist/*"
+  },
   "scripts": {
     "test": "tap --disable-coverage",
     "build": "npm run build:client && npm run build:server",
@@ -85,6 +88,8 @@
     "@types/node": "^22.10.2",
     "@types/sortablejs": "^1.15.8",
     "@typescript-eslint/parser": "^8.46.0",
+    "cheerio": "^1.1.2",
+    "esbuild": "^0.25.11",
     "eslint": "^9.37.0",
     "eslint-plugin-react": "^7.37.5",
     "fuse.js": "^7.1.0",

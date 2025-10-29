@@ -1,3 +1,5 @@
+import "../src/parcel.d.ts";
+
 import path from "node:path";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
@@ -14,9 +16,17 @@ import {
   apiSyncWorldClockPatch,
 } from "./api/sync/world-clock.js";
 
+import "./dist.d.ts";
+
+import homeHtml from "#dist/client/.pages/home/index.js";
+import linkHtml from "#dist/client/.pages/link/index.js";
+import settingsHtml from "#dist/client/.pages/settings/index.js";
+import aboutHtml from "#dist/client/.pages/about/index.js";
+
 const fastify = Fastify({
   logger: true,
   trustProxy: true,
+  ignoreTrailingSlash: true,
 });
 
 // redirect to the main domain
@@ -60,6 +70,14 @@ fastify.register((childContext, _, done) => {
     // `parcel` doesn't compress while `watch`ing
     preCompressed: !!process.env.WHENST_SERVE_PRECOMPRESSED,
     cacheControl: false,
+    index: [homeHtml],
+    allowedPath(pathName, _root, _request) {
+      if (pathName.startsWith("/.") && !pathName.startsWith("/.well-known/")) {
+        return false;
+      }
+
+      return true;
+    },
     // can be overwritten with `sendFile(..., { cacheControl: true, maxAge: ms })`
     setHeaders(res, filepath, _stat) {
       if (res.getHeader("cache-control")) {
@@ -93,19 +111,32 @@ fastify.register((childContext, _, done) => {
         });
     }
 
-    if (
-      request.url.startsWith("/.well-known/") ||
-      request.url.startsWith("/static/")
-    ) {
+    if (request.url.startsWith("/.") || request.url.startsWith("/static/")) {
       return reply.code(404).send();
     }
 
     return reply
-      .code(200)
-      .type("text/html")
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("home/index.html");
+      .sendFile(homeHtml);
   });
+
+  childContext.get("/link", (_request, reply) =>
+    reply
+      .header("cache-control", `public, max-age=${5 * 60}`)
+      .sendFile(linkHtml),
+  );
+
+  childContext.get("/settings", (_request, reply) =>
+    reply
+      .header("cache-control", `public, max-age=${5 * 60}`)
+      .sendFile(settingsHtml),
+  );
+
+  childContext.get("/about", (_request, reply) =>
+    reply
+      .header("cache-control", `public, max-age=${5 * 60}`)
+      .sendFile(aboutHtml),
+  );
 
   done();
 });

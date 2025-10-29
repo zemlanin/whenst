@@ -3,7 +3,10 @@
     "module": "node16",
     "noEmit": true,
     "target": "es2023",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "#/dist/*": ["./dist/*"]
+    }
   },
   "include": ["**/*"],
   "types": ["node"]
