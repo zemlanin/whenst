@@ -18,11 +18,6 @@ import {
 
 import "./dist.d.ts";
 
-import homeHtml from "#dist/client/.pages/home/index.js";
-import linkHtml from "#dist/client/.pages/link/index.js";
-import settingsHtml from "#dist/client/.pages/settings/index.js";
-import aboutHtml from "#dist/client/.pages/about/index.js";
-
 const fastify = Fastify({
   logger: true,
   trustProxy: true,
@@ -71,7 +66,7 @@ fastify.register((childContext, _, done) => {
     // TODO: precompress with `scripts/build`
     preCompressed: !!process.env.WHENST_SERVE_PRECOMPRESSED,
     cacheControl: false,
-    index: [homeHtml],
+    index: ["home/index.html"],
     allowedPath(pathName, _root, _request) {
       if (pathName.startsWith("/.") && !pathName.startsWith("/.well-known/")) {
         return false;
@@ -118,25 +113,25 @@ fastify.register((childContext, _, done) => {
 
     return reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile(homeHtml);
+      .sendFile("home/index.html");
   });
 
   childContext.get("/link", (_request, reply) =>
     reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile(linkHtml),
+      .sendFile("link/index.html"),
   );
 
   childContext.get("/settings", (_request, reply) =>
     reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile(settingsHtml),
+      .sendFile("settings/index.html"),
   );
 
   childContext.get("/about", (_request, reply) =>
     reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile(aboutHtml),
+      .sendFile("about/index.html"),
   );
 
   done();

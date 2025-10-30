@@ -2,550 +2,305 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
 
+const HTML_ENTRYPOINTS = [
+  "src/pages/about/index.html",
+  "src/pages/home/index.html",
+  "src/pages/link/index.html",
+  "src/pages/settings/index.html",
+];
+
 await build();
 
 async function build() {
-  await esbuild.build({
-    entryPoints: [
-      "src/pages/about/index.html",
-      "src/pages/home/index.html",
-      "src/pages/link/index.html",
-      "src/pages/settings/index.html",
-    ],
-    outbase: "src/pages",
-    outdir: "dist/client",
-    assetNames: "static/[name]-[hash]",
-    chunkNames: "static/[name]-[hash]",
-    entryNames: ".pages/[dir]/[name]",
-    publicPath: "/",
-    minify: true, // TODO: minify html
-    bundle: true,
-    metafile: true,
-    format: "esm",
-    platform: "browser",
-    plugins: [
-      {
-        name: "html-plugin",
-        setup(build) {
-          const { initialOptions } = build;
-          const { assetNames, outdir } = initialOptions;
+  /** @type {Set<string>} */
+  const codeEntrypoints = new Set();
+  /** @type {Record<string, string>} */
+  const outAssets = {};
 
-          if (!assetNames) {
-            throw new Error(`assetNames is not defined`);
+  for (const htmlFilepath of HTML_ENTRYPOINTS) {
+    const htmlDirname = path.dirname(htmlFilepath);
+    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
+    const $ = cheerio.load(htmlContents);
+
+    $(
+      'script[type="module"][src], link[rel="stylesheet"][type="text/css"][href]',
+    )
+      .map((i, el) => {
+        if (el.name === "script") {
+          const src = el.attribs.src;
+          if (src && !src.startsWith("http:") && !src.startsWith("https:")) {
+            return path.resolve(htmlDirname, el.attribs.src);
           }
 
-          if (!outdir) {
-            throw new Error(`outdir is not defined`);
+          return null;
+        }
+
+        if (el.name === "link") {
+          const href = el.attribs.href;
+          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
+            return path.resolve(htmlDirname, el.attribs.href);
           }
 
-          /**
-           * @param {import('domhandler').Element} el
-           * */
-          const getBlobAssetSrcAttr = (el) => {
-            if (el.name === "link") {
-              return "href";
-            }
+          return null;
+        }
+      })
+      .filter((i, p) => !!p)
+      .each((i, p) => {
+        if (!p) {
+          return;
+        }
+        codeEntrypoints.add(p);
+      });
+  }
 
-            if (el.name === "img") {
-              return "src";
-            }
+  /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
+  const outEntrypoints = {};
+  for (const entrypoint of codeEntrypoints) {
+    const entryNames = (() => {
+      const indexMatch = entrypoint.match(
+        /src\/pages\/([^/]+\/index)\.(js|ts|tsx|css)$/,
+      );
 
-            if (el.name === "source") {
-              return "srcset";
-            }
+      if (indexMatch) {
+        return `${indexMatch[1]}-[hash]`;
+      }
 
-            if (el.name === "script") {
-              return "src";
-            }
-          };
+      return "static/[name]-[hash]";
+    })();
 
-          /**
-           * @param {import('cheerio').CheerioAPI} $
-           * */
-          const getBlobAssets = ($) => {
-            return $("link, source, img").filter((i, el) => {
-              const srcAttr = getBlobAssetSrcAttr(el);
-              if (!srcAttr) {
-                throw new Error(`${el.name} doesn't have src attribute`);
-              }
+    const result = await buildClient({
+      entrypoint,
+      entryNames,
+      outdir: "dist/client",
+      publicPath: "/",
+    });
 
-              const $el = $(el);
+    if (!result) {
+      throw new Error("compilation error");
+    }
 
-              if (el.name === "link") {
-                const rel = $el.attr("rel");
+    outEntrypoints[entrypoint] = {
+      main: result.path,
+      css: result.cssBundle,
+    };
 
-                return (
-                  (rel === "apple-touch-icon" ||
-                    (rel == "preload" && $el.attr("as") === "font") ||
-                    !!rel?.split(" ").includes("icon")) &&
-                  !!$el.attr(srcAttr)
-                );
-              }
+    Object.assign(outAssets, result.assets);
+  }
 
-              if (el.name === "img") {
-                return !!$el.attr(srcAttr);
-              }
+  for (const htmlFilepath of HTML_ENTRYPOINTS) {
+    const htmlDirname = path.dirname(htmlFilepath);
+    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
+    const $ = cheerio.load(htmlContents);
 
-              if (el.name === "source") {
-                return !!$el.attr(srcAttr);
-              }
+    const assetEntrypoints = new Set();
+    $("link[href], img[src], source[srcset]")
+      .map((i, el) => {
+        if (el.name === "link") {
+          const rel = el.attribs.rel;
+          const as = el.attribs.as;
 
-              return false;
-            });
-          };
+          /** @type {string | undefined} */
+          let href = undefined;
+          if (
+            rel === "apple-touch-icon" ||
+            rel === "icon" ||
+            rel.includes("icon ") ||
+            rel.includes(" icon") ||
+            (rel === "preload" && as === "font")
+          ) {
+            href = el.attribs.href;
+          }
 
-          /**
-           * @param {string} dirToMatch
-           * @param {string} pathToMatch
-           * */
-          const getResolvedAssetPathMatcher = (dirToMatch, pathToMatch) => {
-            const absolutePathToMatch = path.resolve(dirToMatch, pathToMatch);
+          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
+            return path.resolve(htmlDirname, href);
+          }
 
-            /** @type {(asset: {importPath: string; resolveDir: string}) => boolean} */
-            return ({ importPath, resolveDir }) => {
-              return (
-                absolutePathToMatch === path.resolve(resolveDir, importPath)
-              );
-            };
-          };
+          return undefined;
+        }
 
-          /**
-           * @param {import('cheerio').CheerioAPI} $
-           * */
-          const getProcessedAssets = ($) => {
-            return $(
-              'link[rel="manifest"][href], script[type="module"][src], link[rel="stylesheet"][type="text/css"]',
-            ).filter((i, el) => {
-              const srcAttr = getBlobAssetSrcAttr(el);
-              if (!srcAttr) {
-                throw new Error(`${el.name} doesn't have src attribute`);
-              }
+        if (el.name === "img") {
+          const src = el.attribs.src;
+          if (src && !src.startsWith("http:") && !src.startsWith("https:")) {
+            return path.resolve(htmlDirname, src);
+          }
+        }
 
-              const $el = $(el);
+        if (el.name === "source") {
+          const srcset = el.attribs.srcset;
+          if (
+            srcset &&
+            !srcset.startsWith("http:") &&
+            !srcset.startsWith("https:")
+          ) {
+            return path.resolve(htmlDirname, srcset);
+          }
+        }
 
-              if (el.name === "link") {
-                return !!$el.attr("href");
-              }
+        return undefined;
+      })
+      .filter((i, p) => !!p)
+      .each((i, p) => {
+        if (!p) {
+          return;
+        }
+        assetEntrypoints.add(p);
+      });
 
-              if (el.name === "script") {
-                const src = $el.attr("src");
+    const manifestEntrypoints = new Set(
+      $('link[rel="manifest"][href]')
+        .map((i, el) => {
+          const href = el.attribs.href;
+          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
+            return path.resolve(htmlDirname, href);
+          }
+        })
+        .filter((i, p) => !!p)
+        .toArray(),
+    );
 
-                return (
-                  !!src && !src.startsWith("http:") && !src.startsWith("https:")
-                );
-              }
+    for (const entrypoint of manifestEntrypoints) {
+      if (outAssets[entrypoint]) {
+        continue;
+      }
 
-              return false;
-            });
-          };
+      const manifestDirname = path.dirname(entrypoint);
 
-          // original `import from ".html"` loads `html-plugin-stub`
-          // the stub is a generated JS with assets imports
-          build.onResolve({ filter: /\.html$/ }, async (args) => {
-            if (args.namespace === "html-plugin-stub") {
-              return {
-                path: args.path,
-                namespace: "html-plugin-blob",
-                pluginData: args.pluginData,
-              };
-            }
+      const manifestContents = JSON.parse(
+        (await fs.readFile(entrypoint)).toString(),
+      );
+      for (const icon of manifestContents.icons) {
+        assetEntrypoints.add(path.resolve(manifestDirname, icon.src));
+      }
+    }
 
-            return {
-              path: path.isAbsolute(args.path)
-                ? args.path
-                : path.join(args.resolveDir, args.path),
-              namespace: "html-plugin-stub",
-            };
-          });
+    for (const entrypoint of assetEntrypoints) {
+      if (outAssets[entrypoint]) {
+        continue;
+      }
 
-          build.onLoad(
-            { filter: /.*/, namespace: "html-plugin-blob" },
-            async (args) => {
-              /** @type {{ assets: {importPath: string; resolvePath: string; resolveDir: string}[], additionalCss: {href: string}[]}} */
-              const { assets, additionalCss } = args.pluginData;
-              const file = await fs.readFile(args.path);
-              const dirname = path.dirname(args.path);
-              const $ = cheerio.load(file);
+      outAssets[entrypoint] = await buildAsset({
+        entrypoint,
+        outdir: "dist/client",
+        assetNames: "static/[name]-[hash]",
+      });
+    }
 
-              getBlobAssets($).each((i, el) => {
-                const srcAttr = getBlobAssetSrcAttr(el);
-                if (!srcAttr) {
-                  throw new Error(`${el.name} doesn't have src attribute`);
-                }
+    for (const entrypoint of manifestEntrypoints) {
+      if (outAssets[entrypoint]) {
+        continue;
+      }
 
-                const $el = $(el);
+      outAssets[entrypoint] = await buildManifest({
+        entrypoint,
+        outdir: "dist/client",
+        outAssets,
+      });
+    }
+  }
 
-                const originalHref = $el.attr(srcAttr);
-                if (
-                  !originalHref ||
-                  originalHref.startsWith("http:") ||
-                  originalHref.startsWith("https:")
-                ) {
-                  return;
-                }
+  for (const htmlFilepath of HTML_ENTRYPOINTS) {
+    const htmlDirname = path.dirname(htmlFilepath);
+    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
+    const $ = cheerio.load(htmlContents);
 
-                const matchingAsset = assets.find(
-                  getResolvedAssetPathMatcher(dirname, originalHref),
-                );
-
-                if (matchingAsset) {
-                  $el.attr(srcAttr, matchingAsset.resolvePath);
-                }
-              });
-
-              getProcessedAssets($).each((i, el) => {
-                const srcAttr = getBlobAssetSrcAttr(el);
-                if (!srcAttr) {
-                  throw new Error(`${el.name} doesn't have src attribute`);
-                }
-
-                const $el = $(el);
-
-                const originalHref = $el.attr(srcAttr);
-                if (!originalHref) {
-                  return;
-                }
-
-                const matchingAsset = assets.find(
-                  getResolvedAssetPathMatcher(dirname, originalHref),
-                );
-
-                if (matchingAsset) {
-                  $el.attr(srcAttr, matchingAsset.resolvePath);
-                }
-              });
-
-              for (const { href } of additionalCss) {
-                $("head").append(
-                  `<link rel="stylesheet" type="text/css" href=${href}>`,
-                );
-              }
-
-              return {
-                contents: $.html(),
-                loader: "file",
-                watchFiles: assets.map(({ resolvePath }) => resolvePath),
-              };
-            },
+    $("script[src], link[href], img[src], source[srcset]")
+      .filter((i, el) => {
+        if (el.name === "script") {
+          const src = el.attribs.src;
+          return !!(
+            src &&
+            !src.startsWith("http:") &&
+            !src.startsWith("https:")
           );
+        }
 
-          build.onLoad(
-            { filter: /.*/, namespace: "html-plugin-stub" },
-            async (args) => {
-              const file = await fs.readFile(args.path);
-              const $ = cheerio.load(file);
-
-              const manifests = $('link[rel="manifest"][href]')
-                .map((i, el) => $(el).attr("href"))
-                .toArray();
-
-              const scripts = $('script[type="module"][src]')
-                .map((i, el) => $(el).attr("src"))
-                .filter(
-                  (i, src) =>
-                    !src.startsWith("http:") && !src.startsWith("https:"),
-                )
-                .toArray();
-
-              const stylesheets = $(
-                'link[rel="stylesheet"][type="text/css"][href]',
-              )
-                .map((i, el) => $(el).attr("href"))
-                .filter(
-                  (i, src) =>
-                    !src.startsWith("http:") && !src.startsWith("https:"),
-                )
-                .toArray();
-
-              const images = getBlobAssets($)
-                .map((i, el) => {
-                  const srcAttr = getBlobAssetSrcAttr(el);
-                  if (!srcAttr) {
-                    throw new Error(`${el.name} doesn't have src attribute`);
-                  }
-
-                  return $(el).attr(srcAttr);
-                })
-                .toArray();
-
-              /** @type {{ importPath: string; resolveDir: string; resolvePath: string }[]} */
-              const assets = [];
-              /** @type {{href: string}[]} */
-              const additionalCss = [];
-              const warnings = [];
-              /** @type {(importPath: string, options: { resolveDir: string }) => Promise<void | { errors: import('esbuild').Message[] }>} */
-              const collectBlob = async (importPath, { resolveDir }) => {
-                if (
-                  assets.some(
-                    getResolvedAssetPathMatcher(resolveDir, importPath),
-                  )
-                ) {
-                  return;
-                }
-
-                const result = await build.resolve(importPath, {
-                  kind: "import-statement",
-                  importer: args.path,
-                  resolveDir: resolveDir,
-                });
-                if (result.errors.length > 0) {
-                  return { errors: result.errors };
-                }
-
-                if (result.warnings.length > 0) {
-                  warnings.push(...result.warnings);
-                }
-
-                const assetContents = await fs.readFile(result.path);
-
-                const extname = path.extname(result.path);
-                const name = path.basename(result.path, extname);
-                const hash = crypto.createHash("sha256");
-                hash.setEncoding("base64url");
-                hash.write(assetContents);
-                hash.end();
-                const resolvePath =
-                  assetNames
-                    .replace("[name]", name)
-                    .replace("[hash]", hash.read().slice(0, 8)) + extname;
-
-                await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
-                  recursive: true,
-                });
-
-                await fs.writeFile(
-                  path.join(outdir, resolvePath),
-                  assetContents,
-                );
-
-                assets.push({
-                  importPath,
-                  resolveDir,
-                  resolvePath: path.join(
-                    initialOptions.publicPath ?? "/",
-                    resolvePath,
-                  ),
-                });
-              };
-
-              const dirname = path.dirname(args.path);
-
-              for (const image of images) {
-                const result = await collectBlob(image, {
-                  resolveDir: dirname,
-                });
-
-                if (result && "errors" in result && result.errors.length > 0) {
-                  return { errors: result.errors };
-                }
-              }
-
-              for (const manifest of manifests) {
-                if (
-                  assets.some(getResolvedAssetPathMatcher(dirname, manifest))
-                ) {
-                  continue;
-                }
-
-                const result = await build.resolve(manifest, {
-                  kind: "import-statement",
-                  importer: args.path,
-                  resolveDir: dirname,
-                });
-                if (result.errors.length > 0) {
-                  return { errors: result.errors };
-                }
-
-                const resolveDir = path.dirname(result.path);
-
-                if (result.warnings.length > 0) {
-                  warnings.push(...result.warnings);
-                }
-
-                const assetContents = JSON.parse(
-                  (await fs.readFile(result.path)).toString(),
-                );
-                /** @type {{ icons: { src: string }[] }} */
-                const { icons } = assetContents;
-
-                for (const icon of icons) {
-                  const iconResult = await collectBlob(icon.src, {
-                    resolveDir,
-                  });
-
-                  if (
-                    iconResult &&
-                    "errors" in iconResult &&
-                    iconResult.errors.length > 0
-                  ) {
-                    return { errors: iconResult.errors };
-                  }
-                }
-
-                const updatedManifest = JSON.stringify({
-                  ...assetContents,
-                  icons: icons.map((icon) => ({
-                    ...icon,
-                    src:
-                      assets.find(
-                        getResolvedAssetPathMatcher(resolveDir, icon.src),
-                      )?.resolvePath ?? icon.src,
-                  })),
-                });
-
-                // single webmanifest per site
-                const resolvePath = "app.webmanifest";
-
-                await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
-                  recursive: true,
-                });
-
-                await fs.writeFile(
-                  path.join(outdir, resolvePath),
-                  updatedManifest,
-                );
-
-                assets.push({
-                  importPath: manifest,
-                  resolveDir: dirname,
-                  resolvePath: path.join(
-                    initialOptions.publicPath ?? "/",
-                    resolvePath,
-                  ),
-                });
-              }
-
-              for (const script of scripts) {
-                if (assets.some(getResolvedAssetPathMatcher(dirname, script))) {
-                  continue;
-                }
-
-                const result = await build.resolve(script, {
-                  kind: "import-statement",
-                  importer: args.path,
-                  resolveDir: dirname,
-                });
-                if (result.errors.length > 0) {
-                  return { errors: result.errors };
-                }
-
-                if (result.warnings.length > 0) {
-                  warnings.push(...result.warnings);
-                }
-
-                const scriptResult = await buildClient({
-                  entrypoint: result.path,
-                  outdir,
-                  publicPath: initialOptions.publicPath ?? "/",
-                });
-
-                if (scriptResult.errors.length > 0) {
-                  return { errors: scriptResult.errors };
-                }
-
-                if (scriptResult.warnings.length > 0) {
-                  warnings.push(...scriptResult.warnings);
-                }
-
-                if (!scriptResult.path) {
-                  throw new Error(
-                    `buildClient returned undefined path but no errors`,
-                  );
-                }
-
-                assets.push({
-                  importPath: script,
-                  resolveDir: dirname,
-                  resolvePath: path.join(
-                    initialOptions.publicPath ?? "/",
-                    scriptResult.path,
-                  ),
-                });
-
-                if (scriptResult.cssBundle) {
-                  additionalCss.push({ href: scriptResult.cssBundle });
-                }
-              }
-
-              for (const stylesheet of stylesheets) {
-                if (
-                  assets.some(getResolvedAssetPathMatcher(dirname, stylesheet))
-                ) {
-                  continue;
-                }
-
-                const result = await build.resolve(stylesheet, {
-                  kind: "import-statement",
-                  importer: args.path,
-                  resolveDir: dirname,
-                });
-                if (result.errors.length > 0) {
-                  return { errors: result.errors };
-                }
-
-                if (result.warnings.length > 0) {
-                  warnings.push(...result.warnings);
-                }
-
-                const stylesheetResult = await buildClient({
-                  entrypoint: result.path,
-                  outdir,
-                  publicPath: initialOptions.publicPath ?? "/",
-                });
-
-                if (stylesheetResult.errors.length > 0) {
-                  return { errors: stylesheetResult.errors };
-                }
-
-                if (stylesheetResult.warnings.length > 0) {
-                  warnings.push(...stylesheetResult.warnings);
-                }
-
-                if (!stylesheetResult.path) {
-                  throw new Error(
-                    `buildClient returned undefined path but no errors`,
-                  );
-                }
-
-                assets.push({
-                  importPath: stylesheet,
-                  resolveDir: dirname,
-                  resolvePath: path.join(
-                    initialOptions.publicPath ?? "/",
-                    stylesheetResult.path,
-                  ),
-                });
-              }
-
-              return {
-                contents: `
-                import file from ${JSON.stringify(args.path)};
-                export default file;
-              `,
-                watchFiles: assets.map(({ importPath }) => importPath),
-                resolveDir: ".", // TODO
-                warnings,
-                pluginData: {
-                  assets,
-                  additionalCss,
-                },
-              };
-            },
+        if (el.name === "link") {
+          const href = el.attribs.href;
+          return !!(
+            href &&
+            !href.startsWith("http:") &&
+            !href.startsWith("https:")
           );
-        },
-      },
-    ],
-    loader: {
-      ".png": "file",
-      ".woff": "file",
-      ".woff2": "file",
-      // service-worker .js — compiled separately, referenced by a hardcoded path
-    },
-  });
+        }
+
+        if (el.name === "img") {
+          const src = el.attribs.src;
+          return !!(
+            src &&
+            !src.startsWith("http:") &&
+            !src.startsWith("https:")
+          );
+        }
+
+        if (el.name === "source") {
+          const srcset = el.attribs.srcset;
+          return !!(
+            srcset &&
+            !srcset.startsWith("http:") &&
+            !srcset.startsWith("https:")
+          );
+        }
+
+        return false;
+      })
+      .each((i, el) => {
+        const $el = $(el);
+
+        if (el.name === "script") {
+          const src = path.resolve(htmlDirname, el.attribs.src);
+          $el.attr("src", outEntrypoints[src].main);
+
+          if (outEntrypoints[src].css) {
+            $("head").append(
+              `<link rel="stylesheet" type="text/css" href=${JSON.stringify(outEntrypoints[src].css)}>`,
+            );
+          }
+        }
+
+        if (el.name === "link") {
+          const href = path.resolve(htmlDirname, el.attribs.href);
+          $el.attr("href", outEntrypoints[href]?.main ?? outAssets[href]);
+        }
+
+        if (el.name === "img") {
+          const src = path.resolve(htmlDirname, el.attribs.src);
+          $el.attr("src", outAssets[src]);
+        }
+
+        if (el.name === "source") {
+          const srcset = path.resolve(htmlDirname, el.attribs.srcset);
+          $el.attr("srcset", outAssets[srcset]);
+        }
+      });
+
+    await fs.writeFile(
+      path.join("dist/client", htmlFilepath.replace("src/pages/", "")),
+      $.html(),
+    );
+  }
+
+  /*
+      - extract list of js and css entrypoints from html files
+      - esbuild.build js and css entrypoints, enable metafile
+      - replace js/css entrypoints in html with built artifacts
+
+      - extract list of blob paths (images, fonts, etc.) from webmanifest
+      - for each blob path
+        - if blob is already present in metafile, use that
+        - if not, copy the file to `path.join(outdir, 'static')` and use that copy
+      - save webmanifest with all blob paths replaced to `outdir`
+
+      - extract list of blob paths (images, fonts, etc.) from html files
+      - for each blob path
+        - if blob is already present in metafile, use that
+        - if not, copy the file to `path.join(outdir, 'static')` and use that copy
+      - save html files with all js/css/blob paths replaced to `outdir`
+    */
 
   // TODO service-worker
 
@@ -568,17 +323,18 @@ async function build() {
 /**
  * @param {object} options
  * @param {string} options.entrypoint
+ * @param {string} options.entryNames
  * @param {string} options.outdir
  * @param {string} options.publicPath
  * */
-async function buildClient({ entrypoint, outdir, publicPath }) {
-  const { errors, warnings, metafile } = await esbuild.build({
+async function buildClient({ entrypoint, entryNames, outdir, publicPath }) {
+  const { errors, metafile } = await esbuild.build({
     entryPoints: [entrypoint],
     bundle: true,
     platform: "browser",
     format: "esm",
     outdir,
-    entryNames: "static/[name]-[hash]",
+    entryNames,
     assetNames: "static/[name]-[hash]",
     metafile: true,
     minify: true,
@@ -591,13 +347,13 @@ async function buildClient({ entrypoint, outdir, publicPath }) {
   });
 
   if (errors.length > 0) {
-    return { errors, warnings };
+    return null;
   }
 
-  const [outputPath, mainEntry] =
-    Object.entries(metafile.outputs).find(
-      ([_o, { entryPoint }]) => entryPoint,
-    ) ?? [];
+  let outputPath;
+  let cssBundle;
+  /** @type {Record<string, string>} */
+  const assets = {};
 
   /** @param {string | undefined} outputPath */
   const getPublicPath = (outputPath) => {
@@ -608,11 +364,103 @@ async function buildClient({ entrypoint, outdir, publicPath }) {
     return path.join(publicPath, path.relative(outdir, outputPath));
   };
 
+  for (const [out, metadata] of Object.entries(metafile.outputs)) {
+    if (metadata.entryPoint) {
+      outputPath = out;
+      cssBundle = metadata.cssBundle;
+      continue;
+    }
+
+    const inputs = metadata.inputs;
+    const inputsKeys = Object.keys(inputs);
+    if (inputsKeys.length === 1) {
+      const i = path.resolve(process.cwd(), inputsKeys[0]);
+      const o = getPublicPath(out);
+
+      if (i && o) {
+        assets[i] = o;
+      }
+    }
+  }
+
   return {
-    errors: [],
-    warnings,
     path: getPublicPath(outputPath),
-    cssBundle: getPublicPath(mainEntry?.cssBundle),
-    // TODO: return assets to avoid serving the same file twice
+    cssBundle: getPublicPath(cssBundle),
+    assets,
   };
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.entrypoint
+ * @param {string} options.assetNames
+ * @param {string} options.outdir
+ * */
+async function buildAsset({ entrypoint, assetNames, outdir }) {
+  const assetContents = await fs.readFile(entrypoint);
+
+  const extname = path.extname(entrypoint);
+  const name = path.basename(entrypoint, extname);
+  const hash = crypto.createHash("sha256");
+  hash.setEncoding("base64url");
+  hash.write(assetContents);
+  hash.end();
+  const resolvePath =
+    assetNames
+      .replace("[name]", name)
+      .replace("[hash]", hash.read().slice(0, 8)) + extname;
+
+  await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
+    recursive: true,
+  });
+
+  await fs.writeFile(path.join(outdir, resolvePath), assetContents);
+
+  return "/" + resolvePath;
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.entrypoint
+ * @param {string} options.outdir
+ * @param {Record<string, string>} options.outAssets
+ * */
+async function buildManifest({ entrypoint, outdir, outAssets }) {
+  const manifestDirname = path.dirname(entrypoint);
+  const resolvePath = path.basename(entrypoint);
+  const manifestContents = JSON.parse(
+    (await fs.readFile(entrypoint)).toString(),
+  );
+
+  await fs.mkdir(path.dirname(path.join(outdir, resolvePath)), {
+    recursive: true,
+  });
+
+  await fs.writeFile(
+    path.join(outdir, resolvePath),
+    JSON.stringify({
+      ...manifestContents,
+      icons: manifestContents.icons.map((icon) => {
+        if (
+          !icon.src ||
+          icon.src.startsWith("http:") ||
+          icon.src.startsWith("https:")
+        ) {
+          return icon;
+        }
+
+        const assetSrc = outAssets[path.resolve(manifestDirname, icon.src)];
+        if (!assetSrc) {
+          return icon;
+        }
+
+        return {
+          ...icon,
+          src: assetSrc,
+        };
+      }),
+    }),
+  );
+
+  return "/" + resolvePath;
 }
