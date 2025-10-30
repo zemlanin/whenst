@@ -61,21 +61,13 @@ async function build() {
   /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
   const outEntrypoints = {};
   for (const entrypoint of codeEntrypoints) {
-    const entryNames = (() => {
-      const indexMatch = entrypoint.match(
-        /src\/pages\/([^/]+\/index)\.(js|ts|tsx|css)$/,
-      );
-
-      if (indexMatch) {
-        return `${indexMatch[1]}-[hash]`;
-      }
-
-      return "static/[name]-[hash]";
-    })();
+    // TODO: proper "is entrypoint in src/pages" check
+    const isPage = entrypoint.includes("/src/pages/");
 
     const result = await buildClient({
       entrypoint,
-      entryNames,
+      entryNames: isPage ? "[dir]/[name]-[hash]" : "static/[name]-[hash]",
+      outbase: isPage ? "src/pages" : undefined,
       outdir: "dist/client",
       publicPath: "/",
     });
@@ -324,16 +316,24 @@ async function build() {
  * @param {object} options
  * @param {string} options.entrypoint
  * @param {string} options.entryNames
+ * @param {string | undefined} options.outbase
  * @param {string} options.outdir
  * @param {string} options.publicPath
  * */
-async function buildClient({ entrypoint, entryNames, outdir, publicPath }) {
+async function buildClient({
+  entrypoint,
+  entryNames,
+  outbase,
+  outdir,
+  publicPath,
+}) {
   const { errors, metafile } = await esbuild.build({
     entryPoints: [entrypoint],
     bundle: true,
     platform: "browser",
     format: "esm",
     outdir,
+    outbase,
     entryNames,
     assetNames: "static/[name]-[hash]",
     metafile: true,
