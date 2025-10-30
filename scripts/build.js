@@ -276,24 +276,6 @@ async function build() {
     );
   }
 
-  /*
-      - extract list of js and css entrypoints from html files
-      - esbuild.build js and css entrypoints, enable metafile
-      - replace js/css entrypoints in html with built artifacts
-
-      - extract list of blob paths (images, fonts, etc.) from webmanifest
-      - for each blob path
-        - if blob is already present in metafile, use that
-        - if not, copy the file to `path.join(outdir, 'static')` and use that copy
-      - save webmanifest with all blob paths replaced to `outdir`
-
-      - extract list of blob paths (images, fonts, etc.) from html files
-      - for each blob path
-        - if blob is already present in metafile, use that
-        - if not, copy the file to `path.join(outdir, 'static')` and use that copy
-      - save html files with all js/css/blob paths replaced to `outdir`
-    */
-
   // TODO service-worker
 
   await esbuild.build({
