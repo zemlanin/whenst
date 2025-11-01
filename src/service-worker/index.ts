@@ -112,7 +112,9 @@ async function getResponseWithIndexFallback(request: Request) {
 async function fetchAndCache(request: Request) {
   let response;
   try {
-    response = await fetch(request);
+    response = await fetch(request, {
+      signal: timeoutAbortSignal(2000),
+    });
   } catch (err) {
     const r = await getResponseWithIndexFallback(request);
 
@@ -128,6 +130,16 @@ async function fetchAndCache(request: Request) {
     cache.put(request, response.clone());
   }
   return response;
+}
+
+function timeoutAbortSignal(milliseconds: number) {
+  if ("timeout" in AbortSignal && AbortSignal.timeout) {
+    return AbortSignal.timeout(milliseconds);
+  }
+
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), milliseconds);
+  return controller.signal;
 }
 
 const favoriteColor = "#" + Math.random().toString(16).slice(2, 8);
