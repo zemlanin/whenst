@@ -7,11 +7,12 @@ import process from "node:process";
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
 
+const PAGES_BASE = "src/pages/";
 const HTML_ENTRYPOINTS = [
-  "src/pages/about/index.html",
-  "src/pages/home/index.html",
-  "src/pages/link/index.html",
-  "src/pages/settings/index.html",
+  path.join(PAGES_BASE, "about/index.html"),
+  path.join(PAGES_BASE, "home/index.html"),
+  path.join(PAGES_BASE, "link/index.html"),
+  path.join(PAGES_BASE, "settings/index.html"),
 ];
 
 await build();
@@ -61,15 +62,14 @@ async function build() {
   /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
   const outEntrypoints = {};
   for (const entrypoint of codeEntrypoints) {
-    const pagesOutbase = "src/pages";
-    const isPage = entrypoint.startsWith(
-      path.join(process.cwd(), pagesOutbase),
-    );
+    const isPage = entrypoint.startsWith(path.join(process.cwd(), PAGES_BASE));
 
     const result = await buildClient({
       entrypoint,
-      entryNames: isPage ? "[dir]/[name]-[hash]" : "static/[name]-[hash]",
-      outbase: isPage ? pagesOutbase : undefined,
+      entryNames: isPage
+        ? "static/[dir]/[name]-[hash]"
+        : "static/[name]-[hash]",
+      outbase: isPage ? PAGES_BASE : undefined,
       outdir: "dist/client",
       publicPath: "/",
     });
@@ -272,10 +272,13 @@ async function build() {
         }
       });
 
-    await fs.writeFile(
-      path.join("dist/client", htmlFilepath.replace("src/pages/", "")),
-      $.html(),
+    const outfile = path.join(
+      "dist/client",
+      htmlFilepath.replace(PAGES_BASE, ""),
     );
+
+    await fs.mkdir(path.dirname(outfile), { recursive: true });
+    await fs.writeFile(outfile, $.html());
   }
 
   // TODO service-worker
