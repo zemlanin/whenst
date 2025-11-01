@@ -61,13 +61,15 @@ async function build() {
   /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
   const outEntrypoints = {};
   for (const entrypoint of codeEntrypoints) {
-    // TODO: proper "is entrypoint in src/pages" check
-    const isPage = entrypoint.includes("/src/pages/");
+    const pagesOutbase = "src/pages";
+    const isPage = entrypoint.startsWith(
+      path.join(process.cwd(), pagesOutbase),
+    );
 
     const result = await buildClient({
       entrypoint,
       entryNames: isPage ? "[dir]/[name]-[hash]" : "static/[name]-[hash]",
-      outbase: isPage ? "src/pages" : undefined,
+      outbase: isPage ? pagesOutbase : undefined,
       outdir: "dist/client",
       publicPath: "/",
     });
