@@ -68,10 +68,12 @@ self.addEventListener("fetch", (e) => {
       }
 
       const cachedResponse = await getResponseWithIndexFallback(e.request);
-      if (cachedResponse) {
-        fetchAndCache(e.request);
+      if (pathname.startsWith("/static/")) {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
 
-        return cachedResponse;
+        return fetchAndCache(e.request);
       }
 
       if (pathname.startsWith("/api/timezones-index")) {
