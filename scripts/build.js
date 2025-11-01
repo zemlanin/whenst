@@ -272,9 +272,9 @@ async function build() {
           $el.attr("src", outEntrypoints[src].main);
 
           if (outEntrypoints[src].css) {
-            $("head").append(
+            $(
               `<link rel="stylesheet" type="text/css" href=${JSON.stringify(outEntrypoints[src].css)}>`,
-            );
+            ).insertBefore(`head link[rel="stylesheet"][href]`);
           }
         }
 

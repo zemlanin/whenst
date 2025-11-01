@@ -24,6 +24,7 @@ export function TimezoneHeading({
 }) {
   const inputSizerText = useSignal(defaultValue + WIDE_CHARACTER);
   const inputSizerWidth = useSignal<number | undefined>(undefined);
+  const inputSizerHeight = useSignal<number | undefined>(undefined);
   const inputSizerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export function TimezoneHeading({
       requestAnimationFrame(() => {
         for (const entry of entries) {
           inputSizerWidth.value = Math.ceil(entry.borderBoxSize[0].inlineSize);
+          inputSizerHeight.value = Math.ceil(entry.borderBoxSize[0].blockSize);
         }
       });
     });
@@ -127,7 +129,7 @@ export function TimezoneHeading({
 
           if (!event.target.value.trim()) {
             event.target.value = defaultValue;
-            inputSizerText.value = defaultValue;
+            inputSizerText.value = defaultValue + WIDE_CHARACTER;
           }
         }}
         onFocus={() => {
@@ -156,6 +158,7 @@ export function TimezoneHeading({
           id={commandsId}
           optionsSignal={optionsSignal}
           inputSizerWidth={inputSizerWidth}
+          inputSizerHeight={inputSizerHeight}
         />
       </Show>
     </form>
@@ -166,16 +169,22 @@ function OptionsList({
   id,
   optionsSignal,
   inputSizerWidth,
+  inputSizerHeight,
 }: {
   id: string;
   optionsSignal: Signal<PaletteOption[]>;
   inputSizerWidth: Signal<number | undefined>;
+  inputSizerHeight: Signal<number | undefined>;
 }) {
-  const optionsStyle = useComputed(() =>
-    inputSizerWidth.value === undefined
-      ? ``
-      : `max-width: min(${inputSizerWidth.value}px, 100%)`,
-  );
+  const optionsStyle = useComputed(() => {
+    const top = `top: ${inputSizerHeight.value ? `${inputSizerHeight.value}px` : "auto"}`;
+    const maxWidth =
+      inputSizerWidth.value === undefined
+        ? ""
+        : `max-width: min(${inputSizerWidth.value}px, 100%)`;
+
+    return [top, maxWidth].join(";");
+  });
 
   return (
     <ul id={id} role="listbox" style={optionsStyle}>

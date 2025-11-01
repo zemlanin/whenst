@@ -3,6 +3,12 @@
   align-self: flex-start;
   max-width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+:global(#title-bar) .main {
+  align-items: center;
 }
 
 :global(#title-bar) .main input {
@@ -36,6 +42,7 @@
   padding-inline: calc(0.25rem + 1px);
   box-sizing: border-box;
   word-break: nowrap;
+  padding-block-end: 0.5rem;
 }
 
 .main input {
