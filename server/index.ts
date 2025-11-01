@@ -54,15 +54,12 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-await fastify.register(import("@fastify/compress"));
-
 fastify.register((childContext, _, done) => {
   childContext.register(fastifyStatic, {
     root:
       process.env.WHENST_STATIC_ROOT ??
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
-    preCompressed: true,
     cacheControl: false,
     index: ["home/index.html"],
     allowedPath(pathName, _root, _request) {
