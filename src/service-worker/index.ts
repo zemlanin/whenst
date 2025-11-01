@@ -1,6 +1,6 @@
 declare const self: ServiceWorkerGlobalScope;
 
-import { manifest, version } from "service-worker-manifest";
+import { manifest, version, pages } from "service-worker-manifest";
 import { generateIntlTimezones } from "../../shared/generateIntlTimezones.js";
 import { authCheck, sync } from "./db.js";
 
@@ -125,7 +125,9 @@ async function fetchAndCache(request: Request) {
     throw err;
   }
 
-  if (response.ok) {
+  const isHtml = response.headers.get("content-type") === "text/html";
+  const knownHtmlPage = isHtml && pages.includes(new URL(request.url).pathname);
+  if (response.ok && (!isHtml || knownHtmlPage)) {
     const cache = await caches.open(version);
     cache.put(request, response.clone());
   }

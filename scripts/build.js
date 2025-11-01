@@ -466,11 +466,17 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
  * @param {Record<string, string>} options.outAssets
  * */
 async function buildServiceWorker({ outdir, outEntrypoints, outAssets }) {
-  const manifest = [
-    ...new Set([
-      ...HTML_ENTRYPOINTS.map((p) =>
+  const pages = [
+    ...new Set(
+      HTML_ENTRYPOINTS.map((p) =>
         path.dirname(path.relative(PAGES_BASE, p)),
       ).map((p) => (p === "home" ? "/" : `/${p}`)),
+    ),
+  ];
+
+  const manifest = [
+    ...new Set([
+      ...pages,
       ...Object.values(outEntrypoints)
         .flatMap(({ main, cssBundle }) => [main ?? "", cssBundle ?? ""])
         .filter(Boolean),
@@ -512,7 +518,7 @@ async function buildServiceWorker({ outdir, outEntrypoints, outAssets }) {
             { filter: /.*/, namespace: "service-worker-manifest-stub" },
             async () => {
               return {
-                contents: JSON.stringify({ manifest, version }),
+                contents: JSON.stringify({ manifest, version, pages }),
                 loader: "json",
               };
             },

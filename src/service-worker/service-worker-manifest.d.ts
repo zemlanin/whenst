@@ -6,6 +6,7 @@
 declare module "service-worker-manifest" {
   /** Hash/version of the service worker */
   export const version: string;
-  /** List of URLs service worker should cache */
+  /** Lists of URLs service worker should cache */
   export const manifest: string[];
+  export const pages: string[];
 }
