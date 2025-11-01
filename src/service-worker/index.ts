@@ -125,7 +125,7 @@ async function fetchAndCache(request: Request) {
     throw err;
   }
 
-  const isHtml = response.headers.get("content-type") === "text/html";
+  const isHtml = !!response.headers.get("content-type")?.match(/^text\/html;?/);
   const knownHtmlPage = isHtml && pages.includes(new URL(request.url).pathname);
   if (response.ok && (!isHtml || knownHtmlPage)) {
     const cache = await caches.open(version);
