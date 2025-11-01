@@ -44,8 +44,6 @@ RUN apt-get update -y && apt-get install -y \
 
 ENV WHENST_SPATIALITE_MOD="/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
 
-ENV WHENST_SERVE_PRECOMPRESSED="true"
-
 # LiteFS setup
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 

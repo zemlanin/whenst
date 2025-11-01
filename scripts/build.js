@@ -1,8 +1,12 @@
 // @ts-check
 import crypto from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { createBrotliCompress, createGzip } from "node:zlib";
 
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
@@ -62,6 +66,7 @@ async function build() {
   /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
   const outEntrypoints = {};
   for (const entrypoint of codeEntrypoints) {
+    const outdir = "dist/client";
     const isPage = entrypoint.startsWith(path.join(process.cwd(), PAGES_BASE));
 
     const result = await buildClient({
@@ -70,7 +75,7 @@ async function build() {
         ? "static/[dir]/[name]-[hash]"
         : "static/[name]-[hash]",
       outbase: isPage ? PAGES_BASE : undefined,
-      outdir: "dist/client",
+      outdir,
       publicPath: "/",
     });
 
@@ -82,6 +87,16 @@ async function build() {
       main: result.path,
       css: result.cssBundle,
     };
+
+    if (result.path) {
+      await justCompress(path.join(outdir, result.path.replace(/^\//, "")));
+    }
+
+    if (result.cssBundle) {
+      await justCompress(
+        path.join(outdir, result.cssBundle.replace(/^\//, "")),
+      );
+    }
 
     Object.assign(outAssets, result.assets);
   }
@@ -278,7 +293,7 @@ async function build() {
     );
 
     await fs.mkdir(path.dirname(outfile), { recursive: true });
-    await fs.writeFile(outfile, $.html());
+    await writeWithCompress(outfile, $.html());
   }
 
   // TODO service-worker
@@ -401,7 +416,16 @@ async function buildAsset({ entrypoint, assetNames, outdir }) {
     recursive: true,
   });
 
-  await fs.writeFile(path.join(outdir, resolvePath), assetContents);
+  if (
+    extname === ".js" ||
+    extname === ".ts" ||
+    extname === ".tsx" ||
+    extname === ".css"
+  ) {
+    await writeWithCompress(path.join(outdir, resolvePath), assetContents);
+  } else {
+    await fs.writeFile(path.join(outdir, resolvePath), assetContents);
+  }
 
   return "/" + resolvePath;
 }
@@ -423,7 +447,7 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
     recursive: true,
   });
 
-  await fs.writeFile(
+  await writeWithCompress(
     path.join(outdir, resolvePath),
     JSON.stringify({
       ...manifestContents,
@@ -450,4 +474,42 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
   );
 
   return "/" + resolvePath;
+}
+
+/**
+ * @param {string} outpath
+ * @param {string | Buffer} content
+ * */
+async function writeWithCompress(outpath, content) {
+  await fs.writeFile(outpath, content);
+
+  const gzip = createGzip();
+  await pipeline(
+    Readable.from(content),
+    gzip,
+    createWriteStream(outpath + ".gz"),
+  );
+
+  const brotli = createBrotliCompress();
+  await pipeline(
+    Readable.from(content),
+    brotli,
+    createWriteStream(outpath + ".br"),
+  );
+}
+
+async function justCompress(filepath) {
+  const gzip = createGzip();
+  await pipeline(
+    createReadStream(filepath),
+    gzip,
+    createWriteStream(filepath + ".gz"),
+  );
+
+  const brotli = createBrotliCompress();
+  await pipeline(
+    createReadStream(filepath),
+    brotli,
+    createWriteStream(filepath + ".br"),
+  );
 }

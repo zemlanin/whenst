@@ -62,9 +62,7 @@ fastify.register((childContext, _, done) => {
       process.env.WHENST_STATIC_ROOT ??
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
-    // `parcel` doesn't compress while `watch`ing
-    // TODO: precompress with `scripts/build`
-    preCompressed: !!process.env.WHENST_SERVE_PRECOMPRESSED,
+    preCompressed: true,
     cacheControl: false,
     index: ["home/index.html"],
     allowedPath(pathName, _root, _request) {
