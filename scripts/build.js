@@ -10,6 +10,7 @@ import { createBrotliCompress, createGzip } from "node:zlib";
 
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
+import mime from "mime";
 
 const PAGES_BASE = "src/pages/";
 const HTML_ENTRYPOINTS = [
@@ -416,12 +417,8 @@ async function buildAsset({ entrypoint, assetNames, outdir }) {
     recursive: true,
   });
 
-  if (
-    extname === ".js" ||
-    extname === ".ts" ||
-    extname === ".tsx" ||
-    extname === ".css"
-  ) {
+  const mimeType = mime.getType(resolvePath);
+  if (mimeType?.startsWith("text/") || mimeType === "application/json") {
     await writeWithCompress(path.join(outdir, resolvePath), assetContents);
   } else {
     await fs.writeFile(path.join(outdir, resolvePath), assetContents);
