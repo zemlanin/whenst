@@ -1,26 +1,23 @@
 declare const self: ServiceWorkerGlobalScope;
 
-// import { manifest, version } from "@parcel/service-worker";
-const manifest = "TODO";
-const version = "TODO";
+import { manifest, version } from "service-worker-manifest";
 import { generateIntlTimezones } from "../../shared/generateIntlTimezones.js";
 import { authCheck, sync } from "./db.js";
 
 async function install() {
   const cache = await caches.open(version);
-  const uniqManifest = [...new Set(manifest)];
+  await cache.addAll(manifest);
 
-  await cache.addAll([
-    ...uniqManifest.filter(
-      (p) => !p.endsWith(".html") && !p.endsWith(".webmanifest"),
-    ),
-    ...uniqManifest
-      .filter((p) => p.endsWith(".html"))
-      .map((p) => p.replace(/\/index\.html$/, "").replace(/^\/home$/, "/")),
-  ]);
-
+  const absoluteManifestSet = new Set(
+    manifest.map((p) => new URL(p, self.location.toString()).toString()),
+  );
   const keys = await cache.keys();
   for (const request of keys) {
+    if (!absoluteManifestSet.has(request.url)) {
+      cache.delete(request);
+      continue;
+    }
+
     const response = await caches.match(request);
     if (response && !response.ok) {
       cache.delete(request);
@@ -56,15 +53,6 @@ self.addEventListener("fetch", (e) => {
   if (
     pathname.startsWith("/api/") &&
     !pathname.startsWith("/api/timezones-index")
-  ) {
-    return;
-  }
-
-  if (
-    navigator.onLine &&
-    (pathname.endsWith(".woff") ||
-      pathname.endsWith(".woff2") ||
-      pathname.endsWith(".webmanifest"))
   ) {
     return;
   }

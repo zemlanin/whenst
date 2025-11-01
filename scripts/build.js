@@ -213,6 +213,12 @@ async function build() {
     }
   }
 
+  await buildServiceWorker({
+    outdir: "dist/client",
+    outEntrypoints,
+    outAssets,
+  });
+
   for (const htmlFilepath of HTML_ENTRYPOINTS) {
     const htmlDirname = path.dirname(htmlFilepath);
     const htmlContents = (await fs.readFile(htmlFilepath)).toString();
@@ -474,6 +480,72 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
 }
 
 /**
+ * @param {object} options
+ * @param {string} options.outdir
+ * @param {Record<string, {main?: string, cssBundle?: string}>} options.outEntrypoints
+ * @param {Record<string, string>} options.outAssets
+ * */
+async function buildServiceWorker({ outdir, outEntrypoints, outAssets }) {
+  const manifest = [
+    ...new Set([
+      ...HTML_ENTRYPOINTS.map((p) =>
+        path.dirname(path.relative(PAGES_BASE, p)),
+      ).map((p) => (p === "home" ? "/" : `/${p}`)),
+      ...Object.values(outEntrypoints)
+        .flatMap(({ main, cssBundle }) => [main ?? "", cssBundle ?? ""])
+        .filter(Boolean),
+      ...Object.values(outAssets),
+    ]),
+  ];
+
+  /*
+    `version` is used as Cache Storage API's key
+
+    previously, `version` was a hash of service-worker, but when migrating
+    from parcel to esbuild it seemed wasteful to discard the whole cache
+    on every client-code change
+  */
+  let version = "2025-11-01";
+
+  await esbuild.build({
+    entryPoints: ["src/service-worker/index.ts"],
+    outdir,
+    entryNames: "service-worker",
+    bundle: true,
+    minify: true,
+    platform: "neutral",
+    plugins: [
+      {
+        name: "service-worker-manifest",
+        setup(build) {
+          build.onResolve(
+            { filter: /^service-worker-manifest$/ },
+            async (args) => {
+              return {
+                path: args.path,
+                namespace: "service-worker-manifest-stub",
+              };
+            },
+          );
+
+          build.onLoad(
+            { filter: /.*/, namespace: "service-worker-manifest-stub" },
+            async () => {
+              return {
+                contents: JSON.stringify({ manifest, version }),
+                loader: "json",
+              };
+            },
+          );
+        },
+      },
+    ],
+  });
+
+  await justCompress("dist/client/service-worker.js");
+}
+
+/**
  * @param {string} outpath
  * @param {string | Buffer} content
  * */
@@ -495,6 +567,9 @@ async function writeWithCompress(outpath, content) {
   );
 }
 
+/**
+ * @param {string} filepath
+ * */
 async function justCompress(filepath) {
   const gzip = createGzip();
   await pipeline(
