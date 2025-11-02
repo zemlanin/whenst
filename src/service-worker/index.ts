@@ -8,11 +8,19 @@ async function install() {
   const cache = await caches.open(version);
   await cache.addAll(manifest);
 
+  self.skipWaiting();
+}
+self.addEventListener("install", (e) => e.waitUntil(install()));
+
+async function activate() {
+  const keys = await caches.keys();
+  await Promise.all(keys.map((key) => key !== version && caches.delete(key)));
+
   const absoluteManifestSet = new Set(
     manifest.map((p) => new URL(p, self.location.toString()).toString()),
   );
-  const keys = await cache.keys();
-  for (const request of keys) {
+  const cache = await caches.open(version);
+  for (const request of await cache.keys()) {
     if (!absoluteManifestSet.has(request.url)) {
       cache.delete(request);
       continue;
@@ -23,14 +31,6 @@ async function install() {
       cache.delete(request);
     }
   }
-
-  self.skipWaiting();
-}
-self.addEventListener("install", (e) => e.waitUntil(install()));
-
-async function activate() {
-  const keys = await caches.keys();
-  await Promise.all(keys.map((key) => key !== version && caches.delete(key)));
 }
 self.addEventListener("activate", (e) => e.waitUntil(activate()));
 self.addEventListener("message", (e) => {
