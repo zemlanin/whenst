@@ -5,10 +5,27 @@ import { generateIntlTimezones } from "../../shared/generateIntlTimezones.js";
 import { authCheck, sync } from "./db.js";
 
 async function install() {
+  self.skipWaiting();
+
+  if (navigator.connection?.saveData === true) {
+    const handleConnectionChange = () => {
+      if (navigator.connection?.saveData === false) {
+        navigator.connection.removeEventListener(
+          "change",
+          handleConnectionChange,
+        );
+        void cacheEverything();
+      }
+    };
+    navigator.connection.addEventListener("change", handleConnectionChange);
+    return;
+  }
+
+  await precacheEverything();
+}
+async function precacheEverything() {
   const cache = await caches.open(version);
   await cache.addAll(manifest);
-
-  self.skipWaiting();
 }
 self.addEventListener("install", (e) => e.waitUntil(install()));
 
