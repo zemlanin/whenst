@@ -44,7 +44,6 @@ export async function apiSqrapInitPost(
 }
 
 function generateCode() {
-  // cloudflare workers don't like `randomstring`
   const charset = "ABCDEFGHJKLMNPRSTVWXYZ23456789";
 
   return [...crypto.getRandomValues(new Uint8Array(6))]

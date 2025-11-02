@@ -36,7 +36,7 @@ async function sqrapStatus(request: FastifyRequest, reply: FastifyReply) {
       { account_id: string }
     >(`SELECT account_id FROM sqrap_states WHERE code = @code AND session_id = session_id AND created_at > date('now', '-5 minutes')`)
     .get({
-      code,
+      code: code.toUpperCase().trim(),
       session_id: sessionId,
     });
 

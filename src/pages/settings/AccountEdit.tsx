@@ -182,7 +182,9 @@ function SignedOutSignInTab() {
                   statusError.value = null;
                 });
 
-                sqrapStatus({ code: code.peek() }).then(
+                sqrapStatus({
+                  code: code.peek().toUpperCase().replace(/\s+/, ""),
+                }).then(
                   async ({ done }) => {
                     if (done) {
                       await sendAuthCheckMessage();
