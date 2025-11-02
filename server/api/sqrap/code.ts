@@ -34,7 +34,8 @@ export async function sqrapPost(request: FastifyRequest, reply: FastifyReply) {
 
   reply.header("cache-control", "private, no-cache");
 
-  const { code } = request.body as { code: string };
+  const { code: rawCode } = request.body as { code: string };
+  const code = rawCode.toUpperCase().replace(/\s+/, "");
 
   if (!code || !sessionId || !account) {
     reply.status(401);
