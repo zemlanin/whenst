@@ -70,7 +70,9 @@ function LinkEnterCode() {
             codeSuccess.value = false;
           });
 
-          sqrapCode({ code: form.code.value }).then(
+          sqrapCode({
+            code: form.code.value.toUpperCase().replace(/\s+/, ""),
+          }).then(
             () => {
               form.code.value = "";
 
