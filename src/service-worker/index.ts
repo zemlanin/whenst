@@ -14,7 +14,7 @@ async function install() {
           "change",
           handleConnectionChange,
         );
-        void cacheEverything();
+        void precacheEverything();
       }
     };
     navigator.connection.addEventListener("change", handleConnectionChange);
