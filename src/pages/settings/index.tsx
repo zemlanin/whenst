@@ -1,12 +1,10 @@
-import { useComputed, Signal } from "@preact/signals";
+import { useComputed } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
 
 import Bars from "../../../icons/bars.svg.js";
-import CircleNotch from "../../../icons/circle-notch.svg.js";
-import Check from "../../../icons/check.svg.js";
 
 import {
   deleteWorldClock,
@@ -19,10 +17,6 @@ import "../../keyboard";
 
 import { AddTimezoneForm } from "./add-timezone-form.js";
 import { AccountEdit } from "./AccountEdit.js";
-
-const savingStateSignal = new Signal<{
-  [K in string]?: "initial" | "saving" | "saved";
-}>({});
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
@@ -75,7 +69,6 @@ function TimezonesEdit() {
           return;
         }
 
-        setSavingState(id, "saving");
         sortable.option("disabled", true);
 
         const after =
@@ -89,7 +82,6 @@ function TimezonesEdit() {
               ]?.position;
 
         reorderWorldClock({ id, after: after ?? "0" }).then(() => {
-          setSavingState(id, "saved");
           sortable.option("disabled", false);
         });
       },
@@ -118,21 +110,6 @@ function TimezonesEdit() {
   );
 }
 
-function setSavingState(id: string, state: "initial" | "saving" | "saved") {
-  savingStateSignal.value = {
-    ...savingStateSignal.peek(),
-    [id]: state,
-  };
-
-  if (state === "saved") {
-    setTimeout(() => {
-      if (savingStateSignal.peek()[id] === "saved") {
-        setSavingState(id, "initial");
-      }
-    }, 1000);
-  }
-}
-
 function TimezoneRow({
   id,
   timezone,
@@ -142,38 +119,11 @@ function TimezoneRow({
   timezone: string;
   label: string;
 }) {
-  const className = useComputed(() => {
-    const savingState = savingStateSignal.value[id] ?? "initial";
-
-    return (
-      "timezone-row" +
-      (savingState === "initial"
-        ? ""
-        : savingState === "saving"
-          ? " saving"
-          : savingState === "saved"
-            ? " saved"
-            : "")
-    );
-  });
-
-  const icon = useComputed(() => {
-    const savingState = savingStateSignal.value[id] ?? "initial";
-
-    if (savingState === "saving") {
-      return <CircleNotch height="1em" width="1em" />;
-    }
-
-    if (savingState === "saved") {
-      return <Check height="1em" width="1em" />;
-    }
-
-    return <Bars height="1em" width="1em" />;
-  });
-
   return (
-    <li className={className}>
-      <div className="dnd-handle">{icon}</div>
+    <li className="timezone-row">
+      <div className="dnd-handle">
+        <Bars height="1em" width="1em" />
+      </div>
 
       <TimezoneLabelForm id={id} timezone={timezone} label={label} />
 
@@ -230,11 +180,7 @@ function TimezoneLabelForm({
 
           const label = input.value;
 
-          setSavingState(id, "saving");
-
-          changeWorldClockLabel({ id, label }).then(() => {
-            setSavingState(id, "saved");
-          });
+          changeWorldClockLabel({ id, label });
         }}
       />
       {label && label !== tzLocation ? (
@@ -261,11 +207,8 @@ function deleteFormHandler(event: SubmitEvent) {
   }
 
   const id = idInput.value;
-  setSavingState(id, "saving");
 
-  deleteWorldClock({ id }).then(() => {
-    setSavingState(id, "saved");
-  });
+  deleteWorldClock({ id });
 }
 
 function patchFormHandler(event: SubmitEvent) {
@@ -288,11 +231,7 @@ function patchFormHandler(event: SubmitEvent) {
   const id = idInput.value;
   const label = labelInput.value;
 
-  setSavingState(id, "saving");
-
-  changeWorldClockLabel({ id, label }).then(() => {
-    setSavingState(id, "saved");
-  });
+  changeWorldClockLabel({ id, label });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
