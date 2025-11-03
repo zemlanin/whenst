@@ -11,8 +11,6 @@ type PaletteOption = {
   subtitle?: string;
 };
 
-const WIDE_CHARACTER = "W";
-
 export function TimezoneHeading({
   defaultValue = "",
   className = "",
@@ -22,7 +20,7 @@ export function TimezoneHeading({
   className?: string;
   idPrefix?: string;
 }) {
-  const inputSizerText = useSignal(defaultValue + WIDE_CHARACTER);
+  const inputSizerText = useSignal(defaultValue);
   const inputSizerWidth = useSignal<number | undefined>(undefined);
   const inputSizerHeight = useSignal<number | undefined>(undefined);
   const inputSizerRef = useRef<HTMLDivElement>(null);
@@ -53,11 +51,20 @@ export function TimezoneHeading({
     () => !!optionsSignal.value.length && !collapsedSignal.value,
   );
   const ariaExpanded = useComputed(() => (expanded.value ? "true" : "false"));
-  const inputStyle = useComputed(() =>
-    inputSizerWidth.value === undefined
-      ? `border-color: transparent`
-      : `max-width: min(${inputSizerWidth.value}px, 100%)`,
-  );
+  const inputStyle = useComputed(() => {
+    const maxWidth = inputSizerWidth.value;
+    const collapsed = collapsedSignal.value;
+
+    if (maxWidth === undefined) {
+      return `border-color: transparent`;
+    }
+
+    if (collapsed) {
+      return `max-width: min(${maxWidth}px, 100%)`;
+    }
+
+    return `max-width: 100%`;
+  });
 
   return (
     <form
@@ -113,7 +120,7 @@ export function TimezoneHeading({
             return;
           }
 
-          inputSizerText.value = event.target.value + WIDE_CHARACTER;
+          inputSizerText.value = event.target.value;
           collapsedSignal.value = false;
 
           loadOptions(event.target.value.trim().replace(/\s+/, " ")).then(
@@ -129,7 +136,7 @@ export function TimezoneHeading({
 
           if (!event.target.value.trim()) {
             event.target.value = defaultValue;
-            inputSizerText.value = defaultValue + WIDE_CHARACTER;
+            inputSizerText.value = defaultValue;
           }
         }}
         onFocus={() => {
@@ -157,7 +164,6 @@ export function TimezoneHeading({
         <OptionsList
           id={commandsId}
           optionsSignal={optionsSignal}
-          inputSizerWidth={inputSizerWidth}
           inputSizerHeight={inputSizerHeight}
         />
       </Show>
@@ -168,22 +174,15 @@ export function TimezoneHeading({
 function OptionsList({
   id,
   optionsSignal,
-  inputSizerWidth,
   inputSizerHeight,
 }: {
   id: string;
   optionsSignal: Signal<PaletteOption[]>;
-  inputSizerWidth: Signal<number | undefined>;
   inputSizerHeight: Signal<number | undefined>;
 }) {
   const optionsStyle = useComputed(() => {
-    const top = `top: ${inputSizerHeight.value ? `${inputSizerHeight.value}px` : "auto"}`;
-    const maxWidth =
-      inputSizerWidth.value === undefined
-        ? ""
-        : `max-width: min(${inputSizerWidth.value}px, 100%)`;
-
-    return [top, maxWidth].join(";");
+    const height = inputSizerHeight.value;
+    return `top: ${height ? `${height}px` : "auto"}`;
   });
 
   return (

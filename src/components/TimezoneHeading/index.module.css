@@ -42,7 +42,11 @@
   padding-inline: calc(0.25rem + 1px);
   box-sizing: border-box;
   word-break: nowrap;
-  padding-block-end: 0.5rem;
+  padding-block-end: calc(0.5rem + 2px);
+}
+
+:global(#title-bar) .main .input-sizer {
+  padding-block-end: calc(0.25rem + 2px);
 }
 
 .main input {
@@ -76,10 +80,6 @@
   box-sizing: border-box;
   list-style: none;
   padding: 0;
-  margin-top: -0.25rem;
-}
-
-:global(#title-bar) .main [role="listbox"] {
   margin-top: 0.25rem;
 }
 

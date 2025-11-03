@@ -189,7 +189,8 @@ a:hover {
 }
 
 input {
-  border: var(--separator) 1px solid;
+  border: none;
+  border-bottom: var(--separator) 2px solid;
   background-color: var(--background);
   color: var(--foreground);
   border-radius: 0;
@@ -210,12 +211,17 @@ input::-webkit-datetime-edit-year-field:focus {
 }
 
 :focus-visible,
-/* Safari 17-18 doesn't set `:focus-visible` pseudoclass on datetime inputs */
-input[type="datetime-local"]:focus,
-/* …and doesn't _always_ set it on listbox options */
+/* Safari 17-18 doesn't _always_ set it on listbox options */
 [role="option"]:focus {
   outline: solid 2px var(--primary);
   outline-offset: 0.1em;
+}
+
+input:focus-visible,
+/* Safari 17-18 doesn't set `:focus-visible` pseudoclass on datetime inputs */
+input[type="datetime-local"]:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 input[type="datetime-local"]:focus,
