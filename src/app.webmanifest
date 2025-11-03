@@ -7,37 +7,37 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./images/favicon-white.png",
+      "src": "../images/favicon-white.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "./images/favicon-white-128.png",
+      "src": "../images/favicon-white-128.png",
       "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "./images/favicon-white-192.png",
+      "src": "../images/favicon-white-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./images/favicon-white-120.png",
+      "src": "../images/favicon-white-120.png",
       "sizes": "120x120",
       "type": "image/png"
     },
     {
-      "src": "./images/favicon-white-167.png",
+      "src": "../images/favicon-white-167.png",
       "sizes": "167x167",
       "type": "image/png"
     },
     {
-      "src": "./images/favicon-white-180.png",
+      "src": "../images/favicon-white-180.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "./images/pwa-white-256.png",
+      "src": "../images/pwa-white-256.png",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "maskable"
