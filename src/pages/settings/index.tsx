@@ -168,7 +168,6 @@ function TimezoneLabelForm({
       <input type="hidden" name="id" value={id} />
       <input
         type="text"
-        maxLength={80}
         placeholder="Label"
         value={label || tzLocation}
         className="timezone-label"
@@ -187,7 +186,7 @@ function TimezoneLabelForm({
         }}
       />
       {label && label.trim() !== tzLocation ? (
-        <label htmlFor={labelInputId} className="subtitle">
+        <label htmlFor={labelInputId} className="subtitle" title={tzLocation}>
           {tzLocation}
         </label>
       ) : null}
