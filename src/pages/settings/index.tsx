@@ -1,7 +1,7 @@
 import { useComputed } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 import { render } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useId, useRef } from "preact/hooks";
 import Sortable from "sortablejs";
 
 import Bars from "../../../icons/bars.svg.js";
@@ -148,6 +148,7 @@ function TimezoneLabelForm({
   timezone: string;
   label: string;
 }) {
+  const labelInputId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const tzLocation = (() => {
     try {
@@ -168,10 +169,12 @@ function TimezoneLabelForm({
       <input
         type="text"
         maxLength={80}
-        placeholder={tzLocation}
+        placeholder="Label"
         value={label || tzLocation}
         className="timezone-label"
-        onChange={(event) => {
+        id={labelInputId}
+        name="label"
+        onInput={(event) => {
           const input = event.target as HTMLInputElement | null;
 
           if (!input) {
@@ -183,10 +186,10 @@ function TimezoneLabelForm({
           changeWorldClockLabel({ id, label });
         }}
       />
-      {label && label !== tzLocation ? (
-        <span className="subtitle">
-          {timezone === "Europe/Kiev" ? "Europe/Kyiv" : timezone}
-        </span>
+      {label && label.trim() !== tzLocation ? (
+        <label htmlFor={labelInputId} className="subtitle">
+          {tzLocation}
+        </label>
       ) : null}
     </form>
   );
