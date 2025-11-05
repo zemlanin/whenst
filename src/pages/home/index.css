@@ -648,6 +648,10 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   min-width: 0;
 }
 
+#saved-timezones .timezone-row .timezone-label-wrapper a.timezone-label {
+  align-self: flex-start;
+}
+
 #saved-timezones .timezone-row .timezone-time-wrapper {
   display: flex;
   flex-direction: column;
