@@ -1,4 +1,4 @@
-import { useComputed } from "@preact/signals";
+import { useComputed, useSignal } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
 import { render } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
@@ -158,6 +158,13 @@ function TimezoneLabelForm({
     }
   })();
 
+  const labelInputSignal = useSignal(label || tzLocation);
+  const showSubtitle = useComputed(() => {
+    return (
+      labelInputSignal.value && labelInputSignal.value.trim() !== tzLocation
+    );
+  });
+
   return (
     <form
       action=""
@@ -169,7 +176,8 @@ function TimezoneLabelForm({
       <input
         type="text"
         placeholder="Label"
-        value={label || tzLocation}
+        value={labelInputSignal}
+        maxLength={80}
         className="timezone-label"
         id={labelInputId}
         name="label"
@@ -180,16 +188,26 @@ function TimezoneLabelForm({
             return;
           }
 
+          labelInputSignal.value = input.value;
+        }}
+        onChange={(event) => {
+          const input = event.target as HTMLInputElement | null;
+
+          if (!input) {
+            return;
+          }
+
           const label = input.value;
 
+          labelInputSignal.value = label;
           changeWorldClockLabel({ id, label });
         }}
       />
-      {label && label.trim() !== tzLocation ? (
+      <Show when={showSubtitle}>
         <label htmlFor={labelInputId} className="subtitle" title={tzLocation}>
           {tzLocation}
         </label>
-      ) : null}
+      </Show>
     </form>
   );
 }
