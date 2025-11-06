@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
   <meta charset="utf-8" />
-  <title>Link | when.st</title>
+  <title>{{#if title}}{{ title }} | {{/if}}when.st</title>
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -22,6 +22,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-touch-fullscreen" content="yes" />
   <meta name="apple-mobile-web-app-title" content="when.st" />
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  />
   <link
     rel="preload"
     crossorigin="anonymous"
@@ -50,8 +54,7 @@
     as="font"
     type="font/woff2"
   />
-  <link rel="stylesheet" type="text/css" href="../home/index.css" />
-  <link rel="stylesheet" type="text/css" href="./index.css" />
+  {{> @partial-block }}
   <link
     rel="shortcut icon"
     type="image/png"
@@ -91,38 +94,5 @@
     href="../../../images/favicon-white-180.png"
   />
   <link rel="apple-touch-icon" href="../../../images/favicon-white-180.png" />
+  <link rel="me" href="https://devua.club/@zemlanin" />
 </head>
-<body>
-  <div id="title-bar">
-    <div class="left-half">
-      <a href="/" class="back" title="Back">&larr;</a>
-    </div>
-    <h1>Link</h1>
-
-    <div class="right-half"></div>
-  </div>
-  <div id="layout">
-    <nav>
-      <a href="/" class="logo">
-        <picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="../../../images/logo-black-square.png"
-            width="36"
-            height="36"
-          />
-          <img
-            src="../../../images/logo-white-square.png"
-            width="36"
-            height="36"
-          />
-        </picture>
-      </a>
-      <a href="/about" class="about">About</a>
-    </nav>
-
-    <main></main>
-  </div>
-  <script src="../../register-sw.ts" type="module"></script>
-  <script src="./index.tsx" type="module"></script>
-</body>

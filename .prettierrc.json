@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "files": "**/*.html.hbs",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
+}

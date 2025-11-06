@@ -6,13 +6,14 @@ import process from "node:process";
 
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
+import Handlebars from "handlebars";
 
 const PAGES_BASE = "src/pages/";
-const HTML_ENTRYPOINTS = [
-  path.join(PAGES_BASE, "about/index.html"),
-  path.join(PAGES_BASE, "home/index.html"),
-  path.join(PAGES_BASE, "link/index.html"),
-  path.join(PAGES_BASE, "settings/index.html"),
+const HANDLEBARS_ENTRYPOINTS = [
+  path.join(PAGES_BASE, "about/index.html.hbs"),
+  path.join(PAGES_BASE, "home/index.html.hbs"),
+  path.join(PAGES_BASE, "link/index.html.hbs"),
+  path.join(PAGES_BASE, "settings/index.html.hbs"),
 ];
 
 await build();
@@ -23,11 +24,39 @@ async function build() {
   /** @type {Record<string, string>} */
   const outAssets = {};
 
-  for (const htmlFilepath of HTML_ENTRYPOINTS) {
-    const htmlDirname = path.dirname(htmlFilepath);
-    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
-    const $ = cheerio.load(htmlContents);
+  Handlebars.registerPartial(
+    "head",
+    (
+      await fs.readFile(path.join(PAGES_BASE, "_partials/head.html.hbs"))
+    ).toString(),
+  );
 
+  Handlebars.registerPartial(
+    "nav",
+    (
+      await fs.readFile(path.join(PAGES_BASE, "_partials/nav.html.hbs"))
+    ).toString(),
+  );
+
+  const htmlInputs = await Promise.all([
+    ...HANDLEBARS_ENTRYPOINTS.map(async (handebarsFilepath) => {
+      const htmlDirname = path.dirname(handebarsFilepath);
+      const hbsContents = (await fs.readFile(handebarsFilepath)).toString();
+      const htmlContents = Handlebars.compile(hbsContents, {
+        explicitPartialContext: true,
+      })({});
+      const $ = cheerio.load(htmlContents);
+      const outfile = path.join(
+        "dist/client",
+        handebarsFilepath.replace(PAGES_BASE, "").replace(/\.hbs$/, ""),
+      );
+
+      return { dir: htmlDirname, $, outfile };
+    }),
+  ]);
+
+  // collect JS/CSS entrypoints
+  for (const { dir: htmlDirname, $ } of htmlInputs) {
     $(
       'script[type="module"][src], link[rel="stylesheet"][type="text/css"][href]',
     )
@@ -87,11 +116,8 @@ async function build() {
     Object.assign(outAssets, result.assets);
   }
 
-  for (const htmlFilepath of HTML_ENTRYPOINTS) {
-    const htmlDirname = path.dirname(htmlFilepath);
-    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
-    const $ = cheerio.load(htmlContents);
-
+  // collect assets
+  for (const { dir: htmlDirname, $ } of htmlInputs) {
     const assetEntrypoints = new Set();
     $("link[href], img[src], source[srcset]")
       .map((i, el) => {
@@ -204,11 +230,8 @@ async function build() {
     outAssets,
   });
 
-  for (const htmlFilepath of HTML_ENTRYPOINTS) {
-    const htmlDirname = path.dirname(htmlFilepath);
-    const htmlContents = (await fs.readFile(htmlFilepath)).toString();
-    const $ = cheerio.load(htmlContents);
-
+  // replace entrypoints and assets with built paths
+  for (const { dir: htmlDirname, $, outfile } of htmlInputs) {
     $("script[src], link[href], img[src], source[srcset]")
       .filter((i, el) => {
         if (el.name === "script") {
@@ -279,16 +302,9 @@ async function build() {
         }
       });
 
-    const outfile = path.join(
-      "dist/client",
-      htmlFilepath.replace(PAGES_BASE, ""),
-    );
-
     await fs.mkdir(path.dirname(outfile), { recursive: true });
     await fs.writeFile(outfile, $.html());
   }
-
-  // TODO service-worker
 
   await esbuild.build({
     entryPoints: [
@@ -468,7 +484,7 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
 async function buildServiceWorker({ outdir, outEntrypoints, outAssets }) {
   const pages = [
     ...new Set(
-      HTML_ENTRYPOINTS.map((p) =>
+      HANDLEBARS_ENTRYPOINTS.map((p) =>
         path.dirname(path.relative(PAGES_BASE, p)),
       ).map((p) => (p === "home" ? "/" : `/${p}`)),
     ),
