@@ -6,7 +6,9 @@ import process from "node:process";
 
 import esbuild from "esbuild";
 import * as cheerio from "cheerio";
-import Handlebars from "handlebars";
+import _Handlebars from "handlebars";
+
+const Handlebars = _Handlebars.noConflict();
 
 const PAGES_BASE = "src/pages/";
 const HANDLEBARS_ENTRYPOINTS = [
@@ -23,6 +25,17 @@ async function build() {
   const codeEntrypoints = new Set();
   /** @type {Record<string, string>} */
   const outAssets = {};
+
+  /**
+   * Resolve a relative-from-repo-root path into an absolute one
+   * */
+  Handlebars.registerHelper(
+    "r",
+    /**
+     * @param {string} relative
+     * */
+    (relative) => path.join(process.cwd(), relative),
+  );
 
   Handlebars.registerPartial(
     "head",

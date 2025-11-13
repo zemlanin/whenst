@@ -1,0 +1,1 @@
+- Don't use relative paths in partials as they might differ from paths from partial's caller. Instead, use `{{ r "path/from/repo/root" }}` helper
