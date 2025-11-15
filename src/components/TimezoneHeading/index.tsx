@@ -91,17 +91,24 @@ export function TimezoneHeading({
         }
       }}
       onFocusOut={(event) => {
-        if (!event.relatedTarget) {
-          collapsedSignal.value = true;
-          return;
-        }
+        const currentTarget = event.currentTarget;
+        const relatedTarget = event.relatedTarget;
 
-        if (!(event.relatedTarget instanceof HTMLElement)) {
-          return;
-        }
+        const shouldCollapse =
+          !relatedTarget ||
+          (relatedTarget instanceof HTMLElement &&
+            !currentTarget.contains(relatedTarget));
 
-        if (!event.currentTarget?.contains(event.relatedTarget)) {
+        if (shouldCollapse) {
           collapsedSignal.value = true;
+
+          const timezoneInput =
+            event.currentTarget.elements.namedItem("timezone");
+
+          if (timezoneInput instanceof HTMLInputElement) {
+            timezoneInput.value = defaultValue;
+            inputSizerText.value = defaultValue;
+          }
         }
       }}
     >
@@ -128,16 +135,6 @@ export function TimezoneHeading({
               optionsSignal.value = options;
             },
           );
-        }}
-        onBlur={(event) => {
-          if (!event.target || !(event.target instanceof HTMLInputElement)) {
-            return;
-          }
-
-          if (!event.target.value.trim()) {
-            event.target.value = defaultValue;
-            inputSizerText.value = defaultValue;
-          }
         }}
         onFocus={() => {
           collapsedSignal.value = false;
