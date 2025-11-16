@@ -163,10 +163,9 @@ function HourHand({
   return (
     <path
       d={`
-    M ${viewBoxSize / 2},${viewBoxSize / 2 + 16}
-    L ${viewBoxSize / 2},${128}
-    z
-  `}
+        M ${viewBoxSize / 2},${viewBoxSize / 2 + 16}
+        L ${viewBoxSize / 2},${128}
+      `}
       strokeWidth={24}
       stroke="currentColor"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
@@ -192,10 +191,9 @@ function MinuteHand({
   return (
     <path
       d={`
-    M ${viewBoxSize / 2},${viewBoxSize / 2 + 16}
-    L ${viewBoxSize / 2},${64}
-    z
-  `}
+        M ${viewBoxSize / 2},${viewBoxSize / 2 + 16}
+        L ${viewBoxSize / 2},${64}
+      `}
       strokeWidth={20}
       stroke="currentColor"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
