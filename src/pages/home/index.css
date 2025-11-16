@@ -641,6 +641,8 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   color: var(--deemphasis);
   align-self: flex-end;
   font-style: italic;
+  /* align the line with the typographic baseline */
+  margin-bottom: -0.35em;
 }
 
 #saved-timezones {
