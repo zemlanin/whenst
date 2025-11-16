@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { ReadonlySignal, useComputed } from "@preact/signals";
+import { ReadonlySignal, useComputed, useSignal } from "@preact/signals";
 
 import { clockface } from "./index.module.css";
 
@@ -12,6 +12,18 @@ export function LocationClockface({
   value: ReadonlySignal<Temporal.ZonedDateTime>;
   onChange: (value: Temporal.ZonedDateTime) => void;
 }) {
+  const ongoingTouches = useSignal(
+    new Map<
+      number,
+      {
+        pageX: number;
+        pageY: number;
+        centerPostX: number;
+        centerPostY: number;
+      }
+    >(),
+  );
+
   return (
     <svg
       className={clockface}
@@ -25,6 +37,75 @@ export function LocationClockface({
         e.preventDefault();
         const newValue = value.value.add({ seconds: e.deltaY * 5 });
         onChange(newValue);
+      }}
+      onTouchStart={(e) => {
+        const boundingRect = e.currentTarget.getBoundingClientRect();
+        const centerPostX = boundingRect.left + boundingRect.width / 2;
+        const centerPostY = boundingRect.top + boundingRect.height / 2;
+
+        for (const touch of e.changedTouches) {
+          ongoingTouches.value.set(touch.identifier, {
+            pageX: touch.pageX,
+            pageY: touch.pageY,
+            centerPostX,
+            centerPostY,
+          });
+        }
+      }}
+      onTouchMove={(e) => {
+        e.preventDefault();
+
+        let delta = 0;
+
+        for (const touch of e.changedTouches) {
+          const ongoingTouch = ongoingTouches.value.get(touch.identifier);
+
+          if (!ongoingTouch) {
+            continue;
+          }
+
+          const {
+            pageX: originalX,
+            pageY: originalY,
+            centerPostX,
+            centerPostY,
+          } = ongoingTouch;
+
+          ongoingTouches.value.set(touch.identifier, {
+            pageX: touch.pageX,
+            pageY: touch.pageY,
+            centerPostX,
+            centerPostY,
+          });
+
+          const originalRelX = originalX - centerPostX;
+          const originalRelY = originalY - centerPostY;
+
+          const newRelX = touch.pageX - centerPostX;
+          const newRelY = touch.pageY - centerPostY;
+
+          const originalAngle = Math.atan(originalRelX / originalRelY);
+          const newAngle = Math.atan(newRelX / newRelY);
+
+          delta +=
+            (originalAngle < newAngle ? -1 : +1) *
+            Math.round(
+              Math.sqrt(
+                Math.pow(touch.pageY - originalY, 2) +
+                  Math.pow(touch.pageX - originalX, 2),
+              ),
+            );
+        }
+
+        if (delta) {
+          const newValue = value.value.add({ seconds: delta * 10 });
+          onChange(newValue);
+        }
+      }}
+      onTouchEnd={(e) => {
+        for (const touch of e.changedTouches) {
+          ongoingTouches.value.delete(touch.identifier);
+        }
       }}
     >
       <AMPMComplication value={value} />
