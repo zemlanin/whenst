@@ -2,12 +2,11 @@ import "urlpattern-polyfill";
 import { Temporal, Intl } from "@js-temporal/polyfill";
 
 import { JSX, render } from "preact";
-import { useEffect } from "preact/hooks";
+import { useEffect, useId } from "preact/hooks";
 import {
   useSignal,
   useComputed,
   useSignalEffect,
-  batch,
   effect,
   Signal,
   ReadonlySignal,
@@ -34,6 +33,7 @@ import EarthAsia from "../../../icons/earth-asia.svg.js";
 import EarthEurope from "../../../icons/earth-europe.svg.js";
 import EarthOceania from "../../../icons/earth-oceania.svg.js";
 import Globe from "../../../icons/globe.svg.js";
+import { ActionButton } from "../../components/ActionButton/index.js";
 import { TimezoneHeading } from "../../components/TimezoneHeading/index.js";
 import { TitleBarPortal } from "../../components/TitleBarPortal/index.js";
 
@@ -174,6 +174,7 @@ function ClockRow({
   writeToLocation(dt: Temporal.ZonedDateTime): void;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
+  const formId = "clock-row-" + useId();
 
   const tzName = getLocationFromTimezone(timeZone);
   const tzURL = new URL(getPathnameFromTimezone(timeZone), location.href);
@@ -241,28 +242,42 @@ function ClockRow({
 
   return (
     <div className="clock-row">
-      {secondary ? (
-        <h2>{tzName}</h2>
-      ) : (
-        <TimezoneHeading
-          defaultValue={tzName}
-          className="window-controls-overlay-hidden"
-        />
-      )}
+      <div className="time-and-place">
+        <div className="inputs-section">
+          {secondary ? (
+            <h2>{tzName}</h2>
+          ) : (
+            <TimezoneHeading
+              defaultValue={tzName}
+              className="window-controls-overlay-hidden"
+            />
+          )}
 
-      <form className="clock" onSubmit={(e) => e.preventDefault()}>
-        <input
-          className="local-time"
-          name="t"
-          type="datetime-local"
-          value={timeInTZ}
-          required
-          onChange={onTimeChange}
-          onBlur={onBlur}
-        />
-        {withRelative ? <div className="relative">{relative}</div> : null}
-      </form>
+          <form
+            id={formId}
+            aria-hidden
+            onSubmit={(e) => e.preventDefault()}
+          ></form>
 
+          <div className="clock">
+            <input
+              className="local-time"
+              name="t"
+              type="datetime-local"
+              value={timeInTZ}
+              required
+              onChange={onTimeChange}
+              onBlur={onBlur}
+              form={formId}
+            />
+            {withRelative ? <div className="relative">{relative}</div> : null}
+          </div>
+        </div>
+
+        <div className="clockface-wrapper">
+          <div className="clockface">&nbsp;</div>
+        </div>
+      </div>
       {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}
     </div>
   );
@@ -807,67 +822,6 @@ function formatDTiCal(dt: Temporal.ZonedDateTime) {
   )}${pad2(isoMinute)}${pad2(isoSecond)}`;
 }
 
-function ActionButton({
-  label,
-  labelSuccess,
-  labelFailure,
-  action,
-  primary,
-  "aria-label": ariaLabel,
-  role,
-  tabIndex,
-}: {
-  label: string;
-  labelSuccess: string;
-  labelFailure: string;
-  action?: null | (() => void) | (() => Promise<void>);
-  primary?: boolean;
-  "aria-label"?: string;
-  role?: JSX.HTMLAttributes["role"];
-  tabIndex?: number;
-}) {
-  const labelSignal = useSignal(label);
-  const timeoutIdSignal = useSignal<undefined | ReturnType<typeof setTimeout>>(
-    undefined,
-  );
-
-  const onClick = action
-    ? async () => {
-        clearTimeout(timeoutIdSignal.peek());
-
-        try {
-          await action();
-          batch(() => {
-            labelSignal.value = labelSuccess;
-            timeoutIdSignal.value = setTimeout(() => {
-              labelSignal.value = label;
-            }, 1000);
-          });
-        } catch (_e) {
-          batch(() => {
-            labelSignal.value = labelFailure;
-            timeoutIdSignal.value = setTimeout(() => {
-              labelSignal.value = label;
-            }, 1000);
-          });
-        }
-      }
-    : undefined;
-
-  return (
-    <button
-      disabled={!action}
-      onClick={onClick}
-      className={primary ? "primary" : undefined}
-      aria-label={ariaLabel}
-      role={role}
-      tabIndex={tabIndex}
-    >
-      {labelSignal}
-    </button>
-  );
-}
-
 function UnixRow({
   rootDT,
   writeToLocation,
@@ -918,26 +872,34 @@ function UnixRow({
 
   return (
     <div className="clock-row">
-      <TimezoneHeading
-        defaultValue="Unix Epoch"
-        className="window-controls-overlay-hidden"
-      />
+      <div className="time-and-place">
+        <div className="inputs-section">
+          <TimezoneHeading
+            defaultValue="Unix Epoch"
+            className="window-controls-overlay-hidden"
+          />
 
-      <form className="clock" onSubmit={(e) => e.preventDefault()}>
-        <input
-          className="unix-input"
-          name="t"
-          type="text"
-          maxLength={10}
-          pattern="^[0-9]+$"
-          value={timeInUnix}
-          required
-          onChange={onTimeChange}
-          onInput={onTimeChange}
-          onBlur={onBlur}
-          autoComplete="off"
-        />
-      </form>
+          <form className="clock" onSubmit={(e) => e.preventDefault()}>
+            <input
+              className="unix-input"
+              name="t"
+              type="text"
+              maxLength={10}
+              pattern="^[0-9]+$"
+              value={timeInUnix}
+              required
+              onChange={onTimeChange}
+              onInput={onTimeChange}
+              onBlur={onBlur}
+              autoComplete="off"
+            />
+          </form>
+        </div>
+
+        <div className="clockface-wrapper">
+          <div className="clockface">&nbsp;</div>
+        </div>
+      </div>
 
       <ClockRowActions timestampURL={timestampURL} />
     </div>

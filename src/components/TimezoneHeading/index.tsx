@@ -45,6 +45,7 @@ export function TimezoneHeading({
   }, []);
 
   const commandsId = idPrefix + useId();
+  const formId = idPrefix + useId();
   const collapsedSignal = useSignal(true);
   const optionsSignal = useSignal<PaletteOption[]>([]);
   const expanded = useComputed(
@@ -67,29 +68,8 @@ export function TimezoneHeading({
   });
 
   return (
-    <form
+    <div
       className={`${classes.main} ${className}`}
-      onSubmit={(e) => {
-        e.preventDefault();
-
-        if (
-          e.submitter &&
-          "name" in e.submitter &&
-          e.submitter.name === "expand"
-        ) {
-          collapsedSignal.value = false;
-        }
-
-        const firstOption = optionsSignal.peek()[0];
-        if (firstOption?.url) {
-          collapsedSignal.value = true;
-
-          window.location.href = new URL(
-            firstOption.url,
-            window.location.href,
-          ).toString();
-        }
-      }}
       onFocusOut={(event) => {
         const currentTarget = event.currentTarget;
         const relatedTarget = event.relatedTarget;
@@ -102,8 +82,9 @@ export function TimezoneHeading({
         if (shouldCollapse) {
           collapsedSignal.value = true;
 
-          const timezoneInput =
-            event.currentTarget.elements.namedItem("timezone");
+          const timezoneInput = event.currentTarget
+            .querySelector("form")
+            ?.elements.namedItem("timezone");
 
           if (timezoneInput instanceof HTMLInputElement) {
             timezoneInput.value = defaultValue;
@@ -112,6 +93,31 @@ export function TimezoneHeading({
         }
       }}
     >
+      <form
+        aria-hidden
+        id={formId}
+        onSubmit={(e) => {
+          e.preventDefault();
+
+          if (
+            e.submitter &&
+            "name" in e.submitter &&
+            e.submitter.name === "expand"
+          ) {
+            collapsedSignal.value = false;
+          }
+
+          const firstOption = optionsSignal.peek()[0];
+          if (firstOption?.url) {
+            collapsedSignal.value = true;
+
+            window.location.href = new URL(
+              firstOption.url,
+              window.location.href,
+            ).toString();
+          }
+        }}
+      ></form>
       <div
         className={classes["input-sizer"]}
         ref={inputSizerRef}
@@ -120,6 +126,7 @@ export function TimezoneHeading({
         {inputSizerText}
       </div>
       <input
+        form={formId}
         defaultValue={defaultValue}
         style={inputStyle}
         onInput={(event) => {
@@ -164,7 +171,7 @@ export function TimezoneHeading({
           inputSizerHeight={inputSizerHeight}
         />
       </Show>
-    </form>
+    </div>
   );
 }
 

@@ -295,7 +295,7 @@ nav {
 #title-bar .right-half {
   justify-content: flex-end;
   flex-basis: 80px;
-  flex-shrink: 0;
+  flex-shrink: 4;
   flex-grow: 1;
 }
 
@@ -379,6 +379,32 @@ main {
   margin-bottom: 2em;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clock-row form {
+  display: none;
+}
+
+.clock-row .time-and-place {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.clock-row .time-and-place .inputs-section {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  justify-content: space-between;
+  min-width: 0px;
+}
+
+@media (display-mode: window-controls-overlay) {
+  .clock-row .time-and-place .inputs-section {
+    justify-content: space-around;
+  }
 }
 
 /* clock row followed by another clock row */
@@ -386,28 +412,36 @@ main {
   margin-bottom: 1em;
 }
 
-.clock-row form.clock {
+.clock-row .clock {
   display: flex;
   flex-flow: column;
-  /* min-height: 30vh; */
-  padding: 1rem 0;
   justify-content: center;
-  padding-top: 0;
 }
 
-.clock-row form.clock[hidden] {
+.clock-row .clock[hidden] {
   display: none;
 }
 
-.clock-row form.clock input.unix-input {
+.clock-row .clock input.unix-input {
   width: 14ch;
 }
 
-.clock-row form.clock input[type="datetime-local"],
-.clock-row form.clock input.unix-input {
+.clock-row .clock input[type="datetime-local"],
+.clock-row .clock input.unix-input {
   text-align: center;
   align-self: flex-end;
-  font-size: 1.3rem;
+}
+
+.clock-row .time-and-place .clockface-wrapper {
+  background: red;
+  width: min(30vw, 120px);
+  flex: 0 0 auto;
+}
+
+.clock-row .time-and-place .clockface-wrapper .clockface {
+  aspect-ratio: 1/1;
+  background: yellow;
+  width: 100%;
 }
 
 /* scrolly */
@@ -601,13 +635,13 @@ button[role="radio"][aria-checked="true"]:focus-visible {
 }
 
 @media (min-width: 30rem) {
-  .clock-row form.clock input[type="datetime-local"],
-  .clock-row form.clock input.unix-input {
-    font-size: 2rem;
+  .clock-row .clock input[type="datetime-local"],
+  .clock-row .clock input.unix-input {
+    font-size: 1.3rem;
   }
 }
 
-.clock-row form.clock .relative {
+.clock-row .clock .relative {
   color: var(--deemphasis);
   align-self: flex-end;
   font-style: italic;
