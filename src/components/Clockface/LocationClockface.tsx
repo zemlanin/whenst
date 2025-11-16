@@ -57,6 +57,7 @@ function HourMark({ hour }: { hour: number }) {
         height={hour % 3 ? 24 : 40}
         transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
         transform={`rotate(${(hour * 360) / 12})`}
+        fill="currentColor"
       />
     </>
   );
@@ -139,6 +140,7 @@ function AMPMComplication({
         style="font-size: 54px"
         x={viewBoxSize / 2}
         y={0}
+        fill="currentColor"
       >
         {ampm}
       </text>
@@ -166,6 +168,7 @@ function DateComplication({
         style="font-size: 54px"
         x={textXPosition}
         y={viewBoxSize / 2 + 20}
+        fill="currentColor"
       >
         {day}
       </text>
