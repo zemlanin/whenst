@@ -36,6 +36,10 @@ import Globe from "../../../icons/globe.svg.js";
 import { ActionButton } from "../../components/ActionButton/index.js";
 import { TimezoneHeading } from "../../components/TimezoneHeading/index.js";
 import { TitleBarPortal } from "../../components/TitleBarPortal/index.js";
+import {
+  LocationClockface,
+  UnixClockface,
+} from "../../components/Clockface/index.js";
 
 const _T = Temporal;
 window.Temporal = Temporal;
@@ -275,7 +279,7 @@ function ClockRow({
         </div>
 
         <div className="clockface-wrapper">
-          <div className="clockface">&nbsp;</div>
+          <LocationClockface value={timeInTZ} />
         </div>
       </div>
       {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}
@@ -897,7 +901,7 @@ function UnixRow({
         </div>
 
         <div className="clockface-wrapper">
-          <div className="clockface">&nbsp;</div>
+          <UnixClockface value={timeInUnix} />
         </div>
       </div>
 

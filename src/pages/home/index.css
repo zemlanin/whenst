@@ -433,15 +433,9 @@ main {
 }
 
 .clock-row .time-and-place .clockface-wrapper {
-  background: red;
   width: min(30vw, 120px);
   flex: 0 0 auto;
-}
-
-.clock-row .time-and-place .clockface-wrapper .clockface {
-  aspect-ratio: 1/1;
-  background: yellow;
-  width: 100%;
+  line-height: 0;
 }
 
 /* scrolly */
