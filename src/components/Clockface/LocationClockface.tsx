@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { Signal, useComputed } from "@preact/signals";
+import { ReadonlySignal, useComputed } from "@preact/signals";
 
 import { clockface } from "./index.module.css";
 
@@ -7,14 +7,25 @@ const viewBoxSize = 512;
 
 export function LocationClockface({
   value,
+  onChange,
 }: {
-  value: Signal<Temporal.ZonedDateTime>;
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
+  onChange: (value: Temporal.ZonedDateTime) => void;
 }) {
   return (
     <svg
       className={clockface}
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+      onWheelCapture={(e) => {
+        if (!e.deltaY) {
+          return;
+        }
+
+        e.preventDefault();
+        const newValue = value.value.add({ seconds: e.deltaY * 5 });
+        onChange(newValue);
+      }}
     >
       <AMPMComplication value={value} />
       <HourMark hour={1} />
@@ -51,7 +62,11 @@ function HourMark({ hour }: { hour: number }) {
   );
 }
 
-function HourHand({ value }: { value: Signal<Temporal.ZonedDateTime> }) {
+function HourHand({
+  value,
+}: {
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
+}) {
   const transform = useComputed(() => {
     const t = value.value;
     const twelveHour = t.hour % 12;
@@ -78,7 +93,11 @@ function HourHand({ value }: { value: Signal<Temporal.ZonedDateTime> }) {
   );
 }
 
-function MinuteHand({ value }: { value: Signal<Temporal.ZonedDateTime> }) {
+function MinuteHand({
+  value,
+}: {
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
+}) {
   const transform = useComputed(() => {
     const t = value.value;
     const minuteAngle = 360 / 60;
@@ -106,7 +125,7 @@ function MinuteHand({ value }: { value: Signal<Temporal.ZonedDateTime> }) {
 function AMPMComplication({
   value,
 }: {
-  value: Signal<Temporal.ZonedDateTime>;
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
 }) {
   const ampm = useComputed(() => {
     return value.value.hour >= 12 ? "PM" : "AM";
@@ -130,7 +149,7 @@ function AMPMComplication({
 function DateComplication({
   value,
 }: {
-  value: Signal<Temporal.ZonedDateTime>;
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
 }) {
   const day = useComputed(() => {
     return value.value.day;

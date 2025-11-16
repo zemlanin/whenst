@@ -1,9 +1,15 @@
-import { Signal, useComputed } from "@preact/signals";
+import { ReadonlySignal, useComputed } from "@preact/signals";
 
 import { clockface } from "./index.module.css";
 import { For } from "@preact/signals/utils";
 
-export function UnixClockface({ value }: { value: Signal<number> }) {
+export function UnixClockface({
+  value,
+  onChange,
+}: {
+  value: ReadonlySignal<number>;
+  onChange: (value: number) => void;
+}) {
   const binary = useComputed(() =>
     value.value
       .toString(2)
@@ -17,6 +23,15 @@ export function UnixClockface({ value }: { value: Signal<number> }) {
       className={clockface}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 512 512"
+      onWheelCapture={(e) => {
+        if (!e.deltaY) {
+          return;
+        }
+
+        e.preventDefault();
+        const newValue = value.value + e.deltaY;
+        onChange(newValue);
+      }}
     >
       <For each={binary}>
         {({ digit, index }) => {

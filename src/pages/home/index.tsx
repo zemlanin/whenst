@@ -279,7 +279,20 @@ function ClockRow({
         </div>
 
         <div className="clockface-wrapper">
-          <LocationClockface value={dt} />
+          <LocationClockface
+            value={dt}
+            onChange={(value) => {
+              try {
+                const newRootDT =
+                  Temporal.PlainDateTime.from(value).toZonedDateTime(timeZone);
+                writeToLocation(newRootDT);
+                rootDT.value = newRootDT;
+              } catch (e) {
+                console.error(e);
+                return;
+              }
+            }}
+          />
         </div>
       </div>
       {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}
@@ -901,7 +914,21 @@ function UnixRow({
         </div>
 
         <div className="clockface-wrapper">
-          <UnixClockface value={timeInUnix} />
+          <UnixClockface
+            value={timeInUnix}
+            onChange={(value) => {
+              try {
+                const newRootDT = Temporal.PlainDateTime.from(
+                  new Date(+value * 1000).toISOString().replace(/Z$/, ""),
+                ).toZonedDateTime("UTC");
+                writeToLocation(newRootDT);
+                rootDT.value = newRootDT;
+              } catch (e) {
+                console.error(e);
+                return;
+              }
+            }}
+          />
         </div>
       </div>
 
