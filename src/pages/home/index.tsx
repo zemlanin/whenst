@@ -279,7 +279,7 @@ function ClockRow({
         </div>
 
         <div className="clockface-wrapper">
-          <LocationClockface value={timeInTZ} />
+          <LocationClockface value={dt} />
         </div>
       </div>
       {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}

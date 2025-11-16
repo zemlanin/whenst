@@ -389,7 +389,8 @@ main {
 .clock-row .time-and-place {
   display: flex;
   flex-direction: row;
-  gap: 0.5rem;
+  gap: 1rem;
+  margin-block-end: 1rem;
 }
 
 .clock-row .time-and-place .inputs-section {
@@ -436,6 +437,7 @@ main {
   width: min(30vw, 120px);
   flex: 0 0 auto;
   line-height: 0;
+  display: flex;
 }
 
 /* scrolly */
