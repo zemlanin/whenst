@@ -99,8 +99,16 @@ function IndexPage() {
     );
   }, []);
 
+  const ignoreInitialDT = useSignal(true);
+
   useSignalEffect(() => {
     const dtValue = dt.value;
+
+    if (ignoreInitialDT.peek()) {
+      return () => {
+        ignoreInitialDT.value = false;
+      };
+    }
 
     throttledReplaceState(
       history.state || null,
