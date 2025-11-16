@@ -41,7 +41,7 @@ function HourMark({ hour }: { hour: number }) {
     <>
       <rect
         x={viewBoxSize / 2 - hourMarkWidth / 2}
-        y={0}
+        y={hour % 3 ? -28 : 0}
         width={hourMarkWidth}
         height={hour % 3 ? 24 : 40}
         transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
