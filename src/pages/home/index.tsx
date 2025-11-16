@@ -12,6 +12,7 @@ import {
   ReadonlySignal,
 } from "@preact/signals";
 import { For, Show } from "@preact/signals/utils";
+import throttle from "lodash.throttle";
 
 import "../../keyboard";
 
@@ -57,6 +58,8 @@ const rtfAuto = new window.Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 
+const throttledReplaceState = throttle(history.replaceState.bind(history), 500);
+
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
   const localTZ = Temporal.TimeZone.from(
@@ -96,17 +99,21 @@ function IndexPage() {
     );
   }, []);
 
-  const writeToLocation = (dt: Temporal.ZonedDateTime) => {
-    history.replaceState(
+  useSignalEffect(() => {
+    const dtValue = dt.value;
+
+    throttledReplaceState(
       history.state || null,
       "",
       `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${
-        isUnix ? dt.epochSeconds : formatDTInput(dt.withTimeZone(pageTZ))
+        isUnix
+          ? dtValue.epochSeconds
+          : formatDTInput(dtValue.withTimeZone(pageTZ))
       }`,
     );
 
-    updateTitle(dt, isUnix ? "unix" : pageTZ);
-  };
+    updateTitle(dtValue, isUnix ? "unix" : pageTZ);
+  });
 
   const shouldShowBack = isUnix || pageForRemoteTimeZone;
 
@@ -133,23 +140,16 @@ function IndexPage() {
         />
       </TitleBarPortal>
       {isUnix ? (
-        <UnixRow rootDT={dt} writeToLocation={writeToLocation} />
+        <UnixRow rootDT={dt} />
       ) : (
         <ClockRow
           rootDT={dt}
           timeZone={pageTZ}
           withRelative={!pageForRemoteTimeZone}
-          writeToLocation={writeToLocation}
         />
       )}
       {pageForRemoteTimeZone ? (
-        <ClockRow
-          rootDT={dt}
-          timeZone={localTZ}
-          withRelative
-          secondary
-          writeToLocation={writeToLocation}
-        />
+        <ClockRow rootDT={dt} timeZone={localTZ} withRelative secondary />
       ) : null}
 
       <Tabs
@@ -169,13 +169,11 @@ function ClockRow({
   timeZone,
   withRelative,
   secondary,
-  writeToLocation,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
   timeZone: Temporal.TimeZone | string;
   withRelative: boolean;
   secondary?: boolean;
-  writeToLocation(dt: Temporal.ZonedDateTime): void;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
   const formId = "clock-row-" + useId();
@@ -217,7 +215,6 @@ function ClockRow({
       const newRootDT = Temporal.PlainDateTime.from(
         event.target.value,
       ).toZonedDateTime(timeZone);
-      writeToLocation(newRootDT);
       rootDT.value = newRootDT;
     } catch (e) {
       console.error(e);
@@ -285,7 +282,6 @@ function ClockRow({
               try {
                 const newRootDT =
                   Temporal.PlainDateTime.from(value).toZonedDateTime(timeZone);
-                writeToLocation(newRootDT);
                 rootDT.value = newRootDT;
               } catch (e) {
                 console.error(e);
@@ -839,13 +835,7 @@ function formatDTiCal(dt: Temporal.ZonedDateTime) {
   )}${pad2(isoMinute)}${pad2(isoSecond)}`;
 }
 
-function UnixRow({
-  rootDT,
-  writeToLocation,
-}: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
-  writeToLocation(dt: Temporal.ZonedDateTime): void;
-}) {
+function UnixRow({ rootDT }: { rootDT: Signal<Temporal.ZonedDateTime> }) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
   const timestampURL = useComputed(() =>
     new URL(`/unix/${timeInUnix}`, location.href).toString(),
@@ -865,7 +855,6 @@ function UnixRow({
       const newRootDT = Temporal.PlainDateTime.from(
         new Date(+event.target.value * 1000).toISOString().replace(/Z$/, ""),
       ).toZonedDateTime("UTC");
-      writeToLocation(newRootDT);
       rootDT.value = newRootDT;
     } catch (e) {
       console.error(e);
@@ -921,7 +910,6 @@ function UnixRow({
                 const newRootDT = Temporal.PlainDateTime.from(
                   new Date(+value * 1000).toISOString().replace(/Z$/, ""),
                 ).toZonedDateTime("UTC");
-                writeToLocation(newRootDT);
                 rootDT.value = newRootDT;
               } catch (e) {
                 console.error(e);
