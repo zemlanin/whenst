@@ -35,7 +35,7 @@ export function LocationClockface({
         }
 
         e.preventDefault();
-        const newValue = value.value.add({ seconds: e.deltaY * 5 });
+        const newValue = value.value.add({ seconds: Math.round(e.deltaY) * 5 });
         onChange(newValue);
       }}
       onTouchStart={(e) => {
