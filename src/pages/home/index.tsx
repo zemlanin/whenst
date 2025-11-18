@@ -432,8 +432,7 @@ function ClockRowActions({
             >
               <ClockRotateLeft
                 aria-hidden="true"
-                transform="scale(-1, 1)"
-                transformOrigin="center"
+                style="transform: scale(-1, 1)"
               />
             </a>
           </Show>
