@@ -479,14 +479,18 @@ main {
   justify-content: center;
 }
 
+.clock-row .scrolly > a,
 .tabs-row .scrolly > a {
   min-width: 2rem;
 }
 
+.clock-row .scrolly > button,
 .tabs-row .scrolly > button {
   min-width: 2.5rem;
 }
 
+.clock-row .scrolly > a svg,
+.clock-row .scrolly > button svg,
 .tabs-row .scrolly > a svg,
 .tabs-row .scrolly > button svg {
   width: auto;
@@ -498,6 +502,7 @@ main {
 }
 
 @media (min-width: 30rem) {
+  .clock-row .scrolly > button svg,
   .tabs-row .scrolly > button svg {
     display: none;
   }

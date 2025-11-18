@@ -24,6 +24,7 @@ import {
   getPathnameFromTimezone,
 } from "../../../shared/from-timezone.js";
 
+import ClockRotateLeft from "../../../icons/clock-rotate-left.svg.js";
 import Discord from "../../../icons/discord.svg.js";
 import CalendarPlus from "../../../icons/calendar-plus.svg.js";
 import Gear from "../../../icons/gear.svg.js";
@@ -58,7 +59,23 @@ const rtfAuto = new window.Intl.RelativeTimeFormat("en", {
   numeric: "auto",
 });
 
-const throttledReplaceState = throttle(history.replaceState.bind(history), 500);
+const currentURLSignal = new Signal(new URL(location.href));
+
+const replaceStateWithSignal = (
+  ...args: Parameters<typeof history.replaceState>
+) => {
+  const url = args[2];
+
+  if (url instanceof URL) {
+    currentURLSignal.value = url;
+  } else if (typeof url === "string") {
+    currentURLSignal.value = new URL(url, location.href);
+  }
+
+  history.replaceState(...args);
+};
+
+const throttledReplaceState = throttle(replaceStateWithSignal, 500);
 
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
@@ -69,6 +86,8 @@ function IndexPage() {
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
   const dt = useSignal(parseTimeString(pageTZ, urlDT));
+  const isLiveClockSignal = useSignal(urlDT === undefined || urlDT === "now");
+
   const activeTab = activeTabSignal;
 
   const pageForRemoteTimeZone =
@@ -76,7 +95,7 @@ function IndexPage() {
 
   useEffect(() => {
     if (!urlTZ && location.pathname !== "/" && location.pathname !== "") {
-      history.replaceState(history.state || null, "", "/");
+      replaceStateWithSignal(history.state || null, "", "/");
     }
 
     if (!urlTZ) {
@@ -92,22 +111,48 @@ function IndexPage() {
         ? getPathnameFromTimezone(isUnix ? "unix" : pageTZ)
         : `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${timeString}`;
 
-    history.replaceState(history.state || null, "", canonicalPathname);
+    replaceStateWithSignal(history.state || null, "", canonicalPathname);
     updateTitle(
       urlDT === "now" ? undefined : dt.peek(),
       isUnix ? "unix" : pageTZ,
     );
   }, []);
 
-  const ignoreInitialDT = useSignal(true);
+  useSignalEffect(() => {
+    if (!isLiveClockSignal.value) {
+      return;
+    }
+
+    let timeout: ReturnType<typeof setTimeout>;
+    function waitTick() {
+      timeout = setTimeout(() => {
+        if (!isLiveClockSignal.peek()) {
+          return;
+        }
+
+        dt.value = Temporal.Now.zonedDateTime(
+          browserCalendar,
+          dt.peek().timeZoneId,
+        ).with({
+          millisecond: 0,
+        });
+        waitTick();
+      }, 33);
+    }
+
+    waitTick();
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
 
   useSignalEffect(() => {
     const dtValue = dt.value;
+    const isLive = isLiveClockSignal.value;
 
-    if (ignoreInitialDT.peek()) {
-      return () => {
-        ignoreInitialDT.value = false;
-      };
+    if (isLive) {
+      return;
     }
 
     throttledReplaceState(
@@ -148,16 +193,25 @@ function IndexPage() {
         />
       </TitleBarPortal>
       {isUnix ? (
-        <UnixRow rootDT={dt} />
+        <UnixRow rootDT={dt} isLiveClockSignal={isLiveClockSignal} />
       ) : (
         <ClockRow
           rootDT={dt}
           timeZone={pageTZ}
+          pageTimeZone={pageTZ}
           withRelative={!pageForRemoteTimeZone}
+          isLiveClockSignal={isLiveClockSignal}
         />
       )}
       {pageForRemoteTimeZone ? (
-        <ClockRow rootDT={dt} timeZone={localTZ} withRelative secondary />
+        <ClockRow
+          rootDT={dt}
+          timeZone={localTZ}
+          pageTimeZone={pageTZ}
+          withRelative
+          isLiveClockSignal={isLiveClockSignal}
+          secondary
+        />
       ) : null}
 
       <Tabs
@@ -175,25 +229,38 @@ const NBSP = "\xa0";
 function ClockRow({
   rootDT,
   timeZone,
+  pageTimeZone,
   withRelative,
   secondary,
+  isLiveClockSignal,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
   timeZone: Temporal.TimeZone | string;
+  pageTimeZone: Temporal.TimeZone | string;
   withRelative: boolean;
   secondary?: boolean;
+  isLiveClockSignal: Signal<boolean>;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
   const formId = "clock-row-" + useId();
 
   const tzName = getLocationFromTimezone(timeZone);
   const tzURL = new URL(getPathnameFromTimezone(timeZone), location.href);
+  const pageTzURL = new URL(
+    getPathnameFromTimezone(pageTimeZone),
+    location.href,
+  );
   const timeInTZ = useComputed(() => formatDTInput(dt.value));
   const timestampURL = useComputed(() => `${tzURL}/${timeInTZ}`);
   const relative = useSignal(NBSP);
   const withRelativeSignal = useSignal(withRelative);
+  const displayRelative = useComputed(() => {
+    const w = withRelativeSignal.value;
+    const l = isLiveClockSignal.value;
+    return w && !l;
+  });
   useSignalEffect(() => {
-    if (!withRelativeSignal.value) {
+    if (!displayRelative.value) {
       return;
     }
 
@@ -224,29 +291,42 @@ function ClockRow({
         event.target.value,
       ).toZonedDateTime(timeZone);
       rootDT.value = newRootDT;
+      isLiveClockSignal.value = false;
     } catch (e) {
       console.error(e);
       return;
     }
   };
 
+  const inputFocused = useSignal(false);
+  const inputValue = useComputed(() => {
+    const focused = inputFocused.value;
+    if (focused) {
+      return timeInTZ.peek();
+    }
+
+    return timeInTZ.value;
+  });
+
+  const onFocus = () => {
+    inputFocused.value = true;
+  };
+
   const onBlur = (event: FocusEvent) => {
     if (!event.target || !(event.target instanceof HTMLInputElement)) {
+      inputFocused.value = false;
       return;
     }
 
     try {
       Temporal.PlainDateTime.from(event.target.value).toZonedDateTime(timeZone);
     } catch (_e) {
-      event.target.value = formatDTInput(
-        Temporal.Now.zonedDateTime(browserCalendar, timeZone).with({
-          second: 0,
-          millisecond: 0,
-        }),
-      );
+      replaceStateWithSignal(history.state || null, "", pageTzURL);
+      isLiveClockSignal.value = true;
 
       onTimeChange({ target: event.target });
     }
+    inputFocused.value = false;
   };
 
   return (
@@ -273,13 +353,16 @@ function ClockRow({
               className="local-time"
               name="t"
               type="datetime-local"
-              value={timeInTZ}
+              value={inputValue}
               required
               onChange={onTimeChange}
+              onFocus={onFocus}
               onBlur={onBlur}
               form={formId}
             />
-            {withRelative ? <div className="relative">{relative}</div> : null}
+            <Show when={displayRelative}>
+              <div className="relative">{relative}</div>
+            </Show>
           </div>
         </div>
 
@@ -291,20 +374,36 @@ function ClockRow({
                 const newRootDT =
                   Temporal.PlainDateTime.from(value).toZonedDateTime(timeZone);
                 rootDT.value = newRootDT;
+                isLiveClockSignal.value = false;
               } catch (e) {
                 console.error(e);
                 return;
               }
             }}
+            isLiveClockSignal={isLiveClockSignal}
           />
         </div>
       </div>
-      {secondary ? null : <ClockRowActions timestampURL={timestampURL} />}
+      {secondary ? null : (
+        <ClockRowActions
+          timestampURL={timestampURL}
+          timezoneURL={tzURL}
+          isLiveClockSignal={isLiveClockSignal}
+        />
+      )}
     </div>
   );
 }
 
-function ClockRowActions({ timestampURL }: { timestampURL: Signal<string> }) {
+function ClockRowActions({
+  timestampURL,
+  timezoneURL,
+  isLiveClockSignal,
+}: {
+  timestampURL: Signal<string>;
+  timezoneURL: URL;
+  isLiveClockSignal: Signal<boolean>;
+}) {
   const copyURL = navigator.clipboard
     ? () => navigator.clipboard.writeText(timestampURL.peek())
     : null;
@@ -318,10 +417,26 @@ function ClockRowActions({ timestampURL }: { timestampURL: Signal<string> }) {
       }
     : null;
 
+  const staticClockSignal = useComputed(() => !isLiveClockSignal.value);
+
   return (
     <>
       <div className="actions" role="menubar">
         <div className="scrolly">
+          <Show when={staticClockSignal}>
+            <a
+              href={timezoneURL.toString()}
+              aria-label="Show real-time clock"
+              role="menuitem"
+              tabIndex={-1}
+            >
+              <ClockRotateLeft
+                aria-hidden="true"
+                transform="scale(-1, 1)"
+                transformOrigin="center"
+              />
+            </a>
+          </Show>
           <a
             href={timestampURL}
             aria-label="Link to this page"
@@ -843,8 +958,15 @@ function formatDTiCal(dt: Temporal.ZonedDateTime) {
   )}${pad2(isoMinute)}${pad2(isoSecond)}`;
 }
 
-function UnixRow({ rootDT }: { rootDT: Signal<Temporal.ZonedDateTime> }) {
+function UnixRow({
+  rootDT,
+  isLiveClockSignal,
+}: {
+  rootDT: Signal<Temporal.ZonedDateTime>;
+  isLiveClockSignal: Signal<boolean>;
+}) {
   const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
+  const tzURL = new URL("/unix", location.href);
   const timestampURL = useComputed(() =>
     new URL(`/unix/${timeInUnix}`, location.href).toString(),
   );
@@ -864,24 +986,42 @@ function UnixRow({ rootDT }: { rootDT: Signal<Temporal.ZonedDateTime> }) {
         new Date(+event.target.value * 1000).toISOString().replace(/Z$/, ""),
       ).toZonedDateTime("UTC");
       rootDT.value = newRootDT;
+      isLiveClockSignal.value = false;
     } catch (e) {
       console.error(e);
       return;
     }
   };
 
+  const inputFocused = useSignal(false);
+  const inputValue = useComputed(() => {
+    const focused = inputFocused.value;
+    if (focused) {
+      return timeInUnix.peek();
+    }
+
+    return timeInUnix.value;
+  });
+
+  const onFocus = () => {
+    inputFocused.value = true;
+  };
+
   const onBlur = (event: FocusEvent) => {
     const target = event.target;
 
     if (!target || !(event.target instanceof HTMLInputElement)) {
+      inputFocused.value = false;
       return;
     }
 
     if (!event.target.value || !event.target.value.match(/^[0-9]{1,10}$/)) {
-      event.target.value = Math.floor(+new Date() / 1000).toString();
+      replaceStateWithSignal(history.state || null, "", tzURL);
+      isLiveClockSignal.value = true;
 
       onTimeChange({ target: event.target });
     }
+    inputFocused.value = false;
   };
 
   return (
@@ -900,10 +1040,11 @@ function UnixRow({ rootDT }: { rootDT: Signal<Temporal.ZonedDateTime> }) {
               type="text"
               maxLength={10}
               pattern="^[0-9]+$"
-              value={timeInUnix}
+              value={inputValue}
               required
               onChange={onTimeChange}
               onInput={onTimeChange}
+              onFocus={onFocus}
               onBlur={onBlur}
               autoComplete="off"
             />
@@ -919,16 +1060,22 @@ function UnixRow({ rootDT }: { rootDT: Signal<Temporal.ZonedDateTime> }) {
                   new Date(+value * 1000).toISOString().replace(/Z$/, ""),
                 ).toZonedDateTime("UTC");
                 rootDT.value = newRootDT;
+                isLiveClockSignal.value = false;
               } catch (e) {
                 console.error(e);
                 return;
               }
             }}
+            isLiveClockSignal={isLiveClockSignal}
           />
         </div>
       </div>
 
-      <ClockRowActions timestampURL={timestampURL} />
+      <ClockRowActions
+        timestampURL={timestampURL}
+        timezoneURL={tzURL}
+        isLiveClockSignal={isLiveClockSignal}
+      />
     </div>
   );
 }
@@ -1115,7 +1262,6 @@ function parseTimeString(
 
   return !timeString || timeString === "now"
     ? Temporal.Now.zonedDateTime(browserCalendar, timezone).with({
-        second: 0,
         millisecond: 0,
       })
     : date.toZonedDateTime({
@@ -1124,7 +1270,9 @@ function parseTimeString(
       });
 }
 
-function extractDataFromURL(): [] | [string | Temporal.TimeZone, string] {
+function extractDataFromURL(
+  href = location.href,
+): [] | [string | Temporal.TimeZone, string] {
   const unixURLPattern = new URLPattern(
     {
       pathname: "/unix{/:seconds(\\d*)}?",
@@ -1132,10 +1280,9 @@ function extractDataFromURL(): [] | [string | Temporal.TimeZone, string] {
     // https://github.com/kenchris/urlpattern-polyfill/issues/127
     { ignoreCase: true } as unknown as string,
   );
-  const matchesUnix = unixURLPattern.test(location.href);
+  const matchesUnix = unixURLPattern.test(href);
   if (matchesUnix) {
-    const { seconds } =
-      unixURLPattern.exec(location.href)?.pathname.groups ?? {};
+    const { seconds } = unixURLPattern.exec(href)?.pathname.groups ?? {};
 
     if (!seconds || !seconds.match(/^[0-9]{1,10}$/)) {
       return ["unix", "now"];
@@ -1148,13 +1295,14 @@ function extractDataFromURL(): [] | [string | Temporal.TimeZone, string] {
     pathname: "/:zeroth{/*}?",
   });
 
-  const matchesGeo = geoURLPattern.test(location.href);
+  const matchesGeo = geoURLPattern.test(href);
   if (!matchesGeo) {
     return [];
   }
 
-  const { zeroth, 0: extra } = geoURLPattern.exec(location.href)?.pathname
-    .groups || { zeroth: "" };
+  const { zeroth, 0: extra } = geoURLPattern.exec(href)?.pathname.groups || {
+    zeroth: "",
+  };
 
   if (zeroth === "") {
     return [];
@@ -1310,7 +1458,7 @@ const activeTabSignal = new Signal(
 
 effect(() => {
   if (activeTabSignal.value !== history.state?.activeTab) {
-    history.replaceState(
+    replaceStateWithSignal(
       { ...history.state, activeTab: activeTabSignal.value },
       "",
     );

@@ -1,16 +1,24 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { ReadonlySignal, useComputed, useSignal } from "@preact/signals";
+import {
+  ReadonlySignal,
+  Signal,
+  useComputed,
+  useSignal,
+} from "@preact/signals";
 
 import { clockface } from "./index.module.css";
+import { Show } from "@preact/signals/utils";
 
 const viewBoxSize = 512;
 
 export function LocationClockface({
   value,
   onChange,
+  isLiveClockSignal,
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
   onChange: (value: Temporal.ZonedDateTime) => void;
+  isLiveClockSignal: Signal<boolean>;
 }) {
   const ongoingTouches = useSignal(
     new Map<
@@ -122,6 +130,12 @@ export function LocationClockface({
       <HourMark hour={11} />
       <HourHand value={value} />
       <MinuteHand value={value} />
+      <Show when={isLiveClockSignal}>
+        <>
+          <SecondHand value={value} />
+          <HandsPost />
+        </>
+      </Show>
     </svg>
   );
 }
@@ -183,7 +197,7 @@ function MinuteHand({
     const t = value.value;
     const minuteAngle = 360 / 60;
 
-    const angle = t.minute * minuteAngle;
+    const angle = t.minute * minuteAngle + t.second * (minuteAngle / 60);
 
     return `rotate(${angle})`;
   });
@@ -198,6 +212,45 @@ function MinuteHand({
       stroke="currentColor"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
       transform={transform}
+    />
+  );
+}
+
+function SecondHand({
+  value,
+}: {
+  value: ReadonlySignal<Temporal.ZonedDateTime>;
+}) {
+  const transform = useComputed(() => {
+    const t = value.value;
+    const secondAngle = 360 / 60;
+
+    const angle = t.second * secondAngle;
+
+    return `rotate(${angle})`;
+  });
+
+  return (
+    <path
+      d={`
+        M ${viewBoxSize / 2},${viewBoxSize / 2 + 16}
+        L ${viewBoxSize / 2},${48}
+      `}
+      strokeWidth={6}
+      stroke="var(--primary)"
+      transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
+      transform={transform}
+    />
+  );
+}
+
+function HandsPost() {
+  return (
+    <circle
+      cx={viewBoxSize / 2}
+      cy={viewBoxSize / 2}
+      r={10}
+      fill="var(--primary)"
     />
   );
 }
@@ -218,7 +271,7 @@ function AMPMComplication({
         dominantBaseline="hanging"
         style="font-size: 54px"
         x={viewBoxSize / 2}
-        y={0}
+        y={-6}
         fill="currentColor"
       >
         {ampm}
