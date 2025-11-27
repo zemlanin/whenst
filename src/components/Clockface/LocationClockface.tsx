@@ -163,7 +163,7 @@ function HourHand({
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
 }) {
-  const transform = useComputed(() => {
+  const style = useComputed(() => {
     const t = value.value;
     const twelveHour = t.hour % 12;
 
@@ -171,7 +171,7 @@ function HourHand({
 
     const angle = twelveHour * hourAngle + t.minute * (hourAngle / 60);
 
-    return `rotate(${angle})`;
+    return `transform: rotate(${Math.round(angle)}deg) translateZ(0px)`;
   });
 
   return (
@@ -183,7 +183,7 @@ function HourHand({
       strokeWidth={24}
       stroke="currentColor"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
-      transform={transform}
+      style={style}
     />
   );
 }
@@ -193,13 +193,13 @@ function MinuteHand({
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
 }) {
-  const transform = useComputed(() => {
+  const style = useComputed(() => {
     const t = value.value;
     const minuteAngle = 360 / 60;
 
     const angle = t.minute * minuteAngle + t.second * (minuteAngle / 60);
 
-    return `rotate(${angle})`;
+    return `transform: rotate(${Math.round(angle)}deg) translateZ(0px)`;
   });
 
   return (
@@ -211,7 +211,7 @@ function MinuteHand({
       strokeWidth={20}
       stroke="currentColor"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
-      transform={transform}
+      style={style}
     />
   );
 }
@@ -221,13 +221,13 @@ function SecondHand({
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
 }) {
-  const transform = useComputed(() => {
+  const style = useComputed(() => {
     const t = value.value;
     const secondAngle = 360 / 60;
 
     const angle = t.second * secondAngle;
 
-    return `rotate(${angle})`;
+    return `transform: rotate(${Math.round(angle)}deg) translateZ(0px)`;
   });
 
   return (
@@ -239,7 +239,7 @@ function SecondHand({
       strokeWidth={6}
       stroke="var(--primary)"
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
-      transform={transform}
+      style={style}
     />
   );
 }

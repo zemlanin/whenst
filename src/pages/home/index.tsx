@@ -76,6 +76,13 @@ const replaceStateWithSignal = (
 };
 
 const throttledReplaceState = throttle(replaceStateWithSignal, 500);
+const visibleSignal = new Signal(true);
+if ("visibilityState" in document) {
+  visibleSignal.value = document.visibilityState === "visible";
+  document.addEventListener("visibilitychange", () => {
+    visibleSignal.value = document.visibilityState === "visible";
+  });
+}
 
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL();
@@ -119,25 +126,31 @@ function IndexPage() {
   }, []);
 
   useSignalEffect(() => {
-    if (!isLiveClockSignal.value) {
+    const isLiveClock = isLiveClockSignal.value;
+    const isVisible = visibleSignal.value;
+
+    if (!isLiveClock || !isVisible) {
       return;
     }
 
     let timeout: ReturnType<typeof setTimeout>;
-    function waitTick() {
+    function waitTick(delay?: number) {
       timeout = setTimeout(() => {
-        if (!isLiveClockSignal.peek()) {
+        if (!isLiveClockSignal.peek() || !visibleSignal.peek()) {
           return;
         }
 
-        dt.value = Temporal.Now.zonedDateTime(
+        const now = Temporal.Now.zonedDateTime(
           browserCalendar,
           dt.peek().timeZoneId,
-        ).with({
+        );
+
+        dt.value = now.with({
           millisecond: 0,
         });
-        waitTick();
-      }, 33);
+
+        waitTick(1000 - now.millisecond);
+      }, delay);
     }
 
     waitTick();
