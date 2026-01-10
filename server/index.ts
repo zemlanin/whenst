@@ -21,7 +21,10 @@ import "./dist.d.ts";
 const fastify = Fastify({
   logger: true,
   trustProxy: true,
-  ignoreTrailingSlash: true,
+  routerOptions: {
+    ignoreTrailingSlash: true,
+    ignoreDuplicateSlashes: true,
+  },
 });
 
 // redirect to the main domain
