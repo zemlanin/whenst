@@ -109,7 +109,10 @@ function SignedInFromHereSyncTab() {
 function SignedInDisableSyncTab() {
   return (
     <div>
-      <p>Stop sharing your settings across devices</p>
+      <p>
+        Stop using settings from other devices.{" "}
+        <i>This will reset settings on this device</i>
+      </p>
 
       <button
         onClick={() => {
@@ -118,7 +121,7 @@ function SignedInDisableSyncTab() {
           });
         }}
       >
-        Sign out
+        Disable sync
       </button>
     </div>
   );
