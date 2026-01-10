@@ -118,12 +118,15 @@ h1,
 h2,
 h3 {
   margin-top: 0;
+  line-height: 1.25em;
 }
 
-h1,
-h2,
-h3 {
-  line-height: 1.25em;
+h1 + p,
+h2 + p,
+h3 + p,
+[role="tablist"] + p,
+[role="tablist"] + div p:first-child {
+  margin-top: 0;
 }
 
 button {

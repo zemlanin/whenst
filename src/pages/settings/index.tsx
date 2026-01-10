@@ -16,7 +16,7 @@ import { getLocationFromTimezone } from "../../../shared/from-timezone.js";
 import "../../keyboard";
 
 import { AddTimezoneForm } from "./add-timezone-form.js";
-import { AccountEdit } from "./AccountEdit.js";
+import { Sync } from "./Sync.js";
 
 const timezonesEdit = document.getElementById("timezones-edit");
 if (timezonesEdit) {
@@ -29,16 +29,16 @@ if (timezonesEdit) {
   );
 }
 
-const accountEdit = document.getElementById("account-edit");
-if (accountEdit) {
+const syncEl = document.getElementById("sync");
+if (syncEl) {
   render(
     <Show when={worldClockSignal}>
       <>
-        <h2>Account</h2>
-        <AccountEdit />
+        <h2>Sync</h2>
+        <Sync />
       </>
     </Show>,
-    accountEdit,
+    syncEl,
   );
 }
 
