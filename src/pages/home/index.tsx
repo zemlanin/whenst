@@ -1326,17 +1326,17 @@ function extractDataFromURL(
     strict: true,
   });
   if (remoteTZ) {
-    return [remoteTZ, third ?? "now"];
+    return [remoteTZ, third || "now"];
   }
 
   remoteTZ = guessTimezone(`${zeroth}/${first}`, { strict: true });
   if (remoteTZ) {
-    return [remoteTZ, second ?? "now"];
+    return [remoteTZ, second || "now"];
   }
 
   remoteTZ = guessTimezone(`${zeroth}`, { strict: true });
   if (remoteTZ) {
-    return [remoteTZ, first ?? "now"];
+    return [remoteTZ, first || "now"];
   }
 
   return [];
