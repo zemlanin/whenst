@@ -1,6 +1,19 @@
 {{#> head title="Settings" }}
-<link rel="stylesheet" type="text/css" href="../home/index.css" />
-<link rel="stylesheet" type="text/css" href="./index.css" />
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/home/index.css' type='entrypoint' }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/settings/index.css' type='entrypoint' }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/settings/index.tsx' type='css-modules' }}"
+/>
 {{/ head }}
 <body>
   <div id="title-bar">
@@ -22,6 +35,12 @@
       <div id="sync"></div>
     </main>
   </div>
-  <script src="../../register-sw.ts" type="module"></script>
-  <script src="./index.tsx" type="module"></script>
+  <script
+    src="{{ static 'src/register-sw.ts' type='entrypoint' }}"
+    type="module"
+  ></script>
+  <script
+    src="{{ static 'src/pages/settings/index.tsx' type='entrypoint' }}"
+    type="module"
+  ></script>
 </body>

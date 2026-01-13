@@ -3,7 +3,10 @@ import "../src/assets.d.ts";
 import path from "node:path";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
+import fastifyView from "@fastify/view";
+import Handlebars from "handlebars";
 
+import staticAssets from "#dist/server/static.js";
 import { apiSessionDelete } from "./api/session.js";
 import { apiAccountGet, apiAccountPost } from "./api/account.js";
 import { apiSettingsGet } from "./api/settings.js";
@@ -57,6 +60,31 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+const handlebars = Handlebars.create();
+handlebars.registerHelper("static", (relative, options) => {
+  if (options.hash.type === "entrypoint") {
+    return staticAssets.entrypoints[relative].main;
+  } else if (options.hash.type === "css-modules") {
+    return staticAssets.entrypoints[relative].css;
+  } else if (options.hash.type === "asset") {
+    return staticAssets.assets[relative];
+  } else if (options.hash.type === "manifest") {
+    return staticAssets.assets[relative];
+  }
+
+  throw new Error(`unknown 'static' type: ${options.hash.type}`);
+});
+
+fastify.register(fastifyView, {
+  engine: { handlebars },
+  options: {
+    partials: {
+      head: "src/pages/_partials/head.html.hbs",
+      nav: "src/pages/_partials/nav.html.hbs",
+    },
+  },
+});
+
 fastify.register((childContext, _, done) => {
   childContext.register(fastifyStatic, {
     root:
@@ -64,7 +92,6 @@ fastify.register((childContext, _, done) => {
       path.join(process.cwd(), "./dist/client/"),
     prefix: "/",
     cacheControl: false,
-    index: ["home/index.html"],
     allowedPath(pathName, _root, _request) {
       if (pathName.startsWith("/.") && !pathName.startsWith("/.well-known/")) {
         return false;
@@ -111,26 +138,8 @@ fastify.register((childContext, _, done) => {
 
     return reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("home/index.html");
+      .viewAsync("src/pages/home/index.html.hbs");
   });
-
-  childContext.get("/link", (_request, reply) =>
-    reply
-      .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("link/index.html"),
-  );
-
-  childContext.get("/settings", (_request, reply) =>
-    reply
-      .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("settings/index.html"),
-  );
-
-  childContext.get("/about", (_request, reply) =>
-    reply
-      .header("cache-control", `public, max-age=${5 * 60}`)
-      .sendFile("about/index.html"),
-  );
 
   done();
 });
@@ -147,6 +156,21 @@ fastify.get("/api/sync/world-clock", apiSyncWorldClockGet);
 fastify.patch("/api/sync/world-clock", apiSyncWorldClockPatch);
 fastify.get("/.well-known/healthcheck", (_request, reply) => {
   return reply.code(200).send();
+});
+fastify.get("/link", (_request, reply) => {
+  return reply
+    .header("cache-control", `public, max-age=${5 * 60}`)
+    .viewAsync("src/pages/link/index.html.hbs");
+});
+fastify.get("/settings", (_request, reply) => {
+  return reply
+    .header("cache-control", `public, max-age=${5 * 60}`)
+    .viewAsync("src/pages/settings/index.html.hbs");
+});
+fastify.get("/about", (_request, reply) => {
+  return reply
+    .header("cache-control", `public, max-age=${5 * 60}`)
+    .viewAsync("src/pages/about/index.html.hbs");
 });
 
 // Run the server!

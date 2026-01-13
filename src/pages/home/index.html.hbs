@@ -1,5 +1,20 @@
 {{#> head }}
-<link rel="stylesheet" type="text/css" href="./index.css" />
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/home/index.css' type='entrypoint' }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/home/index.tsx' type='css-modules' }}"
+/>
+<meta property="og:site_name" content="when.st" />
+<meta property="og:url" content="" />
+<meta property="og:title" content="when.st" />
+<meta property="og:image" content="" />
+<meta property="og:image:width" content="" />
+<meta property="og:image:height" content="" />
 {{/ head }}
 <body>
   <div id="title-bar">
@@ -16,6 +31,12 @@
 
     <main></main>
   </div>
-  <script src="../../register-sw.ts" type="module"></script>
-  <script src="./index.tsx" type="module"></script>
+  <script
+    src="{{ static 'src/register-sw.ts' type='entrypoint' }}"
+    type="module"
+  ></script>
+  <script
+    src="{{ static 'src/pages/home/index.tsx' type='entrypoint' }}"
+    type="module"
+  ></script>
 </body>

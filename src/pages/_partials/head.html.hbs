@@ -6,7 +6,10 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
-  <link rel="manifest" href="{{ r 'src/app.webmanifest' }}" />
+  <link
+    rel="manifest"
+    href="{{ static 'src/app.webmanifest' type='manifest' }}"
+  />
   <meta
     name="theme-color"
     content="black"
@@ -29,28 +32,28 @@
   <link
     rel="preload"
     crossorigin="anonymous"
-    href="{{ r 'fonts/iAWriterQuattroS-Regular.woff2' }}"
+    href="{{ static 'fonts/iAWriterQuattroS-Regular.woff2' type='asset' }}"
     as="font"
     type="font/woff2"
   />
   <link
     rel="preload"
     crossorigin="anonymous"
-    href="{{ r 'fonts/iAWriterQuattroS-Bold.woff2' }}"
+    href="{{ static 'fonts/iAWriterQuattroS-Bold.woff2' type='asset' }}"
     as="font"
     type="font/woff2"
   />
   <link
     rel="preload"
     crossorigin="anonymous"
-    href="{{ r 'fonts/iAWriterQuattroS-Italic.woff2' }}"
+    href="{{ static 'fonts/iAWriterQuattroS-Italic.woff2' type='asset' }}"
     as="font"
     type="font/woff2"
   />
   <link
     rel="preload"
     crossorigin="anonymous"
-    href="{{ r 'fonts/iAWriterQuattroS-BoldItalic.woff2' }}"
+    href="{{ static 'fonts/iAWriterQuattroS-BoldItalic.woff2' type='asset' }}"
     as="font"
     type="font/woff2"
   />
@@ -58,41 +61,44 @@
   <link
     rel="shortcut icon"
     type="image/png"
-    href="{{ r 'images/favicon-white.png' }}"
+    href="{{ static 'images/favicon-white.png' type='asset' }}"
   />
   <link
     rel="icon"
     type="image/png"
     sizes="32x32"
-    href="{{ r 'images/favicon-white.png' }}"
+    href="{{ static 'images/favicon-white.png' type='asset' }}"
   />
   <link
     rel="icon"
     type="image/png"
     sizes="128x128"
-    href="{{ r 'images/favicon-white-128.png' }}"
+    href="{{ static 'images/favicon-white-128.png' type='asset' }}"
   />
   <link
     rel="icon"
     type="image/png"
     sizes="192x192"
-    href="{{ r 'images/favicon-white-192.png' }}"
+    href="{{ static 'images/favicon-white-192.png' type='asset' }}"
   />
   <link
     rel="apple-touch-icon"
     sizes="120x120"
-    href="{{ r 'images/favicon-white-120.png' }}"
+    href="{{ static 'images/favicon-white-120.png' type='asset' }}"
   />
   <link
     rel="apple-touch-icon"
     sizes="167x167"
-    href="{{ r 'images/favicon-white-167.png' }}"
+    href="{{ static 'images/favicon-white-167.png' type='asset' }}"
   />
   <link
     rel="apple-touch-icon"
     sizes="180x180"
-    href="{{ r 'images/favicon-white-180.png' }}"
+    href="{{ static 'images/favicon-white-180.png' type='asset' }}"
   />
-  <link rel="apple-touch-icon" href="{{ r 'images/favicon-white-180.png' }}" />
+  <link
+    rel="apple-touch-icon"
+    href="{{ static 'images/favicon-white-180.png' type='asset' }}"
+  />
   <link rel="me" href="https://devua.club/@zemlanin" />
 </head>

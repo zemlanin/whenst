@@ -5,10 +5,9 @@ import path from "node:path";
 import process from "node:process";
 
 import esbuild from "esbuild";
-import * as cheerio from "cheerio";
-import _Handlebars from "handlebars";
+import Handlebars from "handlebars";
 
-const Handlebars = _Handlebars.noConflict();
+const handlebars = Handlebars.noConflict();
 
 const PAGES_BASE = "src/pages/";
 const HANDLEBARS_ENTRYPOINTS = [
@@ -22,87 +21,62 @@ await build();
 
 async function build() {
   /** @type {Set<string>} */
+  const codeAssets = new Set();
+  /** @type {Set<string>} */
   const codeEntrypoints = new Set();
-  /** @type {Record<string, string>} */
-  const outAssets = {};
+  /** @type {Set<string>} */
+  const codeManifests = new Set();
 
   /**
-   * Resolve a relative-from-repo-root path into an absolute one
+   * Resolve a relative-from-repo-root path into an absolute one and store it
    * */
-  Handlebars.registerHelper(
-    "r",
+  handlebars.registerHelper(
+    "static",
     /**
      * @param {string} relative
      * */
-    (relative) => path.join(process.cwd(), relative),
+    (relative, options) => {
+      if (options.hash.type === "entrypoint") {
+        codeEntrypoints.add(relative);
+      } else if (options.hash.type === "asset") {
+        codeAssets.add(relative);
+      } else if (options.hash.type === "manifest") {
+        codeManifests.add(relative);
+      } else if (options.hash.type === "css-modules") {
+        //
+      } else {
+        throw new Error(`unknown 'static' type: ${options.hash.type}`);
+      }
+
+      return relative;
+    },
   );
 
-  Handlebars.registerPartial(
+  handlebars.registerPartial(
     "head",
     (
       await fs.readFile(path.join(PAGES_BASE, "_partials/head.html.hbs"))
     ).toString(),
   );
 
-  Handlebars.registerPartial(
+  handlebars.registerPartial(
     "nav",
     (
       await fs.readFile(path.join(PAGES_BASE, "_partials/nav.html.hbs"))
     ).toString(),
   );
 
-  const htmlInputs = await Promise.all([
-    ...HANDLEBARS_ENTRYPOINTS.map(async (handebarsFilepath) => {
-      const htmlDirname = path.dirname(handebarsFilepath);
-      const hbsContents = (await fs.readFile(handebarsFilepath)).toString();
-      const htmlContents = Handlebars.compile(hbsContents, {
-        explicitPartialContext: true,
-      })({});
-      const $ = cheerio.load(htmlContents);
-      const outfile = path.join(
-        "dist/client",
-        handebarsFilepath.replace(PAGES_BASE, "").replace(/\.hbs$/, ""),
-      );
-
-      return { dir: htmlDirname, $, outfile };
-    }),
-  ]);
-
-  // collect JS/CSS entrypoints
-  for (const { dir: htmlDirname, $ } of htmlInputs) {
-    $(
-      'script[type="module"][src], link[rel="stylesheet"][type="text/css"][href]',
-    )
-      .map((i, el) => {
-        if (el.name === "script") {
-          const src = el.attribs.src;
-          if (src && !src.startsWith("http:") && !src.startsWith("https:")) {
-            return path.resolve(htmlDirname, el.attribs.src);
-          }
-
-          return null;
-        }
-
-        if (el.name === "link") {
-          const href = el.attribs.href;
-          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
-            return path.resolve(htmlDirname, el.attribs.href);
-          }
-
-          return null;
-        }
-      })
-      .filter((i, p) => !!p)
-      .each((i, p) => {
-        if (!p) {
-          return;
-        }
-        codeEntrypoints.add(p);
-      });
+  for (const handebarsFilepath of HANDLEBARS_ENTRYPOINTS) {
+    const hbsContents = (await fs.readFile(handebarsFilepath)).toString();
+    handlebars.compile(hbsContents, {
+      explicitPartialContext: true,
+    })({});
   }
 
   /** @type {Record<string, {main: string | undefined; css: string | undefined}>} */
   const outEntrypoints = {};
+  /** @type {Record<string, string>} */
+  const outAssets = {};
   for (const entrypoint of codeEntrypoints) {
     const outdir = "dist/client";
     const isPage = entrypoint.startsWith(path.join(process.cwd(), PAGES_BASE));
@@ -126,115 +100,52 @@ async function build() {
       css: result.cssBundle,
     };
 
-    Object.assign(outAssets, result.assets);
+    for (const absolutePath of Object.keys(result.assets)) {
+      outAssets[path.relative(process.cwd(), absolutePath)] =
+        result.assets[absolutePath];
+    }
   }
 
   // collect assets
-  for (const { dir: htmlDirname, $ } of htmlInputs) {
-    const assetEntrypoints = new Set();
-    $("link[href], img[src], source[srcset]")
-      .map((i, el) => {
-        if (el.name === "link") {
-          const rel = el.attribs.rel;
-          const as = el.attribs.as;
+  for (const entrypoint of codeManifests) {
+    if (outAssets[entrypoint]) {
+      continue;
+    }
 
-          /** @type {string | undefined} */
-          let href = undefined;
-          if (
-            rel === "apple-touch-icon" ||
-            rel === "icon" ||
-            rel.includes("icon ") ||
-            rel.includes(" icon") ||
-            (rel === "preload" && as === "font")
-          ) {
-            href = el.attribs.href;
-          }
+    const manifestDirname = path.dirname(entrypoint);
 
-          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
-            return path.resolve(htmlDirname, href);
-          }
-
-          return undefined;
-        }
-
-        if (el.name === "img") {
-          const src = el.attribs.src;
-          if (src && !src.startsWith("http:") && !src.startsWith("https:")) {
-            return path.resolve(htmlDirname, src);
-          }
-        }
-
-        if (el.name === "source") {
-          const srcset = el.attribs.srcset;
-          if (
-            srcset &&
-            !srcset.startsWith("http:") &&
-            !srcset.startsWith("https:")
-          ) {
-            return path.resolve(htmlDirname, srcset);
-          }
-        }
-
-        return undefined;
-      })
-      .filter((i, p) => !!p)
-      .each((i, p) => {
-        if (!p) {
-          return;
-        }
-        assetEntrypoints.add(p);
-      });
-
-    const manifestEntrypoints = new Set(
-      $('link[rel="manifest"][href]')
-        .map((i, el) => {
-          const href = el.attribs.href;
-          if (href && !href.startsWith("http:") && !href.startsWith("https:")) {
-            return path.resolve(htmlDirname, href);
-          }
-        })
-        .filter((i, p) => !!p)
-        .toArray(),
+    const manifestContents = JSON.parse(
+      (await fs.readFile(entrypoint)).toString(),
     );
-
-    for (const entrypoint of manifestEntrypoints) {
-      if (outAssets[entrypoint]) {
-        continue;
-      }
-
-      const manifestDirname = path.dirname(entrypoint);
-
-      const manifestContents = JSON.parse(
-        (await fs.readFile(entrypoint)).toString(),
+    for (const icon of manifestContents.icons) {
+      codeAssets.add(
+        path.relative(process.cwd(), path.resolve(manifestDirname, icon.src)),
       );
-      for (const icon of manifestContents.icons) {
-        assetEntrypoints.add(path.resolve(manifestDirname, icon.src));
-      }
+    }
+  }
+
+  for (const entrypoint of codeAssets) {
+    if (outAssets[entrypoint]) {
+      continue;
     }
 
-    for (const entrypoint of assetEntrypoints) {
-      if (outAssets[entrypoint]) {
-        continue;
-      }
+    outAssets[entrypoint] = await buildAsset({
+      entrypoint,
+      outdir: "dist/client",
+      assetNames: "static/[name]-[hash]",
+    });
+  }
 
-      outAssets[entrypoint] = await buildAsset({
-        entrypoint,
-        outdir: "dist/client",
-        assetNames: "static/[name]-[hash]",
-      });
+  for (const entrypoint of codeManifests) {
+    if (outAssets[entrypoint]) {
+      continue;
     }
 
-    for (const entrypoint of manifestEntrypoints) {
-      if (outAssets[entrypoint]) {
-        continue;
-      }
-
-      outAssets[entrypoint] = await buildManifest({
-        entrypoint,
-        outdir: "dist/client",
-        outAssets,
-      });
-    }
+    outAssets[entrypoint] = await buildManifest({
+      entrypoint,
+      outdir: "dist/client",
+      outAssets,
+    });
   }
 
   await buildServiceWorker({
@@ -243,81 +154,11 @@ async function build() {
     outAssets,
   });
 
-  // replace entrypoints and assets with built paths
-  for (const { dir: htmlDirname, $, outfile } of htmlInputs) {
-    $("script[src], link[href], img[src], source[srcset]")
-      .filter((i, el) => {
-        if (el.name === "script") {
-          const src = el.attribs.src;
-          return !!(
-            src &&
-            !src.startsWith("http:") &&
-            !src.startsWith("https:")
-          );
-        }
-
-        if (el.name === "link") {
-          const href = el.attribs.href;
-          return !!(
-            href &&
-            !href.startsWith("http:") &&
-            !href.startsWith("https:")
-          );
-        }
-
-        if (el.name === "img") {
-          const src = el.attribs.src;
-          return !!(
-            src &&
-            !src.startsWith("http:") &&
-            !src.startsWith("https:")
-          );
-        }
-
-        if (el.name === "source") {
-          const srcset = el.attribs.srcset;
-          return !!(
-            srcset &&
-            !srcset.startsWith("http:") &&
-            !srcset.startsWith("https:")
-          );
-        }
-
-        return false;
-      })
-      .each((i, el) => {
-        const $el = $(el);
-
-        if (el.name === "script") {
-          const src = path.resolve(htmlDirname, el.attribs.src);
-          $el.attr("src", outEntrypoints[src].main);
-
-          if (outEntrypoints[src].css) {
-            $(
-              `<link rel="stylesheet" type="text/css" href=${JSON.stringify(outEntrypoints[src].css)}>`,
-            ).insertBefore(`head link[rel="stylesheet"][href]`);
-          }
-        }
-
-        if (el.name === "link") {
-          const href = path.resolve(htmlDirname, el.attribs.href);
-          $el.attr("href", outEntrypoints[href]?.main ?? outAssets[href]);
-        }
-
-        if (el.name === "img") {
-          const src = path.resolve(htmlDirname, el.attribs.src);
-          $el.attr("src", outAssets[src]);
-        }
-
-        if (el.name === "source") {
-          const srcset = path.resolve(htmlDirname, el.attribs.srcset);
-          $el.attr("srcset", outAssets[srcset]);
-        }
-      });
-
-    await fs.mkdir(path.dirname(outfile), { recursive: true });
-    await fs.writeFile(outfile, $.html());
-  }
+  await buildServerStaticManifest({
+    outdir: "dist/server",
+    outEntrypoints,
+    outAssets,
+  });
 
   await esbuild.build({
     entryPoints: [
@@ -486,6 +327,34 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
   );
 
   return "/" + resolvePath;
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.outdir
+ * @param {Record<string, {main?: string, cssBundle?: string}>} options.outEntrypoints
+ * @param {Record<string, string>} options.outAssets
+ * */
+async function buildServerStaticManifest({
+  outdir,
+  outEntrypoints,
+  outAssets,
+}) {
+  await fs.mkdir(outdir, {
+    recursive: true,
+  });
+
+  await fs.writeFile(
+    path.join(outdir, "static.js"),
+    `export default ${JSON.stringify(
+      {
+        entrypoints: outEntrypoints,
+        assets: outAssets,
+      },
+      undefined,
+      2,
+    )}`,
+  );
 }
 
 /**

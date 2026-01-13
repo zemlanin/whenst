@@ -1,6 +1,14 @@
 {{#> head title="About" }}
-<link rel="stylesheet" type="text/css" href="../home/index.css" />
-<link rel="stylesheet" type="text/css" href="./index.css" />
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/home/index.css' type='entrypoint' }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ static 'src/pages/about/index.css' type='entrypoint' }}"
+/>
 {{/ head }}
 <body>
   <div id="title-bar">
@@ -78,6 +86,12 @@
       </a> -->
     </main>
   </div>
-  <script src="../../register-sw.ts" type="module"></script>
-  <script src="./index.ts" type="module"></script>
+  <script
+    src="{{ static 'src/register-sw.ts' type='entrypoint' }}"
+    type="module"
+  ></script>
+  <script
+    src="{{ static 'src/pages/about/index.ts' type='entrypoint' }}"
+    type="module"
+  ></script>
 </body>
