@@ -313,7 +313,13 @@ async function buildManifest({ entrypoint, outdir, outAssets }) {
           return icon;
         }
 
-        const assetSrc = outAssets[path.resolve(manifestDirname, icon.src)];
+        const assetSrc =
+          outAssets[
+            path.relative(
+              process.cwd(),
+              path.resolve(manifestDirname, icon.src),
+            )
+          ];
         if (!assetSrc) {
           return icon;
         }
