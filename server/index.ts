@@ -2,9 +2,12 @@ import "../src/assets.d.ts";
 
 import path from "node:path";
 import Fastify from "fastify";
+import fastifyAccepts from "@fastify/accepts";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
 import Handlebars from "handlebars";
+import "urlpattern-polyfill";
+import { Temporal } from "@js-temporal/polyfill";
 
 import staticAssets from "#dist/server/static.js";
 import { apiSessionDelete } from "./api/session.js";
@@ -18,8 +21,15 @@ import {
   apiSyncWorldClockGet,
   apiSyncWorldClockPatch,
 } from "./api/sync/world-clock.js";
+import { guessTimezone } from "../src/guess-timezone.js";
+import {
+  getLocationFromTimezone,
+  getPathnameFromTimezone,
+} from "../shared/from-timezone.js";
 
 import "./dist.d.ts";
+
+const serverCalendar = "iso8601";
 
 const fastify = Fastify({
   logger: true,
@@ -29,6 +39,8 @@ const fastify = Fastify({
     ignoreDuplicateSlashes: true,
   },
 });
+
+fastify.register(fastifyAccepts);
 
 // redirect to the main domain
 if (process.env.NODE_ENV === "production") {
@@ -136,13 +148,170 @@ fastify.register((childContext, _, done) => {
       return reply.code(404).send();
     }
 
+    // TODO: 404 for unknown timezones
+    const opengraph = (() => {
+      try {
+        return getHomeOpengraphData(request.url, {
+          languages: request
+            .accepts()
+            .languages()
+            .filter((lang) => lang === "en" || lang.startsWith("en-")),
+        });
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    })();
+
     return reply
       .header("cache-control", `public, max-age=${5 * 60}`)
-      .viewAsync("src/pages/home/index.html.hbs");
+      .viewAsync("src/pages/home/index.html.hbs", { opengraph });
   });
 
   done();
 });
+
+function getHomeOpengraphData(
+  pathname: string,
+  { languages }: { languages: string[] },
+) {
+  const url = new URL(pathname, "https://when.st/").toString();
+  const [urlTZ, urlDT] = extractDataFromURL(url);
+
+  if (urlTZ instanceof Temporal.TimeZone) {
+    const placeStr = getLocationFromTimezone(urlTZ);
+    const instant =
+      urlDT && urlDT !== "now" ? parseTimeString(urlTZ, urlDT) : null;
+
+    const canonicalPathname =
+      getPathnameFromTimezone(urlTZ) +
+      (instant
+        ? `/${instant.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}`
+        : "");
+
+    return {
+      title: instant
+        ? `${instant.toLocaleString(languages, {
+            dateStyle: "long",
+            timeStyle: "short",
+          })} in ${placeStr}`
+        : `Time in ${placeStr}`,
+      url: new URL(canonicalPathname, "https://when.st/").toString(),
+      // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition
+      description: `UTC${(
+        instant || Temporal.Now.zonedDateTime(serverCalendar, urlTZ)
+      ).offset
+        .replace(/:00$/, "")
+        .replace(/^([+-])0([0-9])$/, "$1$2")}`,
+      published_time: instant
+        ? instant.toString({ timeZoneName: "never", offset: "auto" })
+        : undefined,
+    };
+  }
+
+  // TODO: `/unix/:seconds`
+  // TODO: `/` (generic "about" description)
+  return null;
+}
+
+function parseTimeString(
+  timezone: string | Temporal.TimeZone,
+  timeString: string | undefined,
+) {
+  if (timezone === "unix") {
+    timezone = "UTC";
+  }
+
+  let date = undefined;
+  if (timeString) {
+    try {
+      date = Temporal.PlainDate.from(timeString);
+    } catch (_e) {
+      //
+    }
+  }
+
+  if (!date) {
+    date = Temporal.Now.plainDate(serverCalendar);
+  }
+
+  if (timeString && timeString !== "now") {
+    try {
+      Temporal.PlainTime.from(timeString);
+    } catch (_e) {
+      timeString = "now";
+    }
+  }
+
+  return !timeString || timeString === "now"
+    ? Temporal.Now.zonedDateTime(serverCalendar, timezone).with({
+        millisecond: 0,
+      })
+    : date.toZonedDateTime({
+        plainTime: Temporal.PlainTime.from(timeString),
+        timeZone: timezone,
+      });
+}
+
+function extractDataFromURL(
+  href: string,
+): [] | [string | Temporal.TimeZone, string] {
+  const unixURLPattern = new URLPattern(
+    {
+      pathname: "/unix{/:seconds(\\d*)}?",
+    },
+    // https://github.com/kenchris/urlpattern-polyfill/issues/127
+    { ignoreCase: true } as unknown as string,
+  );
+  const matchesUnix = unixURLPattern.test(href);
+  if (matchesUnix) {
+    const { seconds } = unixURLPattern.exec(href)?.pathname.groups ?? {};
+
+    if (!seconds || !seconds.match(/^[0-9]{1,10}$/)) {
+      return ["unix", "now"];
+    }
+
+    return ["unix", new Date(+seconds * 1000).toISOString().replace(/Z$/, "")];
+  }
+
+  const geoURLPattern = new URLPattern({
+    pathname: "/:zeroth{/*}?",
+  });
+
+  const matchesGeo = geoURLPattern.test(href);
+  if (!matchesGeo) {
+    return [];
+  }
+
+  const { zeroth, 0: extra } = geoURLPattern.exec(href)?.pathname.groups || {
+    zeroth: "",
+  };
+
+  if (zeroth === "") {
+    return [];
+  }
+
+  const [first, second, third] = extra?.split("/") ?? [];
+
+  let remoteTZ = guessTimezone(`${zeroth}/${first}/${second}`, {
+    strict: true,
+  });
+  if (remoteTZ) {
+    return [remoteTZ, third || "now"];
+  }
+
+  remoteTZ = guessTimezone(`${zeroth}/${first}`, { strict: true });
+  if (remoteTZ) {
+    return [remoteTZ, second || "now"];
+  }
+
+  remoteTZ = guessTimezone(`${zeroth}`, { strict: true });
+  if (remoteTZ) {
+    return [remoteTZ, first || "now"];
+  }
+
+  return [];
+}
 
 fastify.get("/api/account", apiAccountGet);
 fastify.post("/api/account", apiAccountPost);

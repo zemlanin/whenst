@@ -3,6 +3,21 @@
   <meta charset="utf-8" />
   <title>{{#if title}}{{ title }} | {{/if}}when.st</title>
   <meta
+    property="og:title"
+    content="{{#if title}}{{ title }}{{else}}when.st{{/if}}"
+  />
+  <meta property="og:site_name" content="when.st" />
+  {{#if opengraph}}
+  <meta property="og:url" content="{{ opengraph.url }}" />
+  <meta property="og:description" content="{{ opengraph.description }}" />
+  {{#if opengraph.published_time}}
+  <meta
+    property="article:published_time"
+    content="{{ opengraph.published_time }}"
+  />
+  {{/if}}
+  {{/if}}
+  <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
