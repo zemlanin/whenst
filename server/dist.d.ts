@@ -11,3 +11,7 @@ declare module "#dist/server/static.js" {
   };
   export default value;
 }
+
+declare module "#dist/server/index.js" {
+  export const server: import("fastify").FastifyInstance;
+}

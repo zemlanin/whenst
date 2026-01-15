@@ -49,4 +49,10 @@ export default tseslint.config(
       "react/display-name": 0,
     },
   },
+  {
+    files: ["test/*.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": 0,
+    },
+  },
 );

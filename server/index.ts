@@ -1,5 +1,3 @@
-import "../src/assets.d.ts";
-
 import path from "node:path";
 import Fastify from "fastify";
 import fastifyAccepts from "@fastify/accepts";
@@ -342,11 +340,13 @@ fastify.get("/about", (_request, reply) => {
     .viewAsync("src/pages/about/index.html.hbs");
 });
 
-// Run the server!
-fastify.listen({ port: 3000, host: "0.0.0.0" }, function (err, _address) {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-  // Server is now listening on ${address}
-});
+export const server = fastify;
+
+if (import.meta.main) {
+  fastify.listen({ port: 3000, host: "0.0.0.0" }, function (err, _address) {
+    if (err) {
+      fastify.log.error(err);
+      process.exit(1);
+    }
+  });
+}
