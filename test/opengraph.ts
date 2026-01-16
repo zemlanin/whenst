@@ -1,8 +1,10 @@
 /// <reference path="../server/dist.d.ts" />
 
 import { AddressInfo } from "node:net";
-import t from "tap";
+
 import { load } from "cheerio";
+import t from "tap";
+import { Temporal } from "@js-temporal/polyfill";
 
 t.test("opengraph", async (t) => {
   process.env.WHENST_MAIN_DB = ":memory:";
@@ -40,14 +42,48 @@ t.test("opengraph", async (t) => {
   });
 
   await t.test(async () => {
-    const $ = await fetch$("/madrid");
+    const $ = await fetch$("/kyiv");
 
-    t.same($('head [property="og:title"]').attr("content"), "Time in Madrid");
+    t.same($('head [property="og:title"]').attr("content"), "Time in Kyiv");
     t.same(
       $('head [property="og:url"]').attr("content"),
-      "https://when.st/Europe/Madrid",
+      "https://when.st/Europe/Kyiv",
     );
-    t.same($('head [property="og:description"]').attr("content"), "UTC+1");
+    t.same(
+      $('head [property="og:description"]').attr("content"),
+      `UTC${getCurrentOffset("Europe/Kiev")}`,
+    );
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/kiev");
+
+    t.same($('head [property="og:title"]').attr("content"), "Time in Kyiv");
+    t.same(
+      $('head [property="og:url"]').attr("content"),
+      "https://when.st/Europe/Kyiv",
+    );
+    t.same(
+      $('head [property="og:description"]').attr("content"),
+      `UTC${getCurrentOffset("Europe/Kiev")}`,
+    );
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/America/Sao_Paulo/");
+
+    t.same(
+      $('head [property="og:title"]').attr("content"),
+      "Time in São Paulo",
+    );
+    t.same(
+      $('head [property="og:url"]').attr("content"),
+      "https://when.st/America/Sao_Paulo",
+    );
+    t.same(
+      $('head [property="og:description"]').attr("content"),
+      `UTC${getCurrentOffset("America/Sao_Paulo")}`,
+    );
   });
 
   await t.test(async () => {
@@ -63,22 +99,42 @@ t.test("opengraph", async (t) => {
       $('head [property="og:url"]').attr("content"),
       "https://when.st/Europe/Berlin/2026-01-05T20:18",
     );
-    t.same($('head [property="og:description"]').attr("content"), "UTC+1");
+    t.same(
+      $('head [property="og:description"]').attr("content"),
+      `UTC${getCurrentOffset("Europe/Berlin")}`,
+    );
   });
 
   await t.test(async () => {
-    const $ = await fetch$("/madrid/2026-01-15T22:18", {
+    const $ = await fetch$("/madrid/2026-05-15T22:18", {
       headers: { "accept-language": "en-US" },
     });
 
     t.same(
       $('head [property="og:title"]').attr("content"),
-      "January 15, 2026 at 10:18 PM in Madrid",
+      "May 15, 2026 at 10:18 PM in Madrid",
     );
     t.same(
       $('head [property="og:url"]').attr("content"),
-      "https://when.st/Europe/Madrid/2026-01-15T22:18",
+      "https://when.st/Europe/Madrid/2026-05-15T22:18",
     );
+    t.same($('head [property="og:description"]').attr("content"), "UTC+2");
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/utc/2022-01-19T07:50", {
+      headers: { "accept-language": "en-GB" },
+    });
+
+    t.same(
+      $('head [property="og:title"]').attr("content"),
+      "19 January 2022 at 07:50 in UTC",
+    );
+    t.same(
+      $('head [property="og:url"]').attr("content"),
+      "https://when.st/UTC/2022-01-19T07:50",
+    );
+    t.same($('head [property="og:description"]').attr("content"), "UTC");
   });
 
   await t.test(async () => {
@@ -144,3 +200,12 @@ t.test("opengraph", async (t) => {
 
   await server.close();
 });
+
+const now = Temporal.Now.instant();
+function getCurrentOffset(timeZone: string) {
+  const fullOffset = now.toZonedDateTime({
+    timeZone,
+    calendar: "iso8601",
+  }).offset;
+  return fullOffset.replace(/:00$/, "").replace(/^([+-])0([0-9])/, "$1$2");
+}

@@ -187,6 +187,16 @@ function getHomeOpengraphData(
         ? `/${instant.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}`
         : "");
 
+    // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition
+    const utcOffset =
+      urlTZ.id === "UTC"
+        ? "UTC"
+        : `UTC${(
+            instant || Temporal.Now.zonedDateTime(serverCalendar, urlTZ)
+          ).offset
+            .replace(/:00$/, "")
+            .replace(/^([+-])0([0-9])$/, "$1$2")}`;
+
     return {
       title: instant
         ? `${instant.toLocaleString(languages, {
@@ -195,12 +205,7 @@ function getHomeOpengraphData(
           })} in ${placeStr}`
         : `Time in ${placeStr}`,
       url: new URL(canonicalPathname, "https://when.st/").toString(),
-      // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition
-      description: `UTC${(
-        instant || Temporal.Now.zonedDateTime(serverCalendar, urlTZ)
-      ).offset
-        .replace(/:00$/, "")
-        .replace(/^([+-])0([0-9])$/, "$1$2")}`,
+      description: utcOffset,
       published_time: instant
         ? instant.toString({ timeZoneName: "never", offset: "auto" })
         : undefined,
