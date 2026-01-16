@@ -28,7 +28,32 @@ t.test("opengraph", async (t) => {
   await t.test(async () => {
     const $ = await fetch$("/");
 
+    t.same($("head title").text(), "when.st");
     t.same($('head [property="og:title"]').attr("content"), "when.st");
+    t.same($('head [property="og:url"]').attr("content"), undefined);
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/about");
+
+    t.same($("head title").text(), "About | when.st");
+    t.same($('head [property="og:title"]').attr("content"), "About");
+    t.same($('head [property="og:url"]').attr("content"), undefined);
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/settings");
+
+    t.same($("head title").text(), "Settings | when.st");
+    t.same($('head [property="og:title"]').attr("content"), "Settings");
+    t.same($('head [property="og:url"]').attr("content"), undefined);
+  });
+
+  await t.test(async () => {
+    const $ = await fetch$("/link");
+
+    t.same($("head title").text(), "Link | when.st");
+    t.same($('head [property="og:title"]').attr("content"), "Link");
     t.same($('head [property="og:url"]').attr("content"), undefined);
   });
 
