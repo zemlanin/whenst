@@ -724,12 +724,6 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   flex-grow: 1;
 }
 
-#the-tweet img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-}
-
 form#send-code {
   display: flex;
   flex-flow: row;
