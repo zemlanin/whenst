@@ -4,6 +4,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
 
+import { db } from "../../db/index.js";
 import { guessTimezone } from "../../../src/guess-timezone.js";
 import {
   getLocationFromTimezone,
@@ -33,17 +34,21 @@ export async function apiSlackEventsPost(
   if (isLinkSharedBody(body)) {
     const r = reply.status(200).send(null);
 
-    await sendChatUnfurl(body.event);
+    await sendChatUnfurl(body);
 
     return r;
+  }
+
+  if (isTokensRevokedBody(body)) {
+    removeTokens(body);
+
+    return reply.status(200).send(null);
   }
 
   return reply.status(200).send(null);
 }
 
-const SIGNING_SECRET = process.env.WHENST_SIGNING_SECRET || "";
-// TODO: oauth flow
-const BOT_ACCESS_TOKEN = process.env.WHENST_BOT_ACCESS_TOKEN || "";
+const SIGNING_SECRET = process.env.WHENST_SLACK_SIGNING_SECRET || "";
 
 function isValidSlackRequest(request: FastifyRequest) {
   const timestamp = request.headers["x-slack-request-timestamp"];
@@ -98,7 +103,9 @@ type LinkSharedEvent = {
   event_ts: string;
 };
 
-function isLinkSharedBody(body: unknown): body is { event: LinkSharedEvent } {
+function isLinkSharedBody(
+  body: unknown,
+): body is { team_id: string; event: LinkSharedEvent } {
   return (
     isEventMessage(body) &&
     body.type === "event_callback" &&
@@ -107,6 +114,28 @@ function isLinkSharedBody(body: unknown): body is { event: LinkSharedEvent } {
     typeof body.event === "object" &&
     "type" in body.event &&
     body.event.type === "link_shared"
+  );
+}
+
+type TokensRevokedEvent = {
+  type: "tokens_revoked";
+  tokens: {
+    oauth: string[];
+    bot: string[];
+  };
+};
+
+function isTokensRevokedBody(
+  body: unknown,
+): body is { team_id: string; event: TokensRevokedEvent } {
+  return (
+    isEventMessage(body) &&
+    body.type === "event_callback" &&
+    "event" in body &&
+    body.event !== null &&
+    typeof body.event === "object" &&
+    "type" in body.event &&
+    body.event.type === "tokens_revoked"
   );
 }
 
@@ -123,7 +152,32 @@ function isEventMessage(
   );
 }
 
-async function sendChatUnfurl(event: LinkSharedEvent) {
+async function sendChatUnfurl({
+  team_id,
+  event,
+}: {
+  team_id: string;
+  event: LinkSharedEvent;
+}) {
+  const { access_token } =
+    db
+      .prepare<{ team_id: string }, { access_token: string }>(
+        `
+          SELECT
+            access_token
+          FROM slack_oauth_tokens
+          WHERE
+            team_id = @team_id
+          ORDER BY created_at DESC
+          LIMIT 1;
+        `,
+      )
+      .get({ team_id }) || {};
+
+  if (!access_token) {
+    return;
+  }
+
   const unfurls: Record<string, { blocks: Record<string, unknown>[] }> = {};
 
   for (const link of event.links) {
@@ -151,8 +205,17 @@ async function sendChatUnfurl(event: LinkSharedEvent) {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<${new URL(canonicalPathname, "https://when.st/").toString()}|${instantPathPart} in ${placeStr}> <!date^${instant.epochSeconds}^is {date_long_pretty} at {time}|is :shrug:>`,
+              text: `<!date^${instant.epochSeconds}^{date_long_pretty} at {time}|:shrug:>`,
             },
+          },
+          {
+            type: "context",
+            elements: [
+              {
+                type: "mrkdwn",
+                text: `<${new URL(canonicalPathname, "https://when.st/").toString()}|${instantPathPart} in ${placeStr}>`,
+              },
+            ],
           },
         ],
       };
@@ -171,7 +234,7 @@ async function sendChatUnfurl(event: LinkSharedEvent) {
     method: "post",
     headers: {
       "content-type": "application/json; charset=utf-8",
-      authorization: `Bearer ${BOT_ACCESS_TOKEN}`,
+      authorization: `Bearer ${access_token}`,
     },
     body: JSON.stringify({
       source: event.source,
@@ -183,6 +246,28 @@ async function sendChatUnfurl(event: LinkSharedEvent) {
   if (!resp.ok) {
     console.error(await resp.json());
   }
+}
+
+function removeTokens({
+  team_id,
+  event,
+}: {
+  team_id: string;
+  event: TokensRevokedEvent;
+}) {
+  const deleteStmt = db.prepare<{ team_id: string; bot_user_id: string }>(
+    `
+      DELETE FROM slack_oauth_tokens
+      WHERE team_id = @team_id AND bot_user_id = @bot_user_id;
+    `,
+  );
+  const deleteMany = db.transaction((bots: string[]) => {
+    for (const bot_user_id of bots) {
+      deleteStmt.run({ team_id, bot_user_id });
+    }
+  });
+
+  deleteMany(event.tokens.bot);
 }
 
 const serverCalendar = "iso8601";

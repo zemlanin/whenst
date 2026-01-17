@@ -1,4 +1,4 @@
-{{#> head title=opengraph.title }}
+{{#> head title="Success" }}
 <link
   rel="stylesheet"
   type="text/css"
@@ -7,31 +7,39 @@
 <link
   rel="stylesheet"
   type="text/css"
-  href="{{ static 'src/pages/home/index.tsx' type='css-modules' }}"
+  href="{{ static 'src/pages/slack/install/index.css' type='entrypoint' }}"
 />
-<meta name="slack-app-id" content="A010GLT1FME" />
 {{/ head }}
 <body>
   <div id="title-bar">
     <div class="left-half">
-      <a href="/" class="back" title="Back" hidden>&larr;</a>
+      <a href="/" class="back" title="Back">&larr;</a>
     </div>
-
-    <div class="heading"></div>
+    <h1>Success</h1>
 
     <div class="right-half"></div>
   </div>
   <div id="layout">
     {{> nav }}
 
-    <main></main>
+    <main>
+      <h1>Success</h1>
+
+      <p>Slack app was successfully installed</p>
+
+      <p>Now go send some when.st links :)</p>
+
+      <p>
+        <a href="/">Go back to home</a>
+      </p>
+    </main>
   </div>
   <script
     src="{{ static 'src/register-sw.ts' type='entrypoint' }}"
     type="module"
   ></script>
   <script
-    src="{{ static 'src/pages/home/index.tsx' type='entrypoint' }}"
+    src="{{ static 'src/pages/slack/install/index.ts' type='entrypoint' }}"
     type="module"
   ></script>
 </body>

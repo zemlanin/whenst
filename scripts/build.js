@@ -15,6 +15,7 @@ const HANDLEBARS_ENTRYPOINTS = [
   path.join(PAGES_BASE, "home/index.html.hbs"),
   path.join(PAGES_BASE, "link/index.html.hbs"),
   path.join(PAGES_BASE, "settings/index.html.hbs"),
+  path.join(PAGES_BASE, "slack/install/success.html.hbs"),
 ];
 
 await build();

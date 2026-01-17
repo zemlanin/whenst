@@ -1,0 +1,9 @@
+h2 {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+
+p,
+ul {
+  margin-top: 0;
+}

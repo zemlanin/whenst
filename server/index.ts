@@ -13,6 +13,7 @@ import { apiSessionDelete } from "./api/session.js";
 import { apiAccountGet, apiAccountPost } from "./api/account.js";
 import { apiSettingsGet } from "./api/settings.js";
 import { apiSlackEventsPost } from "./api/slack/events.js";
+import { apiSlackOauthGet } from "./api/slack/oauth.js";
 import { apiSqrapCodePost } from "./api/sqrap/code.js";
 import { apiSqrapInitPost } from "./api/sqrap/init.js";
 import { apiSqrapStatusGet } from "./api/sqrap/status.js";
@@ -340,6 +341,7 @@ fastify.post(
   },
   apiSlackEventsPost,
 );
+fastify.get("/api/slack/oauth", apiSlackOauthGet);
 fastify.get("/.well-known/healthcheck", (_request, reply) => {
   return reply.code(200).send();
 });
@@ -357,6 +359,26 @@ fastify.get("/about", (_request, reply) => {
   return reply
     .header("cache-control", `public, max-age=${5 * 60}`)
     .viewAsync("src/pages/about/index.html.hbs");
+});
+fastify.get("/slack/install", (request, reply) => {
+  if ((request.query as Record<string, string | undefined>).success) {
+    return reply
+      .header("cache-control", `public, max-age=${5 * 60}`)
+      .viewAsync("src/pages/slack/install/success.html.hbs");
+  }
+
+  const WHENST_SLACK_CLIENT_ID = "1018918207158.1016707049728";
+
+  return reply.redirect(
+    `https://slack.com/oauth/v2/authorize?${new URLSearchParams({
+      scope: "links:read,links:write",
+      client_id: WHENST_SLACK_CLIENT_ID,
+      redirect_uri: new URL(
+        "/api/slack/oauth",
+        `https://${request.hostname}`,
+      ).toString(),
+    })}`,
+  );
 });
 
 export const server = fastify;
