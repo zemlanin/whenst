@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import fastifyAccepts from "@fastify/accepts";
 import fastifyStatic from "@fastify/static";
 import fastifyView from "@fastify/view";
+import fastifyRawBody from "fastify-raw-body";
 import Handlebars from "handlebars";
 import "urlpattern-polyfill";
 import { Temporal } from "@js-temporal/polyfill";
@@ -11,6 +12,7 @@ import staticAssets from "#dist/server/static.js";
 import { apiSessionDelete } from "./api/session.js";
 import { apiAccountGet, apiAccountPost } from "./api/account.js";
 import { apiSettingsGet } from "./api/settings.js";
+import { apiSlackEventsPost } from "./api/slack/events.js";
 import { apiSqrapCodePost } from "./api/sqrap/code.js";
 import { apiSqrapInitPost } from "./api/sqrap/init.js";
 import { apiSqrapStatusGet } from "./api/sqrap/status.js";
@@ -38,6 +40,9 @@ const fastify = Fastify({
   },
 });
 
+await fastify.register(fastifyRawBody, {
+  global: false,
+});
 fastify.register(fastifyAccepts);
 
 // redirect to the main domain
@@ -326,6 +331,15 @@ fastify.get("/api/sqrap/status", apiSqrapStatusGet);
 fastify.get("/api/timezones-index", apiTimezonesIndex);
 fastify.get("/api/sync/world-clock", apiSyncWorldClockGet);
 fastify.patch("/api/sync/world-clock", apiSyncWorldClockPatch);
+fastify.post(
+  "/api/slack/events",
+  {
+    config: {
+      rawBody: true,
+    },
+  },
+  apiSlackEventsPost,
+);
 fastify.get("/.well-known/healthcheck", (_request, reply) => {
   return reply.code(200).send();
 });
