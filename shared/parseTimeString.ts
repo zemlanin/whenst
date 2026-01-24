@@ -56,9 +56,9 @@ export function parseTimeString(
 
   if (!date) {
     if (options?.currentDateTime) {
-      date = options.currentDateTime.toPlainDate();
+      date = options.currentDateTime.withTimeZone(timezone).toPlainDate();
     } else {
-      date = Temporal.Now.plainDate(CALENDAR); // TODO `(CALENDAR, timezone)`
+      date = Temporal.Now.plainDate(CALENDAR, timezone);
     }
   }
 

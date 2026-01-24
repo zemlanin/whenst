@@ -287,6 +287,23 @@ t.test("opengraph", async (t) => {
     );
   });
 
+  await t.test("/Auckland/T00", async () => {
+    const $ = await fetch$("/Auckland/T00", {
+      headers: { "accept-language": "en-GB", date: ANCHOR_DATE },
+    });
+
+    t.same(
+      $('head [property="og:title"]').attr("content"),
+      // it's the 23rd in Auckland at `ANCHOR_DATE`
+      "23 January 2026 at 00:00 in Auckland",
+    );
+    t.same(
+      $('head [property="og:url"]').attr("content"),
+      // it's the 23rd in Auckland at `ANCHOR_DATE`
+      "https://when.st/Pacific/Auckland/2026-01-23T00:00",
+    );
+  });
+
   // TODO `/unix`
   await t.skip("/unix", async () => {
     const $ = await fetch$("/unix");
