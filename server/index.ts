@@ -22,15 +22,14 @@ import {
   apiSyncWorldClockGet,
   apiSyncWorldClockPatch,
 } from "./api/sync/world-clock.js";
-import { guessTimezone } from "../src/guess-timezone.js";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
 } from "../shared/from-timezone.js";
+import { extractDataFromURL } from "../shared/extractDataFromURL.js";
+import { parseTimeString, CALENDAR } from "../shared/parseTimeString.js";
 
 import "./dist.d.ts";
-
-const serverCalendar = "iso8601";
 
 const fastify = Fastify({
   logger: true,
@@ -197,9 +196,7 @@ function getHomeOpengraphData(
     const utcOffset =
       urlTZ.id === "UTC"
         ? "UTC"
-        : `UTC${(
-            instant || Temporal.Now.zonedDateTime(serverCalendar, urlTZ)
-          ).offset
+        : `UTC${(instant || Temporal.Now.zonedDateTime(CALENDAR, urlTZ)).offset
             .replace(/:00$/, "")
             .replace(/^([+-])0([0-9])$/, "$1$2")}`;
 
@@ -221,105 +218,6 @@ function getHomeOpengraphData(
   // TODO: `/unix/:seconds`
   // TODO: `/` (generic "about" description)
   return null;
-}
-
-function parseTimeString(
-  timezone: string | Temporal.TimeZone,
-  timeString: string | undefined,
-) {
-  if (timezone === "unix") {
-    timezone = "UTC";
-  }
-
-  let date = undefined;
-  if (timeString) {
-    try {
-      date = Temporal.PlainDate.from(timeString);
-    } catch (_e) {
-      //
-    }
-  }
-
-  if (!date) {
-    date = Temporal.Now.plainDate(serverCalendar);
-  }
-
-  if (timeString && timeString !== "now") {
-    try {
-      Temporal.PlainTime.from(timeString);
-    } catch (_e) {
-      timeString = "now";
-    }
-  }
-
-  return !timeString || timeString === "now"
-    ? Temporal.Now.zonedDateTime(serverCalendar, timezone).with({
-        millisecond: 0,
-      })
-    : date.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from(timeString),
-        timeZone: timezone,
-      });
-}
-
-function extractDataFromURL(
-  href: string,
-): [] | [string | Temporal.TimeZone, string] {
-  const unixURLPattern = new URLPattern(
-    {
-      pathname: "/unix{/:seconds(\\d*)}?",
-    },
-    // https://github.com/kenchris/urlpattern-polyfill/issues/127
-    { ignoreCase: true } as unknown as string,
-  );
-  const matchesUnix = unixURLPattern.test(href);
-  if (matchesUnix) {
-    const { seconds } = unixURLPattern.exec(href)?.pathname.groups ?? {};
-
-    if (!seconds || !seconds.match(/^[0-9]{1,10}$/)) {
-      return ["unix", "now"];
-    }
-
-    return ["unix", new Date(+seconds * 1000).toISOString().replace(/Z$/, "")];
-  }
-
-  const geoURLPattern = new URLPattern({
-    pathname: "/:zeroth{/*}?",
-  });
-
-  const matchesGeo = geoURLPattern.test(href);
-  if (!matchesGeo) {
-    return [];
-  }
-
-  const { zeroth, 0: extra } = geoURLPattern.exec(href)?.pathname.groups || {
-    zeroth: "",
-  };
-
-  if (zeroth === "") {
-    return [];
-  }
-
-  const [first, second, third] = extra?.split("/") ?? [];
-
-  let remoteTZ = guessTimezone(`${zeroth}/${first}/${second}`, {
-    strict: true,
-  });
-  if (remoteTZ) {
-    return [remoteTZ, third || "now"];
-  }
-
-  remoteTZ = guessTimezone(`${zeroth}/${first}`, { strict: true });
-  if (remoteTZ) {
-    return [remoteTZ, second || "now"];
-  }
-
-  remoteTZ = guessTimezone(`${zeroth}`, { strict: true });
-  if (remoteTZ) {
-    return [remoteTZ, first || "now"];
-  }
-
-  return [];
 }
 
 fastify.get("/api/account", apiAccountGet);

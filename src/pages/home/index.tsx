@@ -18,11 +18,12 @@ import "../../keyboard";
 
 // TODO: `addTimezone`
 import { worldClockSignal } from "../../api.js";
-import { guessTimezone } from "../../guess-timezone.js";
 import {
   getLocationFromTimezone,
   getPathnameFromTimezone,
 } from "../../../shared/from-timezone.js";
+import { extractDataFromURL } from "../../../shared/extractDataFromURL.js";
+import { parseTimeString, CALENDAR } from "../../../shared/parseTimeString.js";
 
 import ClockRotateLeft from "../../../icons/clock-rotate-left.svg.js";
 import Discord from "../../../icons/discord.svg.js";
@@ -51,7 +52,6 @@ declare global {
   }
 }
 
-const browserCalendar = "iso8601";
 const rtfAlways = new window.Intl.RelativeTimeFormat("en", {
   numeric: "always",
 });
@@ -85,7 +85,7 @@ if ("visibilityState" in document) {
 }
 
 function IndexPage() {
-  const [urlTZ, urlDT] = extractDataFromURL();
+  const [urlTZ, urlDT] = extractDataFromURL(location.href);
   const localTZ = Temporal.TimeZone.from(
     Temporal.Now.timeZoneId(),
   ) as Temporal.TimeZone;
@@ -140,10 +140,7 @@ function IndexPage() {
           return;
         }
 
-        const now = Temporal.Now.zonedDateTime(
-          browserCalendar,
-          dt.peek().timeZoneId,
-        );
+        const now = Temporal.Now.zonedDateTime(CALENDAR, dt.peek().timeZoneId);
 
         dt.value = now.with({
           millisecond: 0,
@@ -1243,110 +1240,11 @@ function WorldClockRow({
   );
 }
 
-function parseTimeString(
-  timezone: string | Temporal.TimeZone,
-  timeString: string | undefined,
-) {
-  if (timezone === "unix") {
-    timezone = "UTC";
-  }
-
-  let date = undefined;
-  if (timeString) {
-    try {
-      date = Temporal.PlainDate.from(timeString);
-    } catch (_e) {
-      //
-    }
-  }
-
-  if (!date) {
-    date = Temporal.Now.plainDate(browserCalendar);
-  }
-
-  if (timeString && timeString !== "now") {
-    try {
-      Temporal.PlainTime.from(timeString);
-    } catch (_e) {
-      timeString = "now";
-    }
-  }
-
-  return !timeString || timeString === "now"
-    ? Temporal.Now.zonedDateTime(browserCalendar, timezone).with({
-        millisecond: 0,
-      })
-    : date.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from(timeString),
-        timeZone: timezone,
-      });
-}
-
-function extractDataFromURL(
-  href = location.href,
-): [] | [string | Temporal.TimeZone, string] {
-  const unixURLPattern = new URLPattern(
-    {
-      pathname: "/unix{/:seconds(\\d*)}?",
-    },
-    // https://github.com/kenchris/urlpattern-polyfill/issues/127
-    { ignoreCase: true } as unknown as string,
-  );
-  const matchesUnix = unixURLPattern.test(href);
-  if (matchesUnix) {
-    const { seconds } = unixURLPattern.exec(href)?.pathname.groups ?? {};
-
-    if (!seconds || !seconds.match(/^[0-9]{1,10}$/)) {
-      return ["unix", "now"];
-    }
-
-    return ["unix", new Date(+seconds * 1000).toISOString().replace(/Z$/, "")];
-  }
-
-  const geoURLPattern = new URLPattern({
-    pathname: "/:zeroth{/*}?",
-  });
-
-  const matchesGeo = geoURLPattern.test(href);
-  if (!matchesGeo) {
-    return [];
-  }
-
-  const { zeroth, 0: extra } = geoURLPattern.exec(href)?.pathname.groups || {
-    zeroth: "",
-  };
-
-  if (zeroth === "") {
-    return [];
-  }
-
-  const [first, second, third] = extra?.split("/") ?? [];
-
-  let remoteTZ = guessTimezone(`${zeroth}/${first}/${second}`, {
-    strict: true,
-  });
-  if (remoteTZ) {
-    return [remoteTZ, third || "now"];
-  }
-
-  remoteTZ = guessTimezone(`${zeroth}/${first}`, { strict: true });
-  if (remoteTZ) {
-    return [remoteTZ, second || "now"];
-  }
-
-  remoteTZ = guessTimezone(`${zeroth}`, { strict: true });
-  if (remoteTZ) {
-    return [remoteTZ, first || "now"];
-  }
-
-  return [];
-}
-
 const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "long" });
 
 function getRelativeTime(dt: Temporal.ZonedDateTime) {
   const localDateTime = dt;
-  const now = Temporal.Now.zonedDateTime(browserCalendar, dt.timeZoneId);
+  const now = Temporal.Now.zonedDateTime(CALENDAR, dt.timeZoneId);
   const today = now.startOfDay();
   const durationSinceNow = localDateTime.since(now);
   const durationSinceToday = localDateTime.startOfDay().since(today);
