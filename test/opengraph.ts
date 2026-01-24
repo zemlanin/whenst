@@ -178,8 +178,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  // TODO
-  await t.skip("/chicago/10pm", async () => {
+  await t.test("/chicago/10pm", async () => {
     const $ = await fetch$("/chicago/10pm", {
       headers: { "accept-language": "en-US" },
     });
@@ -195,8 +194,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  // TODO
-  await t.skip("/chicago/9:15am", async () => {
+  await t.test("/chicago/9:15am", async () => {
     const $ = await fetch$("/chicago/9:15am", {
       headers: { "accept-language": "en-US" },
     });
@@ -204,11 +202,91 @@ t.test("opengraph", async (t) => {
     // TODO check for today's date
     t.match(
       $('head [property="og:title"]').attr("content"),
-      /at 09:15 AM in Chicago$/,
+      /at 9:15 AM in Chicago$/,
     );
     t.match(
       $('head [property="og:url"]').attr("content"),
       /https:\/\/when\.st\/America\/Chicago\/\d{4}-\d{2}-\d{2}T09:15/,
+    );
+  });
+
+  await t.test("/los_angeles/12:00am", async () => {
+    const $ = await fetch$("/los_angeles/12:00am", {
+      headers: { "accept-language": "en-US" },
+    });
+
+    // TODO check for today's date
+    t.match(
+      $('head [property="og:title"]').attr("content"),
+      /at 12:00 AM in Los Angeles/,
+    );
+    t.match(
+      $('head [property="og:url"]').attr("content"),
+      /https:\/\/when\.st\/America\/Los_Angeles\/\d{4}-\d{2}-\d{2}T00:00/,
+    );
+  });
+
+  await t.test("/denver/12:00pm", async () => {
+    const $ = await fetch$("/denver/12:00pm", {
+      headers: { "accept-language": "en-GB" },
+    });
+
+    // TODO check for today's date
+    t.match(
+      $('head [property="og:title"]').attr("content"),
+      /at 12:00 in Denver/,
+    );
+    t.match(
+      $('head [property="og:url"]').attr("content"),
+      /https:\/\/when\.st\/America\/Denver\/\d{4}-\d{2}-\d{2}T12:00/,
+    );
+  });
+
+  await t.test("/Tallinn/1am", async () => {
+    const $ = await fetch$("/Tallinn/1am", {
+      headers: { "accept-language": "en-GB" },
+    });
+
+    // TODO check for today's date
+    t.match(
+      $('head [property="og:title"]').attr("content"),
+      /at 01:00 in Tallinn/,
+    );
+    t.match(
+      $('head [property="og:url"]').attr("content"),
+      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T01:00/,
+    );
+  });
+
+  await t.test("/Tallinn/12am", async () => {
+    const $ = await fetch$("/Tallinn/12am", {
+      headers: { "accept-language": "en-GB" },
+    });
+
+    // TODO check for today's date
+    t.match(
+      $('head [property="og:title"]').attr("content"),
+      /at 00:00 in Tallinn/,
+    );
+    t.match(
+      $('head [property="og:url"]').attr("content"),
+      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T00:00/,
+    );
+  });
+
+  await t.test("/Tallinn/12pm", async () => {
+    const $ = await fetch$("/Tallinn/12pm", {
+      headers: { "accept-language": "en-GB" },
+    });
+
+    // TODO check for today's date
+    t.match(
+      $('head [property="og:title"]').attr("content"),
+      /at 12:00 in Tallinn/,
+    );
+    t.match(
+      $('head [property="og:url"]').attr("content"),
+      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T12:00/,
     );
   });
 
