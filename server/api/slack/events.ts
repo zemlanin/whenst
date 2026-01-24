@@ -189,6 +189,7 @@ async function sendChatUnfurl({
 
     if (urlTZ instanceof Temporal.TimeZone) {
       const placeStr = getLocationFromTimezone(urlTZ);
+      // TODO: pass event's datetime when parsing time strings
       const instant = parseTimeString(urlTZ, urlDT);
 
       const instantPathPart = instant.toString({

@@ -6,6 +6,8 @@ import { load } from "cheerio";
 import t from "tap";
 import { Temporal } from "@js-temporal/polyfill";
 
+const ANCHOR_DATE = "Thu, 22 Jan 2026 13:59:03 GMT";
+
 t.test("opengraph", async (t) => {
   process.env.WHENST_MAIN_DB = ":memory:";
   process.env.WHENST_TIMEZONES_DB = ":memory:";
@@ -164,129 +166,124 @@ t.test("opengraph", async (t) => {
 
   await t.test(async () => {
     const $ = await fetch$("/chicago/T10:10", {
-      headers: { "accept-language": "en-US" },
+      headers: {
+        "accept-language": "en-US",
+        date: ANCHOR_DATE,
+      },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 10:10 AM in Chicago$/,
+      "January 22, 2026 at 10:10 AM in Chicago",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/America\/Chicago\/\d{4}-\d{2}-\d{2}T10:10/,
+      "https://when.st/America/Chicago/2026-01-22T10:10",
     );
   });
 
   await t.test("/chicago/10pm", async () => {
     const $ = await fetch$("/chicago/10pm", {
-      headers: { "accept-language": "en-US" },
+      headers: { "accept-language": "en-US", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 10:00 PM in Chicago$/,
+      "January 22, 2026 at 10:00 PM in Chicago",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/America\/Chicago\/\d{4}-\d{2}-\d{2}T22:00/,
+      "https://when.st/America/Chicago/2026-01-22T22:00",
     );
   });
 
   await t.test("/chicago/9:15am", async () => {
     const $ = await fetch$("/chicago/9:15am", {
-      headers: { "accept-language": "en-US" },
+      headers: { "accept-language": "en-US", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 9:15 AM in Chicago$/,
+      "January 22, 2026 at 9:15 AM in Chicago",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/America\/Chicago\/\d{4}-\d{2}-\d{2}T09:15/,
+      "https://when.st/America/Chicago/2026-01-22T09:15",
     );
   });
 
   await t.test("/los_angeles/12:00am", async () => {
     const $ = await fetch$("/los_angeles/12:00am", {
-      headers: { "accept-language": "en-US" },
+      headers: { "accept-language": "en-US", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 12:00 AM in Los Angeles/,
+      "January 22, 2026 at 12:00 AM in Los Angeles",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/America\/Los_Angeles\/\d{4}-\d{2}-\d{2}T00:00/,
+      "https://when.st/America/Los_Angeles/2026-01-22T00:00",
     );
   });
 
   await t.test("/denver/12:00pm", async () => {
     const $ = await fetch$("/denver/12:00pm", {
-      headers: { "accept-language": "en-GB" },
+      headers: { "accept-language": "en-GB", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 12:00 in Denver/,
+      "22 January 2026 at 12:00 in Denver",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/America\/Denver\/\d{4}-\d{2}-\d{2}T12:00/,
+      "https://when.st/America/Denver/2026-01-22T12:00",
     );
   });
 
   await t.test("/Tallinn/1am", async () => {
     const $ = await fetch$("/Tallinn/1am", {
-      headers: { "accept-language": "en-GB" },
+      headers: { "accept-language": "en-GB", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 01:00 in Tallinn/,
+      "22 January 2026 at 01:00 in Tallinn",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T01:00/,
+      "https://when.st/Europe/Tallinn/2026-01-22T01:00",
     );
   });
 
   await t.test("/Tallinn/12am", async () => {
     const $ = await fetch$("/Tallinn/12am", {
-      headers: { "accept-language": "en-GB" },
+      headers: { "accept-language": "en-GB", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 00:00 in Tallinn/,
+      "22 January 2026 at 00:00 in Tallinn",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T00:00/,
+      "https://when.st/Europe/Tallinn/2026-01-22T00:00",
     );
   });
 
   await t.test("/Tallinn/12pm", async () => {
     const $ = await fetch$("/Tallinn/12pm", {
-      headers: { "accept-language": "en-GB" },
+      headers: { "accept-language": "en-GB", date: ANCHOR_DATE },
     });
 
-    // TODO check for today's date
-    t.match(
+    t.same(
       $('head [property="og:title"]').attr("content"),
-      /at 12:00 in Tallinn/,
+      "22 January 2026 at 12:00 in Tallinn",
     );
-    t.match(
+    t.same(
       $('head [property="og:url"]').attr("content"),
-      /https:\/\/when\.st\/Europe\/Tallinn\/\d{4}-\d{2}-\d{2}T12:00/,
+      "https://when.st/Europe/Tallinn/2026-01-22T12:00",
     );
   });
 

@@ -151,6 +151,20 @@ fastify.register((childContext, _, done) => {
       return reply.code(404).send();
     }
 
+    const currentDateTime = (() => {
+      if (!request.headers.date) {
+        return;
+      }
+
+      try {
+        return Temporal.Instant.from(
+          new Date(request.headers.date).toISOString(),
+        ).toZonedDateTimeISO(Temporal.Now.timeZoneId());
+      } catch (_e) {
+        return undefined;
+      }
+    })();
+
     // TODO: 404 for unknown timezones
     const opengraph = (() => {
       try {
@@ -159,6 +173,7 @@ fastify.register((childContext, _, done) => {
             .accepts()
             .languages()
             .filter((lang) => lang === "en" || lang.startsWith("en-")),
+          currentDateTime,
         });
       } catch (e) {
         console.error(e);
@@ -176,7 +191,10 @@ fastify.register((childContext, _, done) => {
 
 function getHomeOpengraphData(
   pathname: string,
-  { languages }: { languages: string[] },
+  {
+    languages,
+    currentDateTime,
+  }: { languages: string[]; currentDateTime?: Temporal.ZonedDateTime },
 ) {
   const url = new URL(pathname, "https://when.st/").toString();
   const [urlTZ, urlDT] = extractDataFromURL(url);
@@ -184,7 +202,11 @@ function getHomeOpengraphData(
   if (urlTZ instanceof Temporal.TimeZone) {
     const placeStr = getLocationFromTimezone(urlTZ);
     const instant =
-      urlDT && urlDT !== "now" ? parseTimeString(urlTZ, urlDT) : null;
+      urlDT && urlDT !== "now"
+        ? parseTimeString(urlTZ, urlDT, {
+            currentDateTime,
+          })
+        : null;
 
     const canonicalPathname =
       getPathnameFromTimezone(urlTZ) +

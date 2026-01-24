@@ -37,12 +37,15 @@ const AM_PM_REPLACEMENT = (
 export function parseTimeString(
   timezone: string | Temporal.TimeZone,
   timeString: string | undefined,
+  options: {
+    currentDateTime?: Temporal.ZonedDateTime;
+  } = {},
 ) {
   if (timezone === "unix") {
     timezone = "UTC";
   }
 
-  let date = undefined;
+  let date: Temporal.PlainDate | undefined = undefined;
   if (timeString) {
     try {
       date = Temporal.PlainDate.from(timeString);
@@ -52,7 +55,11 @@ export function parseTimeString(
   }
 
   if (!date) {
-    date = Temporal.Now.plainDate(CALENDAR); // TODO `(CALENDAR, timezone)`
+    if (options?.currentDateTime) {
+      date = options.currentDateTime.toPlainDate();
+    } else {
+      date = Temporal.Now.plainDate(CALENDAR); // TODO `(CALENDAR, timezone)`
+    }
   }
 
   if (timeString && timeString !== "now") {
@@ -67,12 +74,21 @@ export function parseTimeString(
     }
   }
 
-  return !timeString || timeString === "now"
-    ? Temporal.Now.zonedDateTime(CALENDAR, timezone).with({
-        millisecond: 0,
-      })
-    : date.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from(timeString),
+  if (!timeString || timeString === "now") {
+    if (options?.currentDateTime) {
+      return options.currentDateTime.with({
         timeZone: timezone,
+        millisecond: 0,
       });
+    }
+
+    return Temporal.Now.zonedDateTime(CALENDAR, timezone).with({
+      millisecond: 0,
+    });
+  }
+
+  return date.toZonedDateTime({
+    plainTime: Temporal.PlainTime.from(timeString),
+    timeZone: timezone,
+  });
 }
