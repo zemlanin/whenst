@@ -190,9 +190,10 @@ async function sendChatUnfurl({
     if (urlTZ instanceof Temporal.TimeZone) {
       const placeStr = getLocationFromTimezone(urlTZ);
       // TODO: pass event's datetime when parsing time strings
-      const instant = parseTimeString(urlTZ, urlDT);
+      /** "zonedDateTime" */
+      const zDT = parseTimeString(urlTZ, urlDT);
 
-      const instantPathPart = instant.toString({
+      const instantPathPart = zDT.toString({
         timeZoneName: "never",
         offset: "never",
         smallestUnit: "minute",
@@ -207,7 +208,7 @@ async function sendChatUnfurl({
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<!date^${instant.epochSeconds}^{date_long_pretty} at {time}|:shrug:>`,
+              text: `<!date^${zDT.epochSeconds}^{date_long_pretty} at {time}|:shrug:>`,
             },
           },
           {
@@ -223,7 +224,36 @@ async function sendChatUnfurl({
       };
     }
 
-    // TODO: `/unix/:seconds`
+    if (urlTZ === "unix") {
+      // TODO: pass event's datetime when parsing time strings
+      /** "zonedDateTime" */
+      const zDT = parseTimeString(urlTZ, urlDT);
+
+      const canonicalPathname =
+        getPathnameFromTimezone(urlTZ) + `/${zDT.epochSeconds}`;
+
+      unfurls[link.url] = {
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `<!date^${zDT.epochSeconds}^{date_long_pretty} at {time}|:shrug:>`,
+            },
+          },
+          {
+            type: "context",
+            elements: [
+              {
+                type: "mrkdwn",
+                text: `<${new URL(canonicalPathname, "https://when.st/").toString()}|Unix ${zDT.epochSeconds}>`,
+              },
+            ],
+          },
+        ],
+      };
+    }
+
     // TODO: `/` (generic "about" description)
     continue;
   }

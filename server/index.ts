@@ -201,7 +201,8 @@ function getHomeOpengraphData(
 
   if (urlTZ instanceof Temporal.TimeZone) {
     const placeStr = getLocationFromTimezone(urlTZ);
-    const instant =
+    /** "zonedDateTime" */
+    const zDT =
       urlDT && urlDT !== "now"
         ? parseTimeString(urlTZ, urlDT, {
             currentDateTime,
@@ -210,34 +211,57 @@ function getHomeOpengraphData(
 
     const canonicalPathname =
       getPathnameFromTimezone(urlTZ) +
-      (instant
-        ? `/${instant.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}`
+      (zDT
+        ? `/${zDT.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}`
         : "");
 
     // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition
     const utcOffset =
       urlTZ.id === "UTC"
         ? "UTC"
-        : `UTC${(instant || Temporal.Now.zonedDateTime(CALENDAR, urlTZ)).offset
+        : `UTC${(zDT || Temporal.Now.zonedDateTime(CALENDAR, urlTZ)).offset
             .replace(/:00$/, "")
             .replace(/^([+-])0([0-9])$/, "$1$2")}`;
 
     return {
-      title: instant
-        ? `${instant.toLocaleString(languages, {
+      title: zDT
+        ? `${zDT.toLocaleString(languages, {
             dateStyle: "long",
             timeStyle: "short",
           })} in ${placeStr}`
         : `Time in ${placeStr}`,
       url: new URL(canonicalPathname, "https://when.st/").toString(),
       description: utcOffset,
-      published_time: instant
-        ? instant.toString({ timeZoneName: "never", offset: "auto" })
+      published_time: zDT
+        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
         : undefined,
     };
   }
 
-  // TODO: `/unix/:seconds`
+  if (urlTZ === "unix") {
+    /** "zonedDateTime" */
+    const zDT =
+      urlDT && urlDT !== "now"
+        ? parseTimeString(urlTZ, urlDT, {
+            currentDateTime,
+          })
+        : null;
+
+    const canonicalPathname =
+      getPathnameFromTimezone(urlTZ) + (zDT ? `/${zDT.epochSeconds}` : "");
+
+    return {
+      title: zDT ? `Unix ${zDT.epochSeconds}` : `Unix time`,
+      url: new URL(canonicalPathname, "https://when.st/").toString(),
+      description: zDT
+        ? `0x${zDT.epochSeconds.toString(16)} • 0b${zDT.epochSeconds.toString(2)}`
+        : `aka Epoch time, POSIX time, or Unix timestamp`,
+      published_time: zDT
+        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
+        : undefined,
+    };
+  }
+
   // TODO: `/` (generic "about" description)
   return null;
 }

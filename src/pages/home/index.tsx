@@ -1345,7 +1345,7 @@ function updateTitle(
   const placeStr = getLocationFromTimezone(tz);
   if (!dt) {
     document.title =
-      tz === "unix" ? `Unix epoch | when.st` : `Time in ${placeStr} | when.st`;
+      tz === "unix" ? `Unix time | when.st` : `Time in ${placeStr} | when.st`;
     return;
   }
 

@@ -304,14 +304,23 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  // TODO `/unix`
-  await t.skip("/unix", async () => {
+  await t.test("/unix", async () => {
     const $ = await fetch$("/unix");
 
-    t.same($('head [property="og:title"]').attr("content"), "Time in Madrid");
+    t.same($('head [property="og:title"]').attr("content"), "Unix time");
     t.same(
       $('head [property="og:url"]').attr("content"),
-      "https://when.st/Europe/Madrid",
+      "https://when.st/unix",
+    );
+  });
+
+  await t.test("/unix/1645671600", async () => {
+    const $ = await fetch$("/unix/1645671600");
+
+    t.same($('head [property="og:title"]').attr("content"), "Unix 1645671600");
+    t.same(
+      $('head [property="og:url"]').attr("content"),
+      "https://when.st/unix/1645671600",
     );
   });
 
