@@ -5,14 +5,14 @@ import { useEffect, useId, useRef } from "preact/hooks";
 
 import Plus from "../../../icons/plus.svg.js";
 
-import "./add-timezone-form.css";
+import "./add-world-clock-form.css";
 import { addWorldClock } from "../../api.js";
 
 const collapsedSignal = new Signal(true);
 const activeValueSignal = new Signal("");
 
 // TODO: rename to `AddWorldClockForm`
-export function AddTimezoneForm() {
+export function AddWorldClockForm() {
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     window.addEventListener("click", (event) => {
@@ -81,7 +81,7 @@ export function AddTimezoneForm() {
           collapsedSignal.value = true;
         }
       }}
-      className="add-timezone-form"
+      className="add-world-clock-form"
     >
       <div className="plus-icon">
         <Plus height="1em" width="1em" />

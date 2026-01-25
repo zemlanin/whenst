@@ -15,7 +15,7 @@ import {
 import { getLocationFromTimezone } from "../../../shared/from-timezone.js";
 import "../../keyboard";
 
-import { AddTimezoneForm } from "./add-timezone-form.js";
+import { AddWorldClockForm } from "./add-world-clock-form.js";
 import { Sync } from "./Sync.js";
 
 const timezonesEdit = document.getElementById("timezones-edit");
@@ -95,7 +95,7 @@ function TimezonesEdit() {
   return (
     <>
       <div className="timezone-row">
-        <AddTimezoneForm />
+        <AddWorldClockForm />
       </div>
       <ul id="timezones-list" ref={timezonesListRef}>
         <For each={definedWorldClock}>
