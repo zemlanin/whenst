@@ -122,8 +122,11 @@ h3 {
 }
 
 h1 + p,
+h1 + dl,
 h2 + p,
+h2 + dl,
 h3 + p,
+h3 + dl,
 [role="tablist"] + p,
 [role="tablist"] + div p:first-child {
   margin-top: 0;

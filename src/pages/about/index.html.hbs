@@ -68,6 +68,83 @@
         <a class="button primary" href="/slack/install">Install when.st</a>
       </p>
 
+      <h2>Supported URL formats</h2>
+
+      <dl>
+        <dt><code>https://when.st/:timezone</code></dt>
+        <dd>
+          Current time in the timezone from tz database<sup
+            ><a href="https://en.wikipedia.org/wiki/Tz_database" target="_blank"
+              >?</a
+            ></sup
+          ><br /><br />For example,
+          <a data-pattern="/:timezone">/:timezone</a>
+        </dd>
+
+        <dt><code>https://when.st/:timezone/:datetime</code></dt>
+        <dd>
+          Specific date and time in the timezone<br /><br />For example,
+          <a data-pattern="/:timezone/:datetime">/:timezone/:datetime</a>
+        </dd>
+
+        <dt>
+          <code>https://when.st/:timezone/:time24</code>,
+          <code>https://when.st/:timezone/:time12</code>,
+          <code>https://when.st/:timezone/:hour12</code>
+        </dt>
+        <dd>
+          Today's specific time in the timezone<br /><br />For example,
+          <a data-pattern="/:timezone/:time24">/:timezone/:time24</a>,
+          <a data-pattern="/:timezone/:time12">/:timezone/:time12</a>, and
+          <a data-pattern="/:timezone/:hour12">/:timezone/:hour12</a
+          ><br /><br />
+          <i
+            >Note that “today” in another timezone might mean “still yesterday”
+            or “already tomorrow”, especially if that timezone is on the other
+            size of the planet. Isn’t time fun?..</i
+          >
+        </dd>
+
+        <dt><code>https://when.st/:location</code></dt>
+        <dd>
+          Current time in the location. You can combine it with any of the time
+          parameters<br /><br />For example,
+          <a data-pattern="/:location">/:location</a> and
+          <a data-pattern="/:location/:hour12">/:location/:hour12</a
+          ><br /><br />
+          <i
+            >Locations are limited to cities and regions in timezone names from
+            tz database<sup
+              ><a
+                href="https://en.wikipedia.org/wiki/Tz_database"
+                target="_blank"
+                >?</a
+              ></sup
+            ></i
+          >
+        </dd>
+
+        <dt><code>https://when.st/unix</code></dt>
+        <dd>
+          Current time in Unix timestamp format<sup
+            ><a href="https://en.wikipedia.org/wiki/Unix_time" target="_blank"
+              >?</a
+            ></sup
+          ><br /><br />For example, <a data-pattern="/unix">/unix</a>
+        </dd>
+
+        <dt><code>https://when.st/unix/:epoch</code></dt>
+        <dd>
+          Specific time in Unix timestamp format<sup
+            ><a href="https://en.wikipedia.org/wiki/Unix_time" target="_blank"
+              >?</a
+            ></sup
+          >
+          <br /><br />For example,
+          <a data-pattern="/unix/:epoch">/unix/:epoch</a>
+        </dd>
+      </dl>
+
       <h2>Credits</h2>
       <p>
         Code and Design: <a href="https://anton.codes">Anton</a> /

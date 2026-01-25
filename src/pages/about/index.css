@@ -8,6 +8,35 @@ ul {
   margin-top: 0;
 }
 
+code {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--separator);
+  padding: 0.1em 0.2em;
+  font-size: 0.9em;
+  font-family:
+    "SF Mono", "Menlo-Regular", Consolas, "Andale Mono WT", "Andale Mono",
+    "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono",
+    "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco,
+    "Courier New", Courier, monospace;
+  word-break: keep-all;
+}
+
+dl dt {
+  margin-bottom: 0.25em;
+  overflow: scroll;
+}
+
+dl dd {
+  margin-bottom: 1.5em;
+  margin-left: 1em;
+  overflow: scroll;
+}
+
+dl dd:last-child {
+  margin-bottom: 0;
+}
+
 #the-tweet img,
 #slack-unfurl img {
   width: auto;
