@@ -16,19 +16,19 @@ const AM_PM_REPLACEMENT = (
 
   if (ampm === "am") {
     if (h === "12") {
-      return `T00${m}`;
+      return `00${m}`;
     }
 
-    return `T${h}${m}`;
+    return `${h}${m}`;
   }
 
   if (ampm === "pm") {
     if (h === "12") {
-      return `T${h}${m}`;
+      return `${h}${m}`;
     }
 
     const h24 = parseInt(h, 10) + 12;
-    return `T${h24}${m}`;
+    return `${h24}${m}`;
   }
 
   return match;
