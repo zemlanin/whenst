@@ -238,7 +238,7 @@ async function sendChatUnfurl({
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<!date^${zDT.epochSeconds}^{date_long_pretty} at {time}|:shrug:>`,
+              text: `<!date^${zDT.epochSeconds}^{date_long_pretty} at {time_secs}|:shrug:>`,
             },
           },
           {

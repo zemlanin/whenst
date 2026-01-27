@@ -15,10 +15,12 @@ export function LocationClockface({
   value,
   onChange,
   isLiveClockSignal,
+  staticSecondHand = false,
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
   onChange: (value: Temporal.ZonedDateTime) => void;
   isLiveClockSignal: Signal<boolean>;
+  staticSecondHand?: boolean;
 }) {
   const ongoingTouches = useSignal(
     new Map<
@@ -130,7 +132,12 @@ export function LocationClockface({
       <HourMark hour={11} />
       <HourHand value={value} />
       <MinuteHand value={value} />
-      <Show when={isLiveClockSignal}>
+      <Show
+        when={isLiveClockSignal}
+        fallback={
+          staticSecondHand ? <SecondHand value={value} isStatic /> : undefined
+        }
+      >
         <>
           <SecondHand value={value} />
           <HandsPost />
@@ -218,8 +225,10 @@ function MinuteHand({
 
 function SecondHand({
   value,
+  isStatic = false,
 }: {
   value: ReadonlySignal<Temporal.ZonedDateTime>;
+  isStatic?: boolean;
 }) {
   const style = useComputed(() => {
     const t = value.value;
@@ -237,7 +246,7 @@ function SecondHand({
         L ${viewBoxSize / 2},${48}
       `}
       strokeWidth={6}
-      stroke="var(--primary)"
+      stroke={isStatic ? "currentColor" : "var(--primary)"}
       transformOrigin={`${viewBoxSize / 2}px ${viewBoxSize / 2}px`}
       style={style}
     />

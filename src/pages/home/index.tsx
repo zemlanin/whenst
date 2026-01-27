@@ -221,6 +221,7 @@ function IndexPage() {
           withRelative
           isLiveClockSignal={isLiveClockSignal}
           secondary
+          staticSecondHand={isUnix}
         />
       ) : null}
 
@@ -243,6 +244,7 @@ function ClockRow({
   withRelative,
   secondary,
   isLiveClockSignal,
+  staticSecondHand = false,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
   timeZone: Temporal.TimeZone | string;
@@ -250,6 +252,7 @@ function ClockRow({
   withRelative: boolean;
   secondary?: boolean;
   isLiveClockSignal: Signal<boolean>;
+  staticSecondHand?: boolean;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
   const formId = "clock-row-" + useId();
@@ -391,6 +394,7 @@ function ClockRow({
               }
             }}
             isLiveClockSignal={isLiveClockSignal}
+            staticSecondHand={staticSecondHand}
           />
         </div>
       </div>
