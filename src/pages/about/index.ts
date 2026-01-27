@@ -10,10 +10,8 @@ const patternAnchors =
 const timezone = Temporal.Now.timeZoneId();
 const location = getLocationFromTimezone(timezone);
 const currentDateTime = Temporal.Now.zonedDateTime(CALENDAR, timezone).with({
-  second: 0,
   millisecond: 0,
 });
-// .with({hour: 12, minute: 0})
 
 const PATTERN_PART_REGEX = /\/:([a-z0-9_]+)/g;
 const PATTERN_PART_REPLACEMENT = (_match: string, part: string) => {
