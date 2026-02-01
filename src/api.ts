@@ -7,6 +7,7 @@ import {
 } from "../shared/getMidpointPosition.js";
 import { Signal } from "@preact/signals";
 
+const DB_UPDATE_EVENT_TYPE = "whenst_db_update_event";
 const dbUpdateChannel = new BroadcastChannel("whenst_db_update");
 
 export const worldClockSignal = new Signal(
@@ -47,13 +48,19 @@ async function connectSignal<T>(
     }
   }
 
-  dbUpdateChannel.addEventListener("message", async () => {
+  window.addEventListener(DB_UPDATE_EVENT_TYPE, async () => {
     const db = await openDB("whenst");
     try {
       signal.value = await callback(db);
     } finally {
       db.close();
     }
+  });
+
+  // this indirection is needed because `BroadcastChannel` doesn't work in Safari Private Mode
+  dbUpdateChannel.addEventListener("message", async () => {
+    const refreshEvent = new CustomEvent(DB_UPDATE_EVENT_TYPE);
+    window.dispatchEvent(refreshEvent);
   });
 }
 
@@ -233,11 +240,23 @@ export async function syncEverything() {
 }
 
 async function sendSyncMessage() {
+  if (!navigator.serviceWorker.controller) {
+    // Safari Private Mode doesn't run service workers
+    const refreshEvent = new CustomEvent(DB_UPDATE_EVENT_TYPE);
+    window.dispatchEvent(refreshEvent);
+    return;
+  }
+
   const registration = await navigator.serviceWorker.ready;
   registration.active?.postMessage("sync");
 }
 
 export async function sendAuthCheckMessage() {
+  if (!navigator.serviceWorker.controller) {
+    // Safari Private Mode doesn't run service workers
+    return;
+  }
+
   const registration = await navigator.serviceWorker.ready;
   registration.active?.postMessage("authCheck");
 }

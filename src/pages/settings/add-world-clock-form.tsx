@@ -11,7 +11,6 @@ import { addWorldClock } from "../../api.js";
 const collapsedSignal = new Signal(true);
 const activeValueSignal = new Signal("");
 
-// TODO: rename to `AddWorldClockForm`
 export function AddWorldClockForm() {
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
