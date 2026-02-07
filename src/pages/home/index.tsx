@@ -95,8 +95,7 @@ function IndexPage() {
 
   const activeTab = activeTabSignal;
 
-  const pageForRemoteTimeZone =
-    isUnix || typeof pageTZ === "string" || pageTZ !== localTZ;
+  const pageForRemoteTimeZone = isUnix || pageTZ !== localTZ;
 
   useEffect(() => {
     if (!urlTZ && location.pathname !== "/" && location.pathname !== "") {
