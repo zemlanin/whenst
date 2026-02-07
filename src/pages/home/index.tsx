@@ -37,7 +37,10 @@ import EarthEurope from "../../../icons/earth-europe.svg.js";
 import EarthOceania from "../../../icons/earth-oceania.svg.js";
 import Globe from "../../../icons/globe.svg.js";
 import { ActionButton } from "../../components/ActionButton/index.js";
-import { TimezoneHeading } from "../../components/TimezoneHeading/index.js";
+import {
+  TimezoneHeading,
+  TimezoneTransitionLabel,
+} from "../../components/TimezoneHeading/index.js";
 import { TitleBarPortal } from "../../components/TitleBarPortal/index.js";
 import {
   LocationClockface,
@@ -344,11 +347,15 @@ function ClockRow({
       <div className="time-and-place">
         <div className="inputs-section">
           {secondary ? (
-            <h2>{tzName}</h2>
+            <>
+              <h2>{tzName}</h2>
+              <TimezoneTransitionLabel zonedDateTimeSignal={dt} />
+            </>
           ) : (
             <TimezoneHeading
               defaultValue={tzName}
               className="window-controls-overlay-hidden"
+              zonedDateTimeSignal={dt}
             />
           )}
 

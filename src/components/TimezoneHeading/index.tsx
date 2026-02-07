@@ -4,6 +4,7 @@ import { Show, For } from "@preact/signals/utils";
 import * as classes from "./index.module.css";
 import Fuse from "fuse.js";
 import { getPathnameFromTimezone } from "../../../shared/from-timezone.js";
+import { Temporal } from "@js-temporal/polyfill";
 
 type PaletteOption = {
   url: string;
@@ -15,10 +16,12 @@ export function TimezoneHeading({
   defaultValue = "",
   className = "",
   idPrefix = "tzh",
+  zonedDateTimeSignal,
 }: {
   defaultValue?: string;
   className?: string;
   idPrefix?: string;
+  zonedDateTimeSignal?: Signal<Temporal.ZonedDateTime>;
 }) {
   const inputSizerText = useSignal(defaultValue);
   const inputSizerWidth = useSignal<number | undefined>(undefined);
@@ -164,6 +167,10 @@ export function TimezoneHeading({
         name="timezone"
       />
 
+      {zonedDateTimeSignal ? (
+        <TimezoneTransitionLabel zonedDateTimeSignal={zonedDateTimeSignal} />
+      ) : null}
+
       <Show when={expanded}>
         <OptionsList
           id={commandsId}
@@ -172,6 +179,78 @@ export function TimezoneHeading({
         />
       </Show>
     </div>
+  );
+}
+
+const pr = new window.Intl.PluralRules("en", { type: "ordinal" });
+const pluralSuffixesEn = new Map([
+  ["one", "st"],
+  ["two", "nd"],
+  ["few", "rd"],
+  ["other", "th"],
+]);
+
+function formatOrdinals(n: number) {
+  const rule = pr.select(n);
+  const suffix = pluralSuffixesEn.get(rule);
+  return `${n}${suffix}`;
+}
+
+export function TimezoneTransitionLabel({
+  zonedDateTimeSignal,
+}: {
+  zonedDateTimeSignal: Signal<Temporal.ZonedDateTime>;
+}) {
+  const closeNextTransitionSignal = useComputed(() => {
+    const zonedDateTime = zonedDateTimeSignal.value;
+    const nextTransition = zonedDateTime.getTimeZoneTransition("next");
+
+    if (
+      nextTransition &&
+      nextTransition.since(zonedDateTime).total("days") < 14
+    ) {
+      return nextTransition;
+    }
+
+    return null;
+  });
+
+  const nextTransitionDate = useComputed(() => {
+    const nextTransition = closeNextTransitionSignal.value;
+    if (!nextTransition) {
+      return null;
+    }
+
+    return formatOrdinals(nextTransition.day);
+  });
+
+  const offsetDelta = useComputed(() => {
+    const zonedDateTime = zonedDateTimeSignal.value;
+    const closeNextTransition = closeNextTransitionSignal.value;
+
+    if (!closeNextTransition) {
+      return null;
+    }
+
+    const delta = Temporal.Duration.from({
+      nanoseconds:
+        closeNextTransition.offsetNanoseconds - zonedDateTime.offsetNanoseconds,
+    }).round({ largestUnit: "hours" });
+
+    return `${delta.sign === -1 ? "" : "+"}${delta
+      .toLocaleString("en", {
+        style: "short",
+        fractionalDigits: 0,
+      })
+      .replace(/(\d)\s+([a-z])/i, "$1$2")}`;
+  });
+
+  return (
+    <Show when={closeNextTransitionSignal}>
+      <span className={classes.transitionLabel}>
+        &rarr; {offsetDelta.value} on&nbsp;the&nbsp;{nextTransitionDate.value}
+      </span>
+    </Show>
   );
 }
 

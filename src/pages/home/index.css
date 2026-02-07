@@ -408,6 +408,10 @@ main {
   min-width: 0px;
 }
 
+.clock-row .time-and-place .inputs-section h2 {
+  margin-bottom: 0;
+}
+
 @media (display-mode: window-controls-overlay) {
   .clock-row .time-and-place .inputs-section {
     justify-content: space-around;
