@@ -1201,9 +1201,9 @@ function WorldClockRow({
   localDateString: ReadonlySignal<string>;
   pageDateString: ReadonlySignal<string>;
 }) {
-  const plainDateTime = useComputed(() =>
-    rootDT.value.withTimeZone(timezone).toPlainDateTime(),
-  );
+  const worldDT = useComputed(() => rootDT.value.withTimeZone(timezone));
+
+  const plainDateTime = useComputed(() => worldDT.value.toPlainDateTime());
 
   const dateString = useComputed(() =>
     shortDateFormatter.format(plainDateTime.value),
@@ -1235,6 +1235,10 @@ function WorldClockRow({
         >
           {displayedLabel}
         </a>
+        <TimezoneTransitionLabel
+          zonedDateTimeSignal={worldDT}
+          className="timezone-transition-label"
+        />
       </div>
 
       <div role="cell" className="timezone-time-wrapper">

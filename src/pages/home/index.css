@@ -705,6 +705,13 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   align-self: flex-start;
 }
 
+#saved-timezones
+  .timezone-row
+  .timezone-label-wrapper
+  .timezone-transition-label {
+  margin-left: 0;
+}
+
 #saved-timezones .timezone-row .timezone-time-wrapper {
   display: flex;
   flex-direction: column;
