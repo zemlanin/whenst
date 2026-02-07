@@ -1,10 +1,6 @@
-import { Temporal } from "@js-temporal/polyfill";
-
 import { guessTimezone } from "./guess-timezone.js";
 
-export function extractDataFromURL(
-  href: string,
-): [] | [string | Temporal.TimeZone, string] {
+export function extractDataFromURL(href: string): [] | [string, string] {
   const unixURLPattern = new URLPattern(
     {
       pathname: "/unix{/:seconds(\\d*)}?",

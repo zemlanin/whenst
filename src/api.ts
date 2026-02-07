@@ -1,4 +1,3 @@
-import { Temporal } from "@js-temporal/polyfill";
 import { IDBPDatabase, IDBPObjectStore, openDB } from "idb";
 
 import {
@@ -108,13 +107,9 @@ export async function addWorldClock({
   label,
 }: {
   id: string | undefined;
-  timezone: string | Temporal.TimeZone;
+  timezone: string;
   label: string;
 }) {
-  if (timezone instanceof Temporal.TimeZone) {
-    timezone = timezone.toString();
-  }
-
   if (!(await dbExists())) {
     throw new Error(`db does not exist`);
   }

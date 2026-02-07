@@ -1,8 +1,7 @@
-import { Temporal } from "@js-temporal/polyfill";
-
 import { STRICT_RELATIVE_UTC_ID_REGEX } from "../shared/from-timezone.js";
 
 const timezones = globalThis.Intl.supportedValuesOf("timeZone");
+const timezonesSet = new Set(timezones);
 
 // https://github.com/eggert/tz/blob/main/etcetera
 const TZ_ETC = "Etc/GMT";
@@ -10,7 +9,7 @@ const TZ_ETC = "Etc/GMT";
 export function guessTimezone(
   input: string,
   { strict }: { strict?: boolean } = {},
-): Temporal.TimeZone | null {
+): string | null {
   const inputLowerCase = input.toLowerCase();
 
   if (inputLowerCase === "factory") {
@@ -18,33 +17,31 @@ export function guessTimezone(
     return null;
   }
 
-  try {
-    const directMatch = Temporal.TimeZone.from(input) as Temporal.TimeZone;
+  const directMatch = timezonesSet.has(input) ? input : null;
 
-    if (directMatch.id === TZ_ETC) {
-      return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
-    }
+  if (directMatch === TZ_ETC) {
+    return "UTC";
+  }
 
-    if (directMatch.id.startsWith(TZ_ETC)) {
-      const reverseOffset = directMatch.id.slice(TZ_ETC.length);
-      const offset = reverseOffset.startsWith("-")
-        ? `+${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`
-        : `-${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`;
+  if (directMatch?.startsWith(TZ_ETC)) {
+    const reverseOffset = directMatch.slice(TZ_ETC.length);
+    const offset = reverseOffset.startsWith("-")
+      ? `+${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`
+      : `-${reverseOffset.length === 2 ? "0" : ""}${reverseOffset.slice(1)}`;
 
-      return Temporal.TimeZone.from(offset) as Temporal.TimeZone;
-    }
+    return offset;
+  }
 
+  if (directMatch) {
     return directMatch;
-  } catch (_e) {
-    //
   }
 
   if (inputLowerCase === "europe/kyiv" || inputLowerCase === "kyiv") {
-    return Temporal.TimeZone.from("Europe/Kiev") as Temporal.TimeZone;
+    return "Europe/Kiev";
   }
 
   if (inputLowerCase === "utc" || inputLowerCase === "gmt") {
-    return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
+    return "UTC";
   }
 
   if (inputLowerCase.match(/^(utc|gmt)?[+-][0-1]?[0-9](:[0-5][0-9])?$/)) {
@@ -64,11 +61,11 @@ export function guessTimezone(
       strictOffset === "-00" ||
       strictOffset === "-00:00"
     ) {
-      return Temporal.TimeZone.from("UTC") as Temporal.TimeZone;
+      return "UTC";
     }
 
     try {
-      return Temporal.TimeZone.from(strictOffset) as Temporal.TimeZone;
+      return strictOffset;
     } catch (_e) {
       //
     }
@@ -89,7 +86,7 @@ export function guessTimezone(
     : timezones.filter((v) => v.toLowerCase().includes(inputLowerCase));
 
   if (guessTimezones.length === 1) {
-    return Temporal.TimeZone.from(guessTimezones[0]) as Temporal.TimeZone;
+    return guessTimezones[0];
   }
 
   return null;

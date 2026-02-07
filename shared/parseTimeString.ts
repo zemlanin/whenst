@@ -1,7 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
 
-export const CALENDAR = "iso8601";
-
 //                    ($1                 )($2         ) ($3   )
 const AM_PM_REGEX = /^([1-9]|0[1-9]|1[0-2])(:[0-5][0-9])?(am|pm)$/i;
 const AM_PM_REPLACEMENT = (
@@ -35,7 +33,7 @@ const AM_PM_REPLACEMENT = (
 };
 
 export function parseTimeString(
-  timezone: string | Temporal.TimeZone,
+  timezone: string,
   timeString: string | undefined,
   options: {
     currentDateTime?: Temporal.ZonedDateTime;
@@ -58,7 +56,7 @@ export function parseTimeString(
     if (options?.currentDateTime) {
       date = options.currentDateTime.withTimeZone(timezone).toPlainDate();
     } else {
-      date = Temporal.Now.plainDate(CALENDAR, timezone);
+      date = Temporal.Now.zonedDateTimeISO(timezone).toPlainDate();
     }
   }
 
@@ -82,7 +80,7 @@ export function parseTimeString(
       });
     }
 
-    return Temporal.Now.zonedDateTime(CALENDAR, timezone).with({
+    return Temporal.Now.zonedDateTimeISO(timezone).with({
       millisecond: 0,
     });
   }

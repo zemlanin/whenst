@@ -2,14 +2,13 @@ import { Temporal } from "@js-temporal/polyfill";
 
 import "../../keyboard";
 import { getLocationFromTimezone } from "../../../shared/from-timezone.js";
-import { CALENDAR } from "../../../shared/parseTimeString.js";
 
 const patternAnchors =
   document.querySelectorAll<HTMLAnchorElement>("a[data-pattern]");
 
 const timezone = Temporal.Now.timeZoneId();
 const location = getLocationFromTimezone(timezone);
-const currentDateTime = Temporal.Now.zonedDateTime(CALENDAR, timezone).with({
+const currentDateTime = Temporal.Now.zonedDateTimeISO(timezone).with({
   millisecond: 0,
 });
 
@@ -49,7 +48,7 @@ const PATTERN_PART_REPLACEMENT = (_match: string, part: string) => {
   }
 
   if (part === "epoch") {
-    return `/${currentDateTime.epochSeconds}`;
+    return `/${Math.floor(currentDateTime.epochMilliseconds / 1000)}`;
   }
 
   throw new Error(`Unknown pattern part: ${part}`);

@@ -27,7 +27,7 @@ import {
   getPathnameFromTimezone,
 } from "../shared/from-timezone.js";
 import { extractDataFromURL } from "../shared/extractDataFromURL.js";
-import { parseTimeString, CALENDAR } from "../shared/parseTimeString.js";
+import { parseTimeString } from "../shared/parseTimeString.js";
 
 import "./dist.d.ts";
 
@@ -199,7 +199,36 @@ function getHomeOpengraphData(
   const url = new URL(pathname, "https://when.st/").toString();
   const [urlTZ, urlDT] = extractDataFromURL(url);
 
-  if (urlTZ instanceof Temporal.TimeZone) {
+  if (urlTZ === "unix") {
+    /** "zonedDateTime" */
+    const zDT =
+      urlDT && urlDT !== "now"
+        ? parseTimeString(urlTZ, urlDT, {
+            currentDateTime,
+          })
+        : null;
+
+    const epochSeconds = zDT
+      ? Math.floor(zDT.epochMilliseconds / 1000)
+      : undefined;
+
+    const canonicalPathname =
+      getPathnameFromTimezone(urlTZ) + (zDT ? `/${epochSeconds}` : "");
+
+    return {
+      title: epochSeconds !== undefined ? `Unix ${epochSeconds}` : `Unix time`,
+      url: new URL(canonicalPathname, "https://when.st/").toString(),
+      description:
+        epochSeconds !== undefined
+          ? `0x${epochSeconds.toString(16)} • 0b${epochSeconds.toString(2)}`
+          : `aka Epoch time, POSIX time, or Unix timestamp`,
+      published_time: zDT
+        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
+        : undefined,
+    };
+  }
+
+  if (urlTZ) {
     const placeStr = getLocationFromTimezone(urlTZ);
     /** "zonedDateTime" */
     const zDT =
@@ -217,9 +246,9 @@ function getHomeOpengraphData(
 
     // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition
     const utcOffset =
-      urlTZ.id === "UTC"
+      urlTZ === "UTC"
         ? "UTC"
-        : `UTC${(zDT || Temporal.Now.zonedDateTime(CALENDAR, urlTZ)).offset
+        : `UTC${(zDT || Temporal.Now.zonedDateTimeISO(urlTZ)).offset
             .replace(/:00$/, "")
             .replace(/^([+-])0([0-9])$/, "$1$2")}`;
 
@@ -232,30 +261,6 @@ function getHomeOpengraphData(
         : `Time in ${placeStr}`,
       url: new URL(canonicalPathname, "https://when.st/").toString(),
       description: utcOffset,
-      published_time: zDT
-        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
-        : undefined,
-    };
-  }
-
-  if (urlTZ === "unix") {
-    /** "zonedDateTime" */
-    const zDT =
-      urlDT && urlDT !== "now"
-        ? parseTimeString(urlTZ, urlDT, {
-            currentDateTime,
-          })
-        : null;
-
-    const canonicalPathname =
-      getPathnameFromTimezone(urlTZ) + (zDT ? `/${zDT.epochSeconds}` : "");
-
-    return {
-      title: zDT ? `Unix ${zDT.epochSeconds}` : `Unix time`,
-      url: new URL(canonicalPathname, "https://when.st/").toString(),
-      description: zDT
-        ? `0x${zDT.epochSeconds.toString(16)} • 0b${zDT.epochSeconds.toString(2)}`
-        : `aka Epoch time, POSIX time, or Unix timestamp`,
       published_time: zDT
         ? zDT.toString({ timeZoneName: "never", offset: "auto" })
         : undefined,

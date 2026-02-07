@@ -329,9 +329,6 @@ t.test("opengraph", async (t) => {
 
 const now = Temporal.Now.instant();
 function getCurrentOffset(timeZone: string) {
-  const fullOffset = now.toZonedDateTime({
-    timeZone,
-    calendar: "iso8601",
-  }).offset;
+  const fullOffset = now.toZonedDateTimeISO(timeZone).offset;
   return fullOffset.replace(/:00$/, "").replace(/^([+-])0([0-9])/, "$1$2");
 }

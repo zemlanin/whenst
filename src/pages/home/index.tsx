@@ -23,7 +23,7 @@ import {
   getPathnameFromTimezone,
 } from "../../../shared/from-timezone.js";
 import { extractDataFromURL } from "../../../shared/extractDataFromURL.js";
-import { parseTimeString, CALENDAR } from "../../../shared/parseTimeString.js";
+import { parseTimeString } from "../../../shared/parseTimeString.js";
 
 import ClockRotateLeft from "../../../icons/clock-rotate-left.svg.js";
 import Discord from "../../../icons/discord.svg.js";
@@ -86,9 +86,7 @@ if ("visibilityState" in document) {
 
 function IndexPage() {
   const [urlTZ, urlDT] = extractDataFromURL(location.href);
-  const localTZ = Temporal.TimeZone.from(
-    Temporal.Now.timeZoneId(),
-  ) as Temporal.TimeZone;
+  const localTZ = Temporal.Now.timeZoneId();
   const isUnix = urlTZ === "unix";
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
@@ -98,7 +96,7 @@ function IndexPage() {
   const activeTab = activeTabSignal;
 
   const pageForRemoteTimeZone =
-    isUnix || typeof pageTZ === "string" || pageTZ.id !== localTZ.id;
+    isUnix || typeof pageTZ === "string" || pageTZ !== localTZ;
 
   useEffect(() => {
     if (!urlTZ && location.pathname !== "/" && location.pathname !== "") {
@@ -110,7 +108,7 @@ function IndexPage() {
     }
 
     const timeString = isUnix
-      ? dt.peek().epochSeconds
+      ? Math.floor(dt.peek().epochMilliseconds / 1000)
       : formatDTInput(dt.peek());
 
     const canonicalPathname =
@@ -140,7 +138,7 @@ function IndexPage() {
           return;
         }
 
-        const now = Temporal.Now.zonedDateTime(CALENDAR, dt.peek().timeZoneId);
+        const now = Temporal.Now.zonedDateTimeISO(dt.peek().timeZoneId);
 
         dt.value = now.with({
           millisecond: 0,
@@ -170,7 +168,7 @@ function IndexPage() {
       "",
       `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${
         isUnix
-          ? dtValue.epochSeconds
+          ? Math.floor(dtValue.epochMilliseconds / 1000)
           : formatDTInput(dtValue.withTimeZone(pageTZ))
       }`,
     );
@@ -247,8 +245,8 @@ function ClockRow({
   staticSecondHand = false,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
-  timeZone: Temporal.TimeZone | string;
-  pageTimeZone: Temporal.TimeZone | string;
+  timeZone: string;
+  pageTimeZone: string;
   withRelative: boolean;
   secondary?: boolean;
   isLiveClockSignal: Signal<boolean>;
@@ -500,8 +498,8 @@ function Tabs({
     | typeof CALENDAR_LINKS_ID
   >;
   rootDT: Signal<Temporal.ZonedDateTime>;
-  pageTZ: string | Temporal.TimeZone;
-  localTZ: Temporal.TimeZone;
+  pageTZ: string;
+  localTZ: string;
 }) {
   const otherTimezonesActive = useComputed(
     () => activeTab.value === SAVED_TIMEZONES_ID,
@@ -605,10 +603,9 @@ function RegionAwareIcon({
   timezone,
   ...otherProps
 }: {
-  timezone: Temporal.TimeZone | string;
+  timezone: string;
 } & JSX.SVGAttributes<SVGSVGElement>) {
-  const [area] =
-    typeof timezone === "string" ? [] : (timezone.id?.split("/") ?? []);
+  const [area] = timezone.includes("/") ? timezone.split("/") : [];
 
   /*
     > new Set(Intl.supportedValuesOf("timeZone").map(v => v.split('/')[0]))
@@ -658,7 +655,7 @@ function DiscordActions({
   hidden,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
-  localTZ: Temporal.TimeZone;
+  localTZ: string;
   hidden: Signal<boolean>;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
@@ -731,7 +728,9 @@ function DiscordFormat({
   style: string;
   name: string;
 }) {
-  const code = useComputed(() => `<t:${dt.value.epochSeconds}:${style}>`);
+  const code = useComputed(
+    () => `<t:${Math.floor(dt.value.epochMilliseconds / 1000)}:${style}>`,
+  );
 
   const label = useComputed(() => {
     const formatter =
@@ -788,7 +787,7 @@ function CalendarLinks({
   hidden,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
-  localTZ: Temporal.TimeZone;
+  localTZ: string;
   hidden: Signal<boolean>;
 }) {
   const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
@@ -963,12 +962,11 @@ function GoogleCalendarRow({
 }
 
 function formatDTiCal(dt: Temporal.ZonedDateTime) {
-  const { isoYear, isoMonth, isoDay, isoHour, isoMinute, isoSecond } =
-    dt.getISOFields();
+  const iso = dt.withCalendar("iso8601");
 
-  return `${pad4(isoYear)}${pad2(isoMonth)}${pad2(isoDay)}T${pad2(
-    isoHour,
-  )}${pad2(isoMinute)}${pad2(isoSecond)}`;
+  return `${pad4(iso.year)}${pad2(iso.month)}${pad2(iso.day)}T${pad2(
+    iso.hour,
+  )}${pad2(iso.minute)}${pad2(iso.second)}`;
 }
 
 function UnixRow({
@@ -978,7 +976,9 @@ function UnixRow({
   rootDT: Signal<Temporal.ZonedDateTime>;
   isLiveClockSignal: Signal<boolean>;
 }) {
-  const timeInUnix = useComputed(() => rootDT.value.epochSeconds);
+  const timeInUnix = useComputed(() =>
+    Math.floor(rootDT.value.epochMilliseconds / 1000),
+  );
   const tzURL = new URL("/unix", location.href);
   const timestampURL = useComputed(() =>
     new URL(`/unix/${timeInUnix}`, location.href).toString(),
@@ -1111,8 +1111,8 @@ function SavedTimezones({
   hidden,
 }: {
   rootDT: Signal<Temporal.ZonedDateTime>;
-  pageTZ: Temporal.TimeZone | string;
-  localTZ: Temporal.TimeZone;
+  pageTZ: string;
+  localTZ: string;
   hidden?: Signal<boolean>;
 }) {
   const pageDateString = useComputed(() =>
@@ -1131,17 +1131,13 @@ function SavedTimezones({
     return (
       worldClockSignal.value?.filter(({ timezone, label }) => {
         try {
-          Temporal.TimeZone.from(timezone);
+          Intl.DateTimeFormat(undefined, { timeZone: timezone });
         } catch (e) {
           console.error(e);
           return false;
         }
 
-        return (
-          (timezone !== localTZ.id &&
-            (typeof pageTZ === "string" || timezone !== pageTZ.id)) ||
-          label
-        );
+        return timezone !== localTZ || label;
       }) ?? []
     );
   });
@@ -1197,9 +1193,7 @@ function WorldClockRow({
   pageDateString: ReadonlySignal<string>;
 }) {
   const plainDateTime = useComputed(() =>
-    rootDT.value
-      .withTimeZone(Temporal.TimeZone.from(timezone))
-      .toPlainDateTime(),
+    rootDT.value.withTimeZone(timezone).toPlainDateTime(),
   );
 
   const dateString = useComputed(() =>
@@ -1248,7 +1242,7 @@ const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "long" });
 
 function getRelativeTime(dt: Temporal.ZonedDateTime) {
   const localDateTime = dt;
-  const now = Temporal.Now.zonedDateTime(CALENDAR, dt.timeZoneId);
+  const now = Temporal.Now.zonedDateTimeISO(dt.timeZoneId);
   const today = now.startOfDay();
   const durationSinceNow = localDateTime.since(now);
   const durationSinceToday = localDateTime.startOfDay().since(today);
@@ -1337,10 +1331,7 @@ function formatDTTitle(dt: Temporal.ZonedDateTime) {
   return titleFormatter.format(dt.toPlainDateTime());
 }
 
-function updateTitle(
-  dt: Temporal.ZonedDateTime | undefined,
-  tz: string | Temporal.TimeZone,
-) {
+function updateTitle(dt: Temporal.ZonedDateTime | undefined, tz: string) {
   if (!dt && !tz) {
     document.title = `when.st`;
     return;
@@ -1354,7 +1345,7 @@ function updateTitle(
   }
 
   if (tz === "unix") {
-    document.title = `Unix ${dt.epochSeconds} | when.st`;
+    document.title = `Unix ${Math.floor(dt.epochMilliseconds / 1000)} | when.st`;
     return;
   }
 
