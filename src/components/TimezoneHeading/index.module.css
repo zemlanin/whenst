@@ -80,10 +80,12 @@
 .main [role="combobox"][aria-expanded="false"]:placeholder-shown {
 }
 
-.transitionLabel {
+.transition-label {
   font-style: italic;
+  font-size: 0.9rem;
   color: var(--deemphasis);
-  margin: 0.25em 0.5em;
+  margin: 0.25rem 0 0 0.5rem;
+  display: inline-block;
 }
 
 .main [role="listbox"] {

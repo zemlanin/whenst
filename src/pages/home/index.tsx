@@ -347,10 +347,13 @@ function ClockRow({
       <div className="time-and-place">
         <div className="inputs-section">
           {secondary ? (
-            <>
+            <div>
               <h2>{tzName}</h2>
-              <TimezoneTransitionLabel zonedDateTimeSignal={dt} />
-            </>
+              <TimezoneTransitionLabel
+                zonedDateTimeSignal={dt}
+                className="secondary-subtitle"
+              />
+            </div>
           ) : (
             <TimezoneHeading
               defaultValue={tzName}

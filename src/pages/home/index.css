@@ -412,6 +412,11 @@ main {
   margin-bottom: 0;
 }
 
+.clock-row .time-and-place .inputs-section .secondary-subtitle {
+  margin-left: 0;
+  margin-top: 0.25rem;
+}
+
 @media (display-mode: window-controls-overlay) {
   .clock-row .time-and-place .inputs-section {
     justify-content: space-around;

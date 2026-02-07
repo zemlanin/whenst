@@ -4,7 +4,7 @@ import { Show, For } from "@preact/signals/utils";
 import * as classes from "./index.module.css";
 import Fuse from "fuse.js";
 import { getPathnameFromTimezone } from "../../../shared/from-timezone.js";
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal, Intl } from "@js-temporal/polyfill";
 
 type PaletteOption = {
   url: string;
@@ -182,24 +182,17 @@ export function TimezoneHeading({
   );
 }
 
-const pr = new window.Intl.PluralRules("en", { type: "ordinal" });
-const pluralSuffixesEn = new Map([
-  ["one", "st"],
-  ["two", "nd"],
-  ["few", "rd"],
-  ["other", "th"],
-]);
-
-function formatOrdinals(n: number) {
-  const rule = pr.select(n);
-  const suffix = pluralSuffixesEn.get(rule);
-  return `${n}${suffix}`;
-}
+const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
+  day: "numeric",
+  month: "short",
+});
 
 export function TimezoneTransitionLabel({
   zonedDateTimeSignal,
+  className,
 }: {
   zonedDateTimeSignal: Signal<Temporal.ZonedDateTime>;
+  className?: string;
 }) {
   const closeNextTransitionSignal = useComputed(() => {
     const zonedDateTime = zonedDateTimeSignal.value;
@@ -221,7 +214,7 @@ export function TimezoneTransitionLabel({
       return null;
     }
 
-    return formatOrdinals(nextTransition.day);
+    return shortDateFormatter.format(nextTransition.toPlainDateTime());
   });
 
   const offsetDelta = useComputed(() => {
@@ -247,8 +240,8 @@ export function TimezoneTransitionLabel({
 
   return (
     <Show when={closeNextTransitionSignal}>
-      <span className={classes.transitionLabel}>
-        &rarr; {offsetDelta.value} on&nbsp;the&nbsp;{nextTransitionDate.value}
+      <span className={`${classes["transition-label"]} ${className || ""}`}>
+        {nextTransitionDate.value} &rarr; {offsetDelta.value}
       </span>
     </Show>
   );
