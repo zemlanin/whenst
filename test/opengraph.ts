@@ -27,7 +27,7 @@ t.test("opengraph", async (t) => {
     return $;
   };
 
-  await t.test(async () => {
+  await t.test("/", async () => {
     const $ = await fetch$("/");
 
     t.same($("head title").text(), "when.st");
@@ -35,7 +35,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:url"]').attr("content"), undefined);
   });
 
-  await t.test(async () => {
+  await t.test("/about", async () => {
     const $ = await fetch$("/about");
 
     t.same($("head title").text(), "About | when.st");
@@ -43,7 +43,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:url"]').attr("content"), undefined);
   });
 
-  await t.test(async () => {
+  await t.test("/settings", async () => {
     const $ = await fetch$("/settings");
 
     t.same($("head title").text(), "Settings | when.st");
@@ -51,7 +51,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:url"]').attr("content"), undefined);
   });
 
-  await t.test(async () => {
+  await t.test("/link", async () => {
     const $ = await fetch$("/link");
 
     t.same($("head title").text(), "Link | when.st");
@@ -59,7 +59,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:url"]').attr("content"), undefined);
   });
 
-  await t.test(async () => {
+  await t.test("/knowhere", async () => {
     // TODO 404
     const $ = await fetch$("/knowhere");
 
@@ -68,7 +68,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:description"]').attr("content"), undefined);
   });
 
-  await t.test(async () => {
+  await t.test("/kyiv", async () => {
     const $ = await fetch$("/kyiv");
 
     t.same($('head [property="og:title"]').attr("content"), "Time in Kyiv");
@@ -82,7 +82,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  await t.test(async () => {
+  await t.test("/kiev", async () => {
     const $ = await fetch$("/kiev");
 
     t.same($('head [property="og:title"]').attr("content"), "Time in Kyiv");
@@ -96,7 +96,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  await t.test(async () => {
+  await t.test("/America/Sao_Paulo/", async () => {
     const $ = await fetch$("/America/Sao_Paulo/");
 
     t.same(
@@ -113,7 +113,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  await t.test(async () => {
+  await t.test("/berlin/2026-01-05T20:18", async () => {
     const $ = await fetch$("/berlin/2026-01-05T20:18", {
       headers: { "accept-language": "en-GB" },
     });
@@ -132,7 +132,7 @@ t.test("opengraph", async (t) => {
     );
   });
 
-  await t.test(async () => {
+  await t.test("/madrid/2026-05-15T22:18", async () => {
     const $ = await fetch$("/madrid/2026-05-15T22:18", {
       headers: { "accept-language": "en-US" },
     });
@@ -148,7 +148,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:description"]').attr("content"), "UTC+2");
   });
 
-  await t.test(async () => {
+  await t.test("/utc/2022-01-19T07:50", async () => {
     const $ = await fetch$("/utc/2022-01-19T07:50", {
       headers: { "accept-language": "en-GB" },
     });
@@ -164,7 +164,7 @@ t.test("opengraph", async (t) => {
     t.same($('head [property="og:description"]').attr("content"), "UTC");
   });
 
-  await t.test(async () => {
+  await t.test("/chicago/T10:10", async () => {
     const $ = await fetch$("/chicago/T10:10", {
       headers: {
         "accept-language": "en-US",
@@ -304,6 +304,79 @@ t.test("opengraph", async (t) => {
     );
   });
 
+  await t.test(
+    "/Europe/Paris/2025-03-30T02:13 (DST skipped hour)",
+    async () => {
+      const $ = await fetch$("/Europe/Paris/2025-03-30T02:13", {
+        headers: { "accept-language": "en-FR" },
+      });
+
+      t.same(
+        $('head [property="og:title"]').attr("content"),
+        "30 March 2025 at 03:13 in Paris",
+      );
+      t.same(
+        $('head [property="og:url"]').attr("content"),
+        "https://when.st/Europe/Paris/2025-03-30T03:13",
+      );
+      t.same($('head [property="og:description"]').attr("content"), "UTC+2");
+      t.same(
+        $('head [property="article:published_time"]').attr("content"),
+        "2025-03-30T01:13:00Z",
+      );
+    },
+  );
+
+  await t.test(
+    "/Europe/Paris/2025-10-25T02:14 (DST before fallback)",
+    async () => {
+      const $ = await fetch$("/Europe/Paris/2025-10-25T02:14", {
+        headers: { "accept-language": "en-FR" },
+      });
+
+      t.same(
+        $('head [property="og:title"]').attr("content"),
+        "25 October 2025 at 02:14 in Paris",
+      );
+      t.same(
+        $('head [property="og:url"]').attr("content"),
+        "https://when.st/Europe/Paris/2025-10-25T02:14",
+      );
+      t.same($('head [property="og:description"]').attr("content"), "UTC+2");
+      t.same(
+        $('head [property="article:published_time"]').attr("content"),
+        "2025-10-25T00:14:00Z",
+      );
+    },
+  );
+
+  // TODO: handle repeated DST hour
+  // - specify offset in the URL?
+  // - indicate ambiguous timezone in metadata/UI?
+  // - something else?
+  await t.skip(
+    "/Europe/Paris/2025-10-25T02:15 (DST after fallback)",
+    async () => {
+      const $ = await fetch$("/Europe/Paris/2025-10-25T02:15", {
+        headers: { "accept-language": "en-FR" },
+      });
+
+      t.same(
+        $('head [property="og:title"]').attr("content"),
+        "25 October 2025 at 02:15 in Paris",
+      );
+      t.same(
+        $('head [property="og:url"]').attr("content"),
+        "https://when.st/Europe/Paris/2025-10-25T02:15",
+      );
+      t.same($('head [property="og:description"]').attr("content"), "UTC+1");
+      t.same(
+        $('head [property="article:published_time"]').attr("content"),
+        "2025-10-25T01:15:00Z",
+      );
+    },
+  );
+
   await t.test("/unix", async () => {
     const $ = await fetch$("/unix");
 
@@ -321,6 +394,10 @@ t.test("opengraph", async (t) => {
     t.same(
       $('head [property="og:url"]').attr("content"),
       "https://when.st/unix/1645671600",
+    );
+    t.same(
+      $('head [property="article:published_time"]').attr("content"),
+      "2022-02-24T03:00:00Z",
     );
   });
 
