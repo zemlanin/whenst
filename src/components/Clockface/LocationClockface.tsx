@@ -12,15 +12,17 @@ import { Show } from "@preact/signals/utils";
 const viewBoxSize = 512;
 
 export function LocationClockface({
-  value,
+  instant,
   onChange,
   isLiveClockSignal,
   staticSecondHand = false,
+  timeZone,
 }: {
-  value: ReadonlySignal<Temporal.ZonedDateTime>;
-  onChange: (value: Temporal.ZonedDateTime) => void;
+  instant: ReadonlySignal<Temporal.Instant>;
+  onChange: (value: Temporal.Instant) => void;
   isLiveClockSignal: Signal<boolean>;
   staticSecondHand?: boolean;
+  timeZone: string;
 }) {
   const ongoingTouches = useSignal(
     new Map<
@@ -33,6 +35,9 @@ export function LocationClockface({
       }
     >(),
   );
+  const zonesDateTime = useComputed(() => {
+    return instant.value.toZonedDateTimeISO(timeZone);
+  });
 
   return (
     <svg
@@ -45,7 +50,9 @@ export function LocationClockface({
         }
 
         e.preventDefault();
-        const newValue = value.value.add({ seconds: Math.round(e.deltaY) * 5 });
+        const newValue = instant.value.add({
+          seconds: Math.round(e.deltaY) * 5,
+        });
         onChange(newValue);
       }}
       onTouchStart={(e) => {
@@ -108,7 +115,7 @@ export function LocationClockface({
         }
 
         if (delta) {
-          const newValue = value.value.add({ seconds: delta * 10 });
+          const newValue = instant.value.add({ seconds: delta * 10 });
           onChange(newValue);
         }
       }}
@@ -118,10 +125,10 @@ export function LocationClockface({
         }
       }}
     >
-      <AMPMComplication value={value} />
+      <AMPMComplication value={zonesDateTime} />
       <HourMark hour={1} />
       <HourMark hour={2} />
-      <DateComplication value={value} />
+      <DateComplication value={zonesDateTime} />
       <HourMark hour={4} />
       <HourMark hour={5} />
       <HourMark hour={6} />
@@ -130,16 +137,18 @@ export function LocationClockface({
       <HourMark hour={9} />
       <HourMark hour={10} />
       <HourMark hour={11} />
-      <HourHand value={value} />
-      <MinuteHand value={value} />
+      <HourHand value={zonesDateTime} />
+      <MinuteHand value={zonesDateTime} />
       <Show
         when={isLiveClockSignal}
         fallback={
-          staticSecondHand ? <SecondHand value={value} isStatic /> : undefined
+          staticSecondHand ? (
+            <SecondHand value={zonesDateTime} isStatic />
+          ) : undefined
         }
       >
         <>
-          <SecondHand value={value} />
+          <SecondHand value={zonesDateTime} />
           <HandsPost />
         </>
       </Show>

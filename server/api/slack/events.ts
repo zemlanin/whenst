@@ -188,10 +188,9 @@ async function sendChatUnfurl({
 
     if (urlTZ === "unix") {
       // TODO: pass event's datetime when parsing time strings
-      /** "zonedDateTime" */
-      const zDT = parseTimeString(urlTZ, urlDT);
+      const instant = parseTimeString(urlTZ, urlDT);
 
-      const epochSeconds = Math.floor(zDT.epochMilliseconds / 1000);
+      const epochSeconds = Math.floor(instant.epochMilliseconds / 1000);
 
       const canonicalPathname =
         getPathnameFromTimezone(urlTZ) + `/${epochSeconds}`;
@@ -221,10 +220,9 @@ async function sendChatUnfurl({
     if (urlTZ) {
       const placeStr = getLocationFromTimezone(urlTZ);
       // TODO: pass event's datetime when parsing time strings
-      /** "zonedDateTime" */
-      const zDT = parseTimeString(urlTZ, urlDT);
+      const instant = parseTimeString(urlTZ, urlDT);
 
-      const instantPathPart = zDT.toString({
+      const instantPathPart = instant.toZonedDateTimeISO(urlTZ).toString({
         timeZoneName: "never",
         offset: "never",
         smallestUnit: "minute",
@@ -239,7 +237,7 @@ async function sendChatUnfurl({
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `<!date^${Math.floor(zDT.epochMilliseconds / 1000)}^{date_long_pretty} at {time}|:shrug:>`,
+              text: `<!date^${Math.floor(instant.epochMilliseconds / 1000)}^{date_long_pretty} at {time}|:shrug:>`,
             },
           },
           {

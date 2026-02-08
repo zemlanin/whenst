@@ -200,20 +200,19 @@ function getHomeOpengraphData(
   const [urlTZ, urlDT] = extractDataFromURL(url);
 
   if (urlTZ === "unix") {
-    /** "zonedDateTime" */
-    const zDT =
+    const instant =
       urlDT && urlDT !== "now"
         ? parseTimeString(urlTZ, urlDT, {
             currentDateTime,
           })
         : null;
 
-    const epochSeconds = zDT
-      ? Math.floor(zDT.epochMilliseconds / 1000)
+    const epochSeconds = instant
+      ? Math.floor(instant.epochMilliseconds / 1000)
       : undefined;
 
     const canonicalPathname =
-      getPathnameFromTimezone(urlTZ) + (zDT ? `/${epochSeconds}` : "");
+      getPathnameFromTimezone(urlTZ) + (instant ? `/${epochSeconds}` : "");
 
     return {
       title: epochSeconds !== undefined ? `Unix ${epochSeconds}` : `Unix time`,
@@ -222,21 +221,21 @@ function getHomeOpengraphData(
         epochSeconds !== undefined
           ? `0x${epochSeconds.toString(16)} • 0b${epochSeconds.toString(2)}`
           : `aka Epoch time, POSIX time, or Unix timestamp`,
-      published_time: zDT
-        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
+      published_time: instant
+        ? instant.toString({ smallestUnit: "second" })
         : undefined,
     };
   }
 
   if (urlTZ) {
     const placeStr = getLocationFromTimezone(urlTZ);
-    /** "zonedDateTime" */
-    const zDT =
+    const instant =
       urlDT && urlDT !== "now"
         ? parseTimeString(urlTZ, urlDT, {
             currentDateTime,
           })
         : null;
+    const zDT = instant?.toZonedDateTimeISO(urlTZ) ?? null;
 
     const canonicalPathname =
       getPathnameFromTimezone(urlTZ) +
@@ -261,8 +260,8 @@ function getHomeOpengraphData(
         : `Time in ${placeStr}`,
       url: new URL(canonicalPathname, "https://when.st/").toString(),
       description: utcOffset,
-      published_time: zDT
-        ? zDT.toString({ timeZoneName: "never", offset: "auto" })
+      published_time: instant
+        ? instant.toString({ smallestUnit: "second" })
         : undefined,
     };
   }

@@ -74,19 +74,25 @@ export function parseTimeString(
 
   if (!timeString || timeString === "now") {
     if (options?.currentDateTime) {
-      return options.currentDateTime.with({
-        timeZone: timezone,
-        millisecond: 0,
-      });
+      return options.currentDateTime
+        .with({
+          timeZone: timezone,
+          millisecond: 0,
+        })
+        .toInstant();
     }
 
-    return Temporal.Now.zonedDateTimeISO(timezone).with({
-      millisecond: 0,
-    });
+    return Temporal.Now.zonedDateTimeISO(timezone)
+      .with({
+        millisecond: 0,
+      })
+      .toInstant();
   }
 
-  return date.toZonedDateTime({
-    plainTime: Temporal.PlainTime.from(timeString),
-    timeZone: timezone,
-  });
+  return date
+    .toZonedDateTime({
+      plainTime: Temporal.PlainTime.from(timeString),
+      timeZone: timezone,
+    })
+    .toInstant();
 }

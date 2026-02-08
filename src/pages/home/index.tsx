@@ -93,7 +93,7 @@ function IndexPage() {
   const isUnix = urlTZ === "unix";
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
-  const dt = useSignal(parseTimeString(pageTZ, urlDT));
+  const instant = useSignal(parseTimeString(pageTZ, urlDT));
   const isLiveClockSignal = useSignal(urlDT === undefined || urlDT === "now");
 
   const activeTab = activeTabSignal;
@@ -110,8 +110,8 @@ function IndexPage() {
     }
 
     const timeString = isUnix
-      ? Math.floor(dt.peek().epochMilliseconds / 1000)
-      : formatDTInput(dt.peek());
+      ? Math.floor(instant.peek().epochMilliseconds / 1000)
+      : formatDTInput(instant.peek().toZonedDateTimeISO(pageTZ));
 
     const canonicalPathname =
       urlDT === "now"
@@ -120,7 +120,7 @@ function IndexPage() {
 
     replaceStateWithSignal(history.state || null, "", canonicalPathname);
     updateTitle(
-      urlDT === "now" ? undefined : dt.peek(),
+      urlDT === "now" ? undefined : instant.peek().toZonedDateTimeISO(pageTZ),
       isUnix ? "unix" : pageTZ,
     );
   }, []);
@@ -140,13 +140,14 @@ function IndexPage() {
           return;
         }
 
-        const now = Temporal.Now.zonedDateTimeISO(dt.peek().timeZoneId);
+        const now = Temporal.Now.instant();
 
-        dt.value = now.with({
-          millisecond: 0,
+        instant.value = now.round({
+          smallestUnit: "second",
+          roundingMode: "floor",
         });
 
-        waitTick(1000 - now.millisecond);
+        waitTick(1000 - (now.epochMilliseconds % 1000));
       }, delay);
     }
 
@@ -158,7 +159,7 @@ function IndexPage() {
   });
 
   useSignalEffect(() => {
-    const dtValue = dt.value;
+    const dtValue = instant.value.toZonedDateTimeISO(pageTZ);
     const isLive = isLiveClockSignal.value;
 
     if (isLive) {
@@ -203,10 +204,10 @@ function IndexPage() {
         />
       </TitleBarPortal>
       {isUnix ? (
-        <UnixRow rootDT={dt} isLiveClockSignal={isLiveClockSignal} />
+        <UnixRow instant={instant} isLiveClockSignal={isLiveClockSignal} />
       ) : (
         <ClockRow
-          rootDT={dt}
+          instant={instant}
           timeZone={pageTZ}
           pageTimeZone={pageTZ}
           withRelative={!pageForRemoteTimeZone}
@@ -215,7 +216,7 @@ function IndexPage() {
       )}
       {pageForRemoteTimeZone ? (
         <ClockRow
-          rootDT={dt}
+          instant={instant}
           timeZone={localTZ}
           pageTimeZone={pageTZ}
           withRelative
@@ -226,7 +227,7 @@ function IndexPage() {
       ) : null}
 
       <Tabs
-        rootDT={dt}
+        instant={instant}
         pageTZ={pageTZ}
         localTZ={localTZ}
         activeTab={activeTab}
@@ -238,7 +239,7 @@ function IndexPage() {
 const NBSP = "\xa0";
 
 function ClockRow({
-  rootDT,
+  instant,
   timeZone,
   pageTimeZone,
   withRelative,
@@ -246,7 +247,7 @@ function ClockRow({
   isLiveClockSignal,
   staticSecondHand = false,
 }: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   timeZone: string;
   pageTimeZone: string;
   withRelative: boolean;
@@ -254,7 +255,7 @@ function ClockRow({
   isLiveClockSignal: Signal<boolean>;
   staticSecondHand?: boolean;
 }) {
-  const dt = useComputed(() => rootDT.value.withTimeZone(timeZone));
+  const dt = useComputed(() => instant.value.toZonedDateTimeISO(timeZone));
   const formId = "clock-row-" + useId();
 
   const tzName = getLocationFromTimezone(timeZone);
@@ -303,7 +304,7 @@ function ClockRow({
       const newRootDT = Temporal.PlainDateTime.from(
         event.target.value,
       ).toZonedDateTime(timeZone);
-      rootDT.value = newRootDT;
+      instant.value = newRootDT.toInstant();
       isLiveClockSignal.value = false;
     } catch (e) {
       console.error(e);
@@ -388,12 +389,11 @@ function ClockRow({
 
         <div className="clockface-wrapper">
           <LocationClockface
-            value={dt}
+            instant={instant}
+            timeZone={timeZone}
             onChange={(value) => {
               try {
-                const newRootDT =
-                  Temporal.PlainDateTime.from(value).toZonedDateTime(timeZone);
-                rootDT.value = newRootDT;
+                instant.value = value;
                 isLiveClockSignal.value = false;
               } catch (e) {
                 console.error(e);
@@ -497,7 +497,7 @@ const CALENDAR_LINKS_ID = "calendar-links";
 
 function Tabs({
   activeTab,
-  rootDT,
+  instant,
   pageTZ,
   localTZ,
 }: {
@@ -506,7 +506,7 @@ function Tabs({
     | typeof DISCORD_FORMATS_ID
     | typeof CALENDAR_LINKS_ID
   >;
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   pageTZ: string;
   localTZ: string;
 }) {
@@ -587,20 +587,20 @@ function Tabs({
       </div>
 
       <SavedTimezones
-        rootDT={rootDT}
+        instant={instant}
         pageTZ={pageTZ}
         localTZ={localTZ}
         hidden={otherTimezonesHidden}
       />
 
       <DiscordActions
-        rootDT={rootDT}
+        instant={instant}
         localTZ={localTZ}
         hidden={discordFormatsHidden}
       />
 
       <CalendarLinks
-        rootDT={rootDT}
+        instant={instant}
         localTZ={localTZ}
         hidden={calendarLinksHidden}
       />
@@ -659,15 +659,15 @@ function RegionAwareIcon({
 const DISCORD_FORMATS_ID = "discord-formats";
 
 function DiscordActions({
-  rootDT,
+  instant,
   localTZ,
   hidden,
 }: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   localTZ: string;
   hidden: Signal<boolean>;
 }) {
-  const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
+  const dt = useComputed(() => instant.value.toZonedDateTimeISO(localTZ));
 
   const timestampStyles = [
     ["F", "Long Date/Time"],
@@ -791,15 +791,15 @@ function DiscordFormat({
 }
 
 function CalendarLinks({
-  rootDT,
+  instant,
   localTZ,
   hidden,
 }: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   localTZ: string;
   hidden: Signal<boolean>;
 }) {
-  const dt = useComputed(() => rootDT.value.withTimeZone(localTZ));
+  const dt = useComputed(() => instant.value.toZonedDateTimeISO(localTZ));
 
   const eventTitle = useSignal("");
   const eventDurationMinutes = useSignal(0);
@@ -979,14 +979,14 @@ function formatDTiCal(dt: Temporal.ZonedDateTime) {
 }
 
 function UnixRow({
-  rootDT,
+  instant,
   isLiveClockSignal,
 }: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   isLiveClockSignal: Signal<boolean>;
 }) {
   const timeInUnix = useComputed(() =>
-    Math.floor(rootDT.value.epochMilliseconds / 1000),
+    Math.floor(instant.value.epochMilliseconds / 1000),
   );
   const tzURL = new URL("/unix", location.href);
   const timestampURL = useComputed(() =>
@@ -1004,10 +1004,9 @@ function UnixRow({
     }
 
     try {
-      const newRootDT = Temporal.PlainDateTime.from(
-        new Date(+event.target.value * 1000).toISOString().replace(/Z$/, ""),
-      ).toZonedDateTime("UTC");
-      rootDT.value = newRootDT;
+      instant.value = Temporal.Instant.fromEpochMilliseconds(
+        +event.target.value * 1000,
+      );
       isLiveClockSignal.value = false;
     } catch (e) {
       console.error(e);
@@ -1078,10 +1077,9 @@ function UnixRow({
             value={timeInUnix}
             onChange={(value) => {
               try {
-                const newRootDT = Temporal.PlainDateTime.from(
-                  new Date(+value * 1000).toISOString().replace(/Z$/, ""),
-                ).toZonedDateTime("UTC");
-                rootDT.value = newRootDT;
+                instant.value = Temporal.Instant.fromEpochMilliseconds(
+                  +value * 1000,
+                );
                 isLiveClockSignal.value = false;
               } catch (e) {
                 console.error(e);
@@ -1114,25 +1112,25 @@ const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
 const SAVED_TIMEZONES_ID = "saved-timezones";
 
 function SavedTimezones({
-  rootDT,
+  instant,
   pageTZ,
   localTZ,
   hidden,
 }: {
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   pageTZ: string;
   localTZ: string;
   hidden?: Signal<boolean>;
 }) {
   const pageDateString = useComputed(() =>
     shortDateFormatter.format(
-      rootDT.value.withTimeZone(pageTZ).toPlainDateTime(),
+      instant.value.toZonedDateTimeISO(pageTZ).toPlainDateTime(),
     ),
   );
 
   const localDateString = useComputed(() =>
     shortDateFormatter.format(
-      rootDT.value.withTimeZone(pageTZ).toPlainDateTime(),
+      instant.value.toZonedDateTimeISO(localTZ).toPlainDateTime(),
     ),
   );
 
@@ -1174,7 +1172,7 @@ function SavedTimezones({
               key={timezone + ":" + label}
               timezone={timezone}
               label={label}
-              rootDT={rootDT}
+              instant={instant}
               tabIndex={index === 0 ? 0 : -1}
               localDateString={localDateString}
               pageDateString={pageDateString}
@@ -1189,19 +1187,19 @@ function SavedTimezones({
 function WorldClockRow({
   timezone,
   label,
-  rootDT,
+  instant,
   tabIndex,
   localDateString,
   pageDateString,
 }: {
   timezone: string;
   label: string;
-  rootDT: Signal<Temporal.ZonedDateTime>;
+  instant: Signal<Temporal.Instant>;
   tabIndex: number;
   localDateString: ReadonlySignal<string>;
   pageDateString: ReadonlySignal<string>;
 }) {
-  const worldDT = useComputed(() => rootDT.value.withTimeZone(timezone));
+  const worldDT = useComputed(() => instant.value.toZonedDateTimeISO(timezone));
 
   const plainDateTime = useComputed(() => worldDT.value.toPlainDateTime());
 
