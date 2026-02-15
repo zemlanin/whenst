@@ -375,7 +375,9 @@ async function buildServiceWorker({ outdir, outEntrypoints, outAssets }) {
     ...new Set(
       HANDLEBARS_ENTRYPOINTS.map((p) =>
         path.dirname(path.relative(PAGES_BASE, p)),
-      ).map((p) => (p === "home" ? "/" : `/${p}`)),
+      )
+        .filter((p) => p !== "slack/install")
+        .map((p) => (p === "home" ? "/" : `/${p}`)),
     ),
   ];
 
