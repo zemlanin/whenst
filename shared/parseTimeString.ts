@@ -37,6 +37,7 @@ export function parseTimeString(
   timeString: string | undefined,
   options: {
     currentDateTime?: Temporal.ZonedDateTime;
+    disambiguation?: "earlier" | "later";
   } = {},
 ) {
   if (timezone === "unix") {
@@ -60,19 +61,21 @@ export function parseTimeString(
     }
   }
 
+  let time: Temporal.PlainTime | undefined = undefined;
+
   if (timeString && timeString !== "now") {
     if (timeString.match(AM_PM_REGEX)) {
       timeString = timeString.replace(AM_PM_REGEX, AM_PM_REPLACEMENT);
     }
 
     try {
-      Temporal.PlainTime.from(timeString);
+      time = Temporal.PlainTime.from(timeString);
     } catch (_e) {
       timeString = "now";
     }
   }
 
-  if (!timeString || timeString === "now") {
+  if (!timeString || !time || timeString === "now") {
     if (options?.currentDateTime) {
       return options.currentDateTime
         .with({
@@ -89,10 +92,17 @@ export function parseTimeString(
       .toInstant();
   }
 
-  return date
-    .toZonedDateTime({
-      plainTime: Temporal.PlainTime.from(timeString),
+  return Temporal.ZonedDateTime.from(
+    {
       timeZone: timezone,
-    })
-    .toInstant();
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: time.hour,
+      minute: time.minute,
+    },
+    {
+      disambiguation: options.disambiguation,
+    },
+  ).toInstant();
 }

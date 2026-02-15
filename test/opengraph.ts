@@ -328,51 +328,47 @@ t.test("opengraph", async (t) => {
   );
 
   await t.test(
-    "/Europe/Paris/2025-10-25T02:14 (DST before fallback)",
+    "/Europe/Paris/2025-10-26T02:14 (DST before fallback)",
     async () => {
-      const $ = await fetch$("/Europe/Paris/2025-10-25T02:14", {
+      const $ = await fetch$("/Europe/Paris/2025-10-26T02:14", {
         headers: { "accept-language": "en-FR" },
       });
 
       t.same(
         $('head [property="og:title"]').attr("content"),
-        "25 October 2025 at 02:14 in Paris",
+        "26 October 2025 at 02:14 in Paris",
       );
       t.same(
         $('head [property="og:url"]').attr("content"),
-        "https://when.st/Europe/Paris/2025-10-25T02:14",
+        "https://when.st/Europe/Paris/2025-10-26T02:14",
       );
       t.same($('head [property="og:description"]').attr("content"), "UTC+2");
       t.same(
         $('head [property="article:published_time"]').attr("content"),
-        "2025-10-25T00:14:00Z",
+        "2025-10-26T00:14:00Z",
       );
     },
   );
 
-  // TODO: handle repeated DST hour
-  // - specify offset in the URL?
-  // - indicate ambiguous timezone in metadata/UI?
-  // - something else?
-  await t.skip(
-    "/Europe/Paris/2025-10-25T02:15 (DST after fallback)",
+  await t.test(
+    "/Europe/Paris/2025-10-26T02:15 (DST after fallback)",
     async () => {
-      const $ = await fetch$("/Europe/Paris/2025-10-25T02:15", {
+      const $ = await fetch$("/Europe/Paris/2025-10-26T02:15?change=after", {
         headers: { "accept-language": "en-FR" },
       });
 
       t.same(
         $('head [property="og:title"]').attr("content"),
-        "25 October 2025 at 02:15 in Paris",
+        "26 October 2025 at 02:15 in Paris",
       );
       t.same(
         $('head [property="og:url"]').attr("content"),
-        "https://when.st/Europe/Paris/2025-10-25T02:15",
+        "https://when.st/Europe/Paris/2025-10-26T02:15?change=after",
       );
       t.same($('head [property="og:description"]').attr("content"), "UTC+1");
       t.same(
         $('head [property="article:published_time"]').attr("content"),
-        "2025-10-25T01:15:00Z",
+        "2025-10-26T01:15:00Z",
       );
     },
   );

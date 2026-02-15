@@ -663,6 +663,12 @@ button[role="radio"][aria-checked="true"]:focus-visible {
   font-style: italic;
   /* align the line with the typographic baseline */
   margin-bottom: -0.35em;
+  text-align: right;
+}
+
+.clock-row a.time-change {
+  text-decoration: underline;
+  text-decoration-style: dashed;
 }
 
 #saved-timezones {

@@ -196,8 +196,8 @@ function getHomeOpengraphData(
     currentDateTime,
   }: { languages: string[]; currentDateTime?: Temporal.ZonedDateTime },
 ) {
-  const url = new URL(pathname, "https://when.st/").toString();
-  const [urlTZ, urlDT] = extractDataFromURL(url);
+  const url = new URL(pathname, "https://when.st/");
+  const [urlTZ, urlDT] = extractDataFromURL(url.toString());
 
   if (urlTZ === "unix") {
     const instant =
@@ -229,10 +229,13 @@ function getHomeOpengraphData(
 
   if (urlTZ) {
     const placeStr = getLocationFromTimezone(urlTZ);
+    const disambiguation =
+      url.searchParams.get("change") === "after" ? "later" : undefined;
     const instant =
       urlDT && urlDT !== "now"
         ? parseTimeString(urlTZ, urlDT, {
             currentDateTime,
+            disambiguation,
           })
         : null;
     const zDT = instant?.toZonedDateTimeISO(urlTZ) ?? null;
@@ -240,7 +243,7 @@ function getHomeOpengraphData(
     const canonicalPathname =
       getPathnameFromTimezone(urlTZ) +
       (zDT
-        ? `/${zDT.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}`
+        ? `/${zDT.toString({ timeZoneName: "never", offset: "never", smallestUnit: "minute" })}${disambiguation === "later" ? "?change=after" : ""}`
         : "");
 
     // TODO: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime/getTimeZoneTransition

@@ -181,7 +181,10 @@ async function sendChatUnfurl({
   const unfurls: Record<string, { blocks: Record<string, unknown>[] }> = {};
 
   for (const link of event.links) {
-    const [urlTZ, urlDT] = extractDataFromURL(link.url);
+    const url = new URL(link.url);
+    const disambiguation =
+      url.searchParams.get("change") === "after" ? "later" : undefined;
+    const [urlTZ, urlDT] = extractDataFromURL(url.toString());
     if (!urlDT || urlDT === "now") {
       continue;
     }
@@ -220,7 +223,9 @@ async function sendChatUnfurl({
     if (urlTZ) {
       const placeStr = getLocationFromTimezone(urlTZ);
       // TODO: pass event's datetime when parsing time strings
-      const instant = parseTimeString(urlTZ, urlDT);
+      const instant = parseTimeString(urlTZ, urlDT, {
+        disambiguation,
+      });
 
       const instantPathPart = instant.toZonedDateTimeISO(urlTZ).toString({
         timeZoneName: "never",
@@ -229,7 +234,8 @@ async function sendChatUnfurl({
       });
 
       const canonicalPathname =
-        getPathnameFromTimezone(urlTZ) + `/${instantPathPart}`;
+        getPathnameFromTimezone(urlTZ) +
+        `/${instantPathPart}${disambiguation === "later" ? "?change=after" : ""}`;
 
       unfurls[link.url] = {
         blocks: [

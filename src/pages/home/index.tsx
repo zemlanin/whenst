@@ -93,7 +93,14 @@ function IndexPage() {
   const isUnix = urlTZ === "unix";
   const pageTZ = isUnix ? "UTC" : urlTZ ? urlTZ : localTZ;
 
-  const instant = useSignal(parseTimeString(pageTZ, urlDT));
+  const instant = useSignal(
+    parseTimeString(pageTZ, urlDT, {
+      disambiguation:
+        new URLSearchParams(location.search).get("change") === "after"
+          ? "later"
+          : undefined,
+    }),
+  );
   const isLiveClockSignal = useSignal(urlDT === undefined || urlDT === "now");
 
   const activeTab = activeTabSignal;
@@ -109,20 +116,19 @@ function IndexPage() {
       return;
     }
 
+    const zdt = instant.peek().toZonedDateTimeISO(pageTZ);
+
     const timeString = isUnix
       ? Math.floor(instant.peek().epochMilliseconds / 1000)
-      : formatDTInput(instant.peek().toZonedDateTimeISO(pageTZ));
+      : formatDTInput(zdt);
 
     const canonicalPathname =
       urlDT === "now"
         ? getPathnameFromTimezone(isUnix ? "unix" : pageTZ)
-        : `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${timeString}`;
+        : `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${timeString}${!isUnix && getRepeatedTimeType(zdt) === "after" ? "?change=after" : ""}`;
 
     replaceStateWithSignal(history.state || null, "", canonicalPathname);
-    updateTitle(
-      urlDT === "now" ? undefined : instant.peek().toZonedDateTimeISO(pageTZ),
-      isUnix ? "unix" : pageTZ,
-    );
+    updateTitle(urlDT === "now" ? undefined : zdt, isUnix ? "unix" : pageTZ);
   }, []);
 
   useSignalEffect(() => {
@@ -172,7 +178,8 @@ function IndexPage() {
       `${getPathnameFromTimezone(isUnix ? "unix" : pageTZ)}/${
         isUnix
           ? Math.floor(dtValue.epochMilliseconds / 1000)
-          : formatDTInput(dtValue.withTimeZone(pageTZ))
+          : formatDTInput(dtValue) +
+            (getRepeatedTimeType(dtValue) === "after" ? "?change=after" : "")
       }`,
     );
 
@@ -265,7 +272,12 @@ function ClockRow({
     location.href,
   );
   const timeInTZ = useComputed(() => formatDTInput(dt.value));
-  const timestampURL = useComputed(() => `${tzURL}/${timeInTZ}`);
+
+  const repeatedTimeType = useRepeatedTimeType(dt);
+  const timestampURL = useComputed(
+    () =>
+      `${tzURL}/${timeInTZ}${repeatedTimeType.value === "after" ? `?change=after` : ""}`,
+  );
   const relative = useSignal(NBSP);
   const withRelativeSignal = useSignal(withRelative);
   const displayRelative = useComputed(() => {
@@ -293,6 +305,39 @@ function ClockRow({
     return () => {
       clearTimeout(timeoutId);
     };
+  });
+
+  const disambiguation = useComputed(() => {
+    const url = secondary ? null : new URL(timestampURL.value);
+    if (repeatedTimeType.value === "before") {
+      if (!url) {
+        return <>before time change</>;
+      }
+      url.searchParams.set("change", "after");
+      return (
+        <>
+          <a href={url.toString()} className="time-change">
+            before
+          </a>{" "}
+          time change
+        </>
+      );
+    }
+
+    if (repeatedTimeType.value === "after") {
+      if (!url) {
+        return <>after time change</>;
+      }
+      url.searchParams.delete("change");
+      return (
+        <>
+          <a href={url.toString()} className="time-change">
+            after
+          </a>{" "}
+          time change
+        </>
+      );
+    }
   });
 
   const onTimeChange = (event: { target: EventTarget | null }) => {
@@ -381,8 +426,20 @@ function ClockRow({
               onBlur={onBlur}
               form={formId}
             />
-            <Show when={displayRelative}>
-              <div className="relative">{relative}</div>
+            <Show
+              when={displayRelative}
+              fallback={
+                <Show when={disambiguation}>
+                  <div className="relative">{disambiguation}</div>
+                </Show>
+              }
+            >
+              <div className="relative">
+                {relative}
+                <Show when={disambiguation}>
+                  <>; {disambiguation}</>
+                </Show>
+              </div>
             </Show>
           </div>
         </div>
@@ -414,6 +471,61 @@ function ClockRow({
       )}
     </div>
   );
+}
+
+function useRepeatedTimeType(dt: Signal<Temporal.ZonedDateTime>) {
+  return useComputed(() => {
+    return getRepeatedTimeType(dt.value);
+  });
+}
+
+function getRepeatedTimeType(zdt: Temporal.ZonedDateTime) {
+  const nextTransition = zdt.getTimeZoneTransition("next");
+  const previousTransition = zdt.getTimeZoneTransition("previous");
+
+  if (!nextTransition && !previousTransition) {
+    return null;
+  }
+
+  if (
+    nextTransition &&
+    zdt.offsetNanoseconds > nextTransition.offsetNanoseconds
+  ) {
+    const offsetDelta = Temporal.Duration.from({
+      nanoseconds: zdt.offsetNanoseconds - nextTransition.offsetNanoseconds,
+    });
+
+    if (
+      Temporal.Duration.compare(nextTransition.since(zdt), offsetDelta) <= 0
+    ) {
+      return "before";
+    }
+  }
+
+  if (previousTransition) {
+    const prevPreviousTransition =
+      previousTransition.getTimeZoneTransition("previous");
+    if (
+      prevPreviousTransition &&
+      prevPreviousTransition.offsetNanoseconds >
+        previousTransition.offsetNanoseconds
+    ) {
+      const offsetDelta = Temporal.Duration.from({
+        nanoseconds:
+          prevPreviousTransition.offsetNanoseconds -
+          previousTransition.offsetNanoseconds,
+      });
+
+      if (
+        Temporal.Duration.compare(zdt.since(previousTransition), offsetDelta) <=
+        0
+      ) {
+        return "after";
+      }
+    }
+  }
+
+  return null;
 }
 
 function ClockRowActions({
