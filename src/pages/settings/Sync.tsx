@@ -220,7 +220,7 @@ function SignedOutSignInTab() {
 
   return (
     <>
-      <p>Sync your settings to another device</p>
+      <p>Sync your settings from your other devices</p>
       <Show
         when={hasCode}
         fallback={
