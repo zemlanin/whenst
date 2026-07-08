@@ -12,7 +12,6 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
-
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
@@ -39,10 +38,7 @@ FROM base
 
 RUN apt-get update -y && apt-get install -y \
     # LiteFS setup
-    ca-certificates fuse3 sqlite3 \
-    libsqlite3-mod-spatialite
-
-ENV WHENST_SPATIALITE_MOD="/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
+    ca-certificates fuse3 sqlite3
 
 # LiteFS setup
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs

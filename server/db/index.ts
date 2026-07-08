@@ -3,22 +3,11 @@ import { getAccount } from "../_common/account.js";
 import { getMidpointPosition } from "../../shared/getMidpointPosition.js";
 
 const MAIN_DB = process.env.WHENST_MAIN_DB || ".data/whenst.db";
-const TIMEZONES_DB = process.env.WHENST_TIMEZONES_DB || ".data/timezones.db";
 
 const db = new Database(MAIN_DB, {});
 db.pragma("journal_mode = WAL");
 
-const timezonesDB = new Database(TIMEZONES_DB, {
-  // TypeError: In-memory/temporary databases cannot be readonly
-  readonly: TIMEZONES_DB !== ":memory:",
-});
-timezonesDB.loadExtension(
-  process.env.WHENST_SPATIALITE_MOD ||
-    // `brew install spatialite-tools`
-    "/opt/homebrew/lib/mod_spatialite.dylib",
-);
-
-export { db, timezonesDB };
+export { db };
 
 export function getSessionTimezonesLegacy(sessionId: string) {
   const account = getAccount(sessionId);
