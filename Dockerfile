@@ -38,7 +38,9 @@ FROM base
 
 RUN apt-get update -y && apt-get install -y \
     # LiteFS setup
-    ca-certificates fuse3 sqlite3
+    ca-certificates fuse3 sqlite3 \
+    # Latest tzdata
+    tzdata
 
 # LiteFS setup
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
